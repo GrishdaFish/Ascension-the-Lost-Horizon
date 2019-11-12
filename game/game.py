@@ -188,10 +188,6 @@ class Game:
     def setup_world(self):
         self.world.add_processor(systems.DisplayProcessor())
         self.world.add_processor(systems.MovementProcessor())
-        for object in self.objects:
-            if object.fighter and object != self.player:
-                print('monster added')
-                self.monsters.append(object)
 
         # self.ticker.get_next_tick()
 
@@ -327,7 +323,7 @@ class Game:
         #                return 'didnt-take-turn'
 
     def handle_stairs(self, key, turn):
-        if key.text is '<':
+        if key.text == '<':
             for object in self.objects:
                 if object.x == self.player.x and object.y == self.player.y and object.misc:
                     if object.misc.type == 'up':
@@ -342,7 +338,7 @@ class Game:
 
                             turn = 'turn-used'
 
-        if key.text is '>':
+        if key.text == '>':
             for object in self.objects:
                 if object.x == self.player.x and object.y == self.player.y and object.misc:
                     if object.misc.type == 'down':
