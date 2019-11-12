@@ -320,7 +320,7 @@ class Game:
                     if chosen_item is not None:
                         chosen_item.item.use(self.player.fighter.inventory, self.player, self)
                         return 'turn-used'
-                    return 'didnt-take-turn'
+                    #return 'didnt-take-turn'
 
                 # if key.c is ord(self.keys.key_drop):
                 #    # show the inventory; if an item is selected, drop it
@@ -411,17 +411,35 @@ class Game:
         if self.fov_recompute:
             self.fov_recompute = False
             libtcod.map_compute_fov(self.fov, self.player.x, self.player.y)
+        self.update_lighting()
+
+        self.gEngine.map_draw(self.dungeon_console, self.player.x, self.player.y)
+
+        self.draw_objects()
+
+        # self.world.process()
+
+        self.draw_user_interface()
+
+        self.get_names_under_player()
+
+        self.message.flush_messages()
+
+        self.render_consoles()
+
+    def update_lighting(self):
         self.gEngine.lightmask_reset()
         r = libtcod.random_get_float(0, -0.025, 0.025)
-        self.gEngine.lightmask_add_light(self.player.x, self.player.y, (0.75+r))
+        self.gEngine.lightmask_add_light(self.player.x, self.player.y, (0.75 + r))
         for object in self.objects:
             if object.fighter:
                 r = libtcod.random_get_float(0, -0.025, 0.025)
-                self.gEngine.lightmask_add_light(object.x, object.y, (0.4+r))
+                self.gEngine.lightmask_add_light(object.x, object.y, (0.4 + r))
+
         self.gEngine.particle_update(self.level.dungeon)
         self.gEngine.lightmask_compute(self.level.dungeon)
 
-        self.gEngine.map_draw(self.dungeon_console, self.player.x, self.player.y)
+    def draw_objects(self):
         for object in self.objects:
             if object.misc:
                 if object.misc.type == 'up' or object.misc.type == 'down':
@@ -434,33 +452,25 @@ class Game:
                 object.draw(self.fov, self.gEngine)
         self.player.draw(self.fov, self.gEngine)
 
-        # self.world.process()
-
-        # prepare to render the GUI panel
+    def draw_user_interface(self):
         r, g, b = libtcod.black
         self.gEngine.console_set_default_background(self.panel, r, g, b)
         self.gEngine.console_clear(self.panel)
 
-        # show the player's stats
         self.player_hp_bar.render(1, 1, self.gEngine)
         self.player_xp_bar.render(1, 3, self.gEngine)
 
-        # display names of objects under the mouse
         r, g, b = libtcod.light_gray
         self.gEngine.console_set_default_foreground(self.panel, r, g, b)
         self.gEngine.console_set_alignment(self.panel, libtcod.LEFT)
         self.gEngine.console_set_default_background(0, r, g, b)
-        self.get_names_under_player()
-        # print the game messages
-        self.message.flush_messages()
-
         self.gEngine.console_print(self.panel, 1, 5, "(%dfps)" % (libtcod.sys_get_fps()))
         self.gEngine.console_print(self.panel, 1, 0, self.get_names_under_mouse())
 
+    def render_consoles(self):
         self.hotbar.render()
 
         self.gEngine.console_blit(self.dungeon_console, 0, 0, 0, 0, 0, 0, 0, 1.0, 1.0)
-
         self.gEngine.console_blit(self.toolbar, 0, 0, self.gEngine.w, 5, 0, 0, self.panel_y - 5, 1.0, 1.0)
         self.gEngine.console_blit(self.panel, 0, 0, self.screen_width, self.panel_height, 0, 0, self.panel_y, 1.0, 1.0)
 
