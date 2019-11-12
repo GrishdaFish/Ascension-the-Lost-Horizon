@@ -198,12 +198,29 @@ class Game:
     def new_game(self):
         self.setup_player()
         self.level = self.basic_dungeon.make_map(game=self)
+        self.level.depth = 1
         self.fov = self.level.fov_map
         self.gEngine.log_message('Map made')
         self.setup_world()
         self.message.message('Welcome to %s' % self.gEngine.name)
         self.path = libtcod.path_new_using_function(self.dungeon_width, self.dungeon_height, path_callback, self)
         self.newgame = True
+
+    def handle_keys(self, key):
+        turn = self.handle_misc(key)
+        if turn == 'exit':
+            return turn
+        turn = 'didnt-take-turn'
+
+        if self.game_state == 'playing':
+            turn = self.handle_movement(key)
+            turn = self.handle_pickup(key, turn)
+            turn = self.handle_character(key, turn)
+            turn = self.handle_inventory(key, turn)
+            turn = self.handle_drop(key, turn)
+            turn = self.handle_stairs(key, turn)
+            return turn
+        return turn
 
     def get_move_direction(self, key):
         move_keys = {self.keys.key_north: (0, -1),
@@ -223,19 +240,75 @@ class Game:
             direction = "west"
         return px, py, direction
 
-    def handle_keys(self, key):
-        # if key:
-        #    print(key)
-        # libtcod.sys_check_for_event()
+    def handle_movement(self, key):
         move_keys = {self.keys.key_north: (0, -1),
                      self.keys.key_south: (0, 1),
                      self.keys.key_east: (1, 0),
                      self.keys.key_west: (-1, 0),
                      }
+        if key.vk in move_keys:
+            px, py, d = self.get_move_direction(key.vk)
+            return self.player_move_or_attack(px, py, d)
+
+        # for char based keys, 'w','a','s','d', etc..
+        elif chr(key.c) in move_keys:
+            px, py, d = self.get_move_direction(chr(key.c))
+            return self.player_move_or_attack(px, py, d)
+
+        return 'didnt-take-turn'
+
+    def handle_pickup(self, key, turn):
+        if key.c is ord(self.keys.key_pickup):
+            for object in self.objects:
+                if object.x == self.player.x and object.y == self.player.y and object.item:
+                    object.item.pick_up(self.player.fighter.inventory, self)
+                    turn = 'turn-used'
+        return turn
+
+    def handle_character(self, key, turn):
+        if key.c is ord(self.keys.key_character):
+            character.character_info(0, self.screen_width, self.screen_height, self)
+        return turn
+
+    def handle_inventory(self, key, turn):
+        if key.c is ord(self.keys.key_inventory):
+            # show the inventory; if an item is selected, use it
+            chosen_item = inventory.inventory(self.dungeon_console, self.player, self)
+
+            if chosen_item is not None:
+                chosen_item.item.use(self.player.fighter.inventory, self.player, self)
+                turn = 'turn-used'
+        return turn
+
+    def handle_drop(self, key, turn):
+        if key.c is ord(self.keys.key_drop):
+            chosen_item = inventory.inventory(self.dungeon_console, self.player, self)
+            if chosen_item is not None:
+                if chosen_item in self.player.fighter.inventory:
+                    chosen_item.objects = self.objects
+                    chosen_item.item.drop(self.player.fighter.inventory, self.player)
+                    chosen_item.send_to_back()
+                turn = 'turn-used'
+        return turn
+
+    def handle_misc(self, key):
+        turn = None
         if key.vk == libtcod.KEY_ENTER and key.lalt:
             # Alt+Enter: toggle fullscreen
             libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
+            turn = None
 
+        if key.c is ord('`') or key.c is ord('~'):
+            # self.console.run_console()
+            turn = None
+
+        if key.vk == libtcod.KEY_ESCAPE:
+            turn = self.handle_quit()
+
+        return turn
+
+    def handle_quit(self, key):
+        return 'quit'
         # elif key.vk == libtcod.KEY_ESCAPE:
         #    message = 'Return to main menu?'
         #    w = len(message) * 2
@@ -253,90 +326,33 @@ class Game:
         #                d_box.destroy_box()
         #                return 'didnt-take-turn'
 
-        if self.game_state == 'playing':
-            # movement keys
-            # For arrow keys, keypad keys, etc..
-            if key.vk in move_keys:
-                px, py, d = self.get_move_direction(key.vk)
-                return self.player_move_or_attack(px, py, d)
+    def handle_stairs(self, key, turn):
+        if key.text is '<':
+            for object in self.objects:
+                if object.x == self.player.x and object.y == self.player.y and object.misc:
+                    if object.misc.type == 'up':
+                        if self.level.depth == 1:
+                            menus.town_menu(self.dungeon_console, 'Welcome to Town', self, self.inventory_width,
+                                            self.gEngine.h,
+                                            self.gEngine.w)
+                            turn = 'turn-used'
+                        else:
+                            #self.depth -= 1
+                            #self.load_level(self.depth, 'up')
 
-            # for char based keys, 'w','a','s','d', etc..
-            elif chr(key.c) in move_keys:
-                px, py, d = self.get_move_direction(chr(key.c))
-                return self.player_move_or_attack(px, py, d)
+                            turn = 'turn-used'
 
-            else:
-                #    # test for other keys
-                #    if key.c is ord('`') or key.c is ord('~'):
-                #        self.console.run_console()
-                #        return 'didnt-take-turn'
-                #
-                if key.c is ord(self.keys.key_pickup):
-                    for object in self.objects:
-                        if object.x == self.player.x and object.y == self.player.y and object.item:
-                            object.item.pick_up(self.player.fighter.inventory, self)
-                            return 'turn-used'
-
-                # if key.c is ord('<'):
-                #    for object in self.objects:
-                #        if object.x == self.player.x and object.y == self.player.y and object.misc:
-                #            if object.misc.type == 'up':
-                #                if self.depth == 1:
-                #                    town_menu(0, 'Welcome to Town', self, INVENTORY_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH)
-                #                    return 'turn-used'
-                #                else:
-                #                    self.depth -= 1
-                #                    self.load_level(self.depth, 'up')
-                #
-                #                    return 'turn-used'
-
-                # if key.c is ord('>'):
-                #    for object in self.objects:
-                #        if object.x == self.player.x and object.y == self.player.y and object.misc:
-                #            if object.misc.type == 'down':
-                #                # save previous level
-                #                self.logger.log.debug(self.depth)
-                #                # self.current_dungeon.append(Level(self.Map.map, self.objects, self.Map.depth))
-                #                self.depth += 1
-                #                self.load_level(self.depth, 'down')
-                #                # self.new_level()
-                #                return 'turn-used'
-
-                # if key.c is ord(self.keys.key_equip):
-                #    eq = (self.player.fighter.wielded, self.player.fighter.equipment, None)
-                #    equipment_menu(eq, SCREEN_HEIGHT, SCREEN_WIDTH, self)
-                #    return 'turn-used'
-
-                if key.c is ord(self.keys.key_character):
-                    index = character.character_info(0, self.screen_width, self.screen_height, self)
-                    # if index is not None:
-                    #    index.increase_level(5)
-                    #    return 'turn-used'
-
-                if key.c is ord(self.keys.key_inventory):
-                    # show the inventory; if an item is selected, use it
-                    chosen_item = inventory.inventory(self.dungeon_console, self.player, self)
-
-                    if chosen_item is not None:
-                        chosen_item.item.use(self.player.fighter.inventory, self.player, self)
-                        return 'turn-used'
-                    #return 'didnt-take-turn'
-
-                # if key.c is ord(self.keys.key_drop):
-                #    # show the inventory; if an item is selected, drop it
-                #    msg = 'Press the key next to an item to drop it, or any other to cancel.\n'
-                #    chosen_item = inventory_menu(0, msg, self.player.fighter.inventory, INVENTORY_WIDTH, SCREEN_HEIGHT,
-                #                                 SCREEN_WIDTH, game=self)
-                #    if chosen_item is not None:
-                #        if chosen_item in self.player.fighter.inventory:
-                #            # self.player.objects = self.objects
-                #            chosen_item.objects = self.objects
-                #            chosen_item.item.drop(self.player.fighter.inventory, self.player)
-                #            chosen_item.send_to_back()
-                #        return 'turn-used'
-
-                return 'didnt-take-turn'
-        return 'didnt-take-turn'
+        if key.text is '>':
+            for object in self.objects:
+                if object.x == self.player.x and object.y == self.player.y and object.misc:
+                    if object.misc.type == 'down':
+                        # save previous level
+                        # self.current_dungeon.append(Level(self.Map.map, self.objects, self.Map.depth))
+                        #self.depth += 1
+                        #self.load_level(self.depth, 'down')
+                        # self.new_level()
+                        turn = 'turn-used'
+        return turn
 
     def check_for_target(self, x, y):
         for object in self.objects:
@@ -464,7 +480,7 @@ class Game:
         self.gEngine.console_set_default_foreground(self.panel, r, g, b)
         self.gEngine.console_set_alignment(self.panel, libtcod.LEFT)
         self.gEngine.console_set_default_background(0, r, g, b)
-        self.gEngine.console_print(self.panel, 1, 5, "(%dfps)" % (libtcod.sys_get_fps()))
+        self.gEngine.console_print(self.panel, 1, 5, "(%dfps) Depth: %d" % (libtcod.sys_get_fps(), self.level.depth))
         self.gEngine.console_print(self.panel, 1, 0, self.get_names_under_mouse())
 
     def render_consoles(self):

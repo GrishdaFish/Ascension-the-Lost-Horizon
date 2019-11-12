@@ -1,4 +1,4 @@
-[2019-11-11 20:47:54,453] - main.INFO - [gEngine.log_message():153] - Starting new game
-[2019-11-11 20:47:54,459] - main.INFO - [gEngine.log_message():153] - Creating map.
-[2019-11-11 20:47:54,514] - main.INFO - [gEngine.log_message():153] - 80
-[2019-11-11 20:47:54,526] - main.INFO - [gEngine.log_message():153] - Map made
+[2019-11-12 17:08:24,040] - main.INFO - [gEngine.log_message():153] - Starting new game
+[2019-11-12 17:08:24,047] - main.INFO - [gEngine.log_message():153] - Creating map.
+[2019-11-12 17:08:24,102] - main.INFO - [gEngine.log_message():153] - 80
+[2019-11-12 17:08:24,116] - main.INFO - [gEngine.log_message():153] - Map made
