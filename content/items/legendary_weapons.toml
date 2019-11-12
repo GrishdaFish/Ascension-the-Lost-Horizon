@@ -1,0 +1,13 @@
+#/*===============================================
+#                Legendary Weapons
+#===============================================*/
+[["legendary_weapon"]]
+    name = "Uriel's Brand"
+    base_weapon = "long sword"
+    pref_mat = "steel"
+
+    base_value = 1500
+    threat_level = 3.0
+    bonus_dice = [1, 8] # additional damage this template adds (eg, 1d6  base weapon is now 1d6 + 1d8
+    bonus_type = ["dexterity", "fire", "accuracy", "deflect"]
+    bonus_magnitude = [3, 5, 5, 5] # need a value for each bonus type added

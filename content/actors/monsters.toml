@@ -1,0 +1,131 @@
+########################################################################################################################
+#Monster content file. All variables are manditory at the moment
+#More properties will be added later
+#
+#Will add object_type "special" for other special types.
+#These types will make stronger monsters with special stat additions,
+#abilities, weaknesses and strenghts.
+#
+#
+#Special types that are planned:
+#
+#champion
+#undead
+#mage
+#archer
+#rogue
+#swarm_leader
+#swarm_minion
+#
+#
+#UPDATE-> Monsters now have a size stat, sizes are:
+#tiny
+#small
+#normal
+#large
+#huge
+#giant
+#
+########################################################################################################################
+
+[[monster]]
+    name = 'rat'
+    cell = 'r'
+    hp = 5
+    defense = 0
+    power = 1
+    type = 'melee'
+    threat_level = 0.5
+    starting_depth = 1
+    deepest_depth  = 2
+    speed = 10
+    xp_reward = 25
+    strength = 6
+    dexterity = 5
+    intelligence = 1
+    defense_bonus = -20
+    can_equip_gear = false
+    size = "tiny"
+    color = [94, 75, 47]
+
+[[monster]]
+    name = 'goblin'
+    cell = 'g'
+    hp = 5
+    defense = 0
+    power = 2
+    type = 'melee'
+    threat_level = 1.0
+    starting_depth = 1
+    deepest_depth  = 4
+    speed = 15
+    strength = 8
+    dexterity = 5
+    intelligence = 10
+    xp_reward = 50
+    defense_bonus = -15
+    can_equip_gear = true
+    size = 'small'
+    color = [197, 136, 124]
+
+[[monster]]
+    name = 'orc'
+    cell = 'o'
+    hp = 10
+    defense = 0
+    power = 3
+    type = 'melee'
+    threat_level = 2.0
+    starting_depth = 1
+    deepest_depth = 4
+    speed = 15
+    strength = 14
+    dexterity = 5
+    intelligence = 10
+    defense_bonus = -15
+    xp_reward = 75
+    can_equip_gear = true
+    size = 'normal'
+    color = [0, 191, 0]
+
+
+[[monster]]
+    name = 'hobgoblin'
+    cell = 'h'
+    hp = 12
+    defense = 1
+    power = 3
+    type = 'melee'
+    threat_level = 3.0
+    starting_depth = 1
+    deepest_depth = 4
+    speed = 10
+    strength = 12
+    dexterity = 5
+    intelligence = 10
+    xp_reward = 100
+    defense_bonus = -10
+    can_equip_gear = true
+    size = 'normal'
+    color = [255,255,114]
+
+
+[[monster]]
+    name = 'troll'
+    cell = 'T'
+    hp = 16
+    defense = 1
+    power = 4
+    type = 'melee'
+    threat_level = 4.0
+    starting_depth = 1
+    deepest_depth = 4
+    speed = 25
+    strength = 18
+    dexterity = 5
+    intelligence = 4
+    xp_reward = 150
+    defense_bonus = -25
+    can_equip_gear = true
+    size = 'large'
+    color = [0,127,0]

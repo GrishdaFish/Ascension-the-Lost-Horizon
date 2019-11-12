@@ -1,0 +1,15 @@
+
+#/*===============================================
+#                Base Armor
+#===============================================*/
+[["armor"]]
+    name = "plate"
+    cell = ']'
+    type = "armor"
+    location = "torso"
+    base_value = 75
+    description = ""
+    threat_level = 0.5
+    allowed_materials = 3 #1 for cloth, 2 for metal, 3 for both
+    bonus = 3
+    penalty = 3

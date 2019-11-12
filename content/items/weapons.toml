@@ -1,0 +1,21 @@
+
+#/*======================================================
+#                    Base Weapons
+#=======================================================*/
+[["weapon"]]
+    name="great sword"
+    cell='/' #should keep weapons this character
+    type="melee" #can be only melee for now, ranged will come later
+    handed=2  #how many hands it takes to wield
+    dual_wield=false  #can be dual wielded?
+    damage_type="Straightsword"  #2x damage vs this protection type
+    family = "straightsword" # the skill family this weapon belongs in
+    base_value=100  #base value of the item before materials
+    description=""  #Description of the item, not including material
+    threat_level=0.5  #for calculating spawns, higher number = more dangerous
+    size="tiny"
+    damage = [2, 10, 1, 0] # min damage, max damage, mutliplier, bonus (2d10*1+0)
+    accuracy = 0 #accuracy bonus or penalty
+
+
+

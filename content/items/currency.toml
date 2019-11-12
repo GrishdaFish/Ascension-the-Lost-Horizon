@@ -1,0 +1,26 @@
+
+[["currency"]]
+    name="copper coin"
+    cell='$'
+    worth=1
+    is_coin=true #items that goes into money purse, gems would be false
+    col=[197, 136, 124]
+    stackable = true
+
+
+[["currency"]]
+    name = "silver coin"
+    cell = '$'
+    worth = 10
+    is_coin = true
+    col = [203, 203, 203]
+    stackable = true
+
+
+[["currency"]]
+    name = "gold coin"
+    cell = '$'
+    worth = 100
+    is_coin = true
+    col = [229, 191, 0]
+    stackable = true

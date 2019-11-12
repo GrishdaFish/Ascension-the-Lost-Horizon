@@ -1,0 +1,12 @@
+
+#/*===============================================
+#                Monster Weapons
+#===============================================*/
+[["monster_weapon"]]
+    name="claw"
+    type="monster_melee" #can be only melee for now, ranged will come later
+    handed=1 #how many hands it takes to wield
+    dual_wield=true #can be dual wielded?
+    damage_type="Claw" #2x damage vs this protection type
+    damage = [1, 2, 1, 0]
+    accuracy = -1 #accuracy bonus or penalty
