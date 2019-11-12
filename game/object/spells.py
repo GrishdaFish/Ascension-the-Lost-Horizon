@@ -1,5 +1,6 @@
 import tcod as libtcod
 import random
+from game import lights
 from game.object import object
 import sys
 import os

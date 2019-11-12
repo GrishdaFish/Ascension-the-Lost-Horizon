@@ -9,6 +9,7 @@ from gEngine.utilities import status_bar
 from gEngine.utilities import messaging
 from gEngine.utilities.user_interface import menu
 from gEngine.utilities.user_interface import hot_bar
+from game import lights
 from game.object import build_objects
 from game.object import object
 from game.user_interface import inventory
@@ -53,6 +54,7 @@ class Game:
         self.message_width = self.screen_width
         self.message_height = self.panel_height - 1
         self.inventory_width = 50
+        self.light_handler = lights.LightHandler(self.gEngine)
 
         self.path = None
         # create all of the consoles for drawing and UI
@@ -138,7 +140,10 @@ class Game:
                     libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
 
                     self.player_action = self.handle_keys(key)
-
+                    if mouse.lbutton_pressed:
+                        intensity = libtcod.random_get_float(0, 1.0, 1.5)
+                        l = lights.Light(mouse.cx, mouse.cy, self.light_handler, decay=0.05, flicker=True,intensity=intensity)
+                        self.light_handler.add_light(l)
                     if self.player_action == 'player-moved':
                         self.player_moved = True
 
@@ -441,6 +446,7 @@ class Game:
 
     def update_lighting(self):
         self.gEngine.lightmask_reset()
+        self.light_handler.update()
         r = libtcod.random_get_float(0, -0.025, 0.025)
         self.gEngine.lightmask_add_light(self.player.x, self.player.y, (0.75 + r))
         for object in self.objects:

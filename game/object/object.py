@@ -122,6 +122,9 @@ class Object:
                 fg *= brightness[1]
                 fb *= brightness[2]
             br, bg, bb = col
+            fr = min(255, fr)
+            fg = min(255, fg)
+            fb = min(255, fb)
             if is_player:
                 gEngine.console_put_char_ex(self.con, gEngine.w / 2, gEngine.h / 2 - 6, self.char, int(fr), int(fg),
                                             int(fb), br, bg, bb)
@@ -413,9 +416,9 @@ class WanderingMonster(AI_Base):
                     self.dest_x = libtcod.random_get_int(0, min_x + 1, max_x - 1)
                     self.dest_y = libtcod.random_get_int(0, min_y + 1, max_y - 1)
                     if self.dest_x > game.dungeon_width:
-                        self.dest_x = game.dungeon_width
+                        self.dest_x = game.dungeon_width - 1
                     if self.dest_y > game.dungeon_height:
-                        self.dest_y = game.dungeon_height
+                        self.dest_y = game.dungeon_height - 1
 
                     if not game.level.dungeon[self.dest_x][self.dest_y].blocked and not self.owner.distance(self.dest_x,
                                                                                                       self.dest_y) == 0:
