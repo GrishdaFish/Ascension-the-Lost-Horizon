@@ -67,8 +67,8 @@ class DialogBox:
         self.game.gEngine.console_flush()
         key = libtcod.Key()
         mouse = libtcod.Mouse()
-        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE, key, mouse)
-        input = self.buttons[0].display(mouse)
+        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+        input = self.buttons[0].display()
         for i in input:
             if i != -1:
                 return 1
