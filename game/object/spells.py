@@ -50,7 +50,11 @@ def fireball(min, max, range, radius, targets, target, player, game):
         game.message.message('You cancelled the spell!', libtcod.light_cyan)
         return 'cancelled'
     game.message.message('The fireball explodes, burning everything within ' + str(radius) + ' tiles!', 5)
-    game.gEngine.particle_explosion(5, x, y, b=True, color=libtcod.red)
+    #game.gEngine.particle_explosion(5, x, y, b=True, color=libtcod.red)
+    l = lights.Light(x, y, game.light_handler, flicker=True)
+    c = [libtcod.white, libtcod.orange]
+    l.staged_lerp(2.0, 1.6, 0.05, 0.0095, c)
+    game.light_handler.add_light(l)
     FIREBALL_DAMAGE = libtcod.random_get_int(0, min, max)
     if game.objects:
         for obj in game.objects:  # damage every fighter in range, including the player

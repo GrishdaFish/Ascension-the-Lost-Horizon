@@ -23,13 +23,11 @@ class LightHandler:
         for light in range(len(self.lights) - 1, 0, -1):
             if self.lights[light].dead:
                 self.lights.pop(light)
-            #else:
-            #    l = self.lights[light]
-            #    self.gEngine.lightmask_add_light(l.x, l.y, l.color)
 
     def render(self):
         for light in self.lights:
             self.gEngine.lightmask_add_light(light.x, light.y, light.color)
+
 
 class Light:
     def __init__(self, x, y, handler, duration=0.0, decay=0.0, intensity=1.0, color=libtcod.light_yellow, flicker=False,
@@ -54,6 +52,11 @@ class Light:
             self.time_end = self.time_now + self.duration
         self.handler.add_light(self)
         self.dead = False
+        self.randomize_color = False
+        self.lerp_speed = 0
+        self.lerp_interval = 0
+        self.secondary_color = None
+        self.reverse = False
 
     def update(self):
         self.compute()
@@ -65,6 +68,7 @@ class Light:
         if self.intensity <= 0:  # flag remove if light is dead
             self.dead = True
             return
+
         # self.handler.add_light(self)
         return
 
@@ -76,8 +80,112 @@ class Light:
         if self.flicker:
             r = libtcod.random_get_float(0, -self.flicker_intensity, self.flicker_intensity)
             self.intensity += r
-        r = self.original_color[0] / 255 * self.intensity
-        g = self.original_color[1] / 255 * self.intensity
-        b = self.original_color[2] / 255 * self.intensity
+        if self.randomize_color:
+            self.lerp_colors()
+        elif self.staged:
+            self.staged_lerp_compute()
+        else:
+            r = self.original_color[0] / 255 * self.intensity
+            g = self.original_color[1] / 255 * self.intensity
+            b = self.original_color[2] / 255 * self.intensity
+            self.color = (r, g, b)
+
+    def staged_lerp(self, initial_intensity, target_intensity, initial_decay, final_decay, colors):
+        """
+        :param initial_intensity: How bright the initial burst of colors[0] is
+        :param target_intensity: How bright the light is after the initial burst
+        :param initial_decay: How fast the initial burst fades to target_intensity
+        :param final_decay: How fast the light decays after target_intensity is hit
+        :param colors: List of colors to be used. colors[0] is initial burst, colors[1] is target, then transition between
+        :return: Nothing
+        """
+        self.staged = True
+        self.initial_intensity = initial_intensity
+        self.saved_intensity = initial_intensity
+        self.intensity = target_intensity
+        self.initial_decay = initial_decay
+        self.decay = final_decay
+        self.burst_colors = colors
+
+    def staged_lerp_compute(self): #  2 colors for now
+        if self.initial_intensity > self.intensity:
+            col1 = self.burst_colors[0]
+            col2 = self.burst_colors[1]
+            decrease = self.saved_intensity - self.initial_intensity
+            lerp_value = (decrease / self.saved_intensity)
+            r, g, b = libtcod.color_lerp(col2, col1, 1.0 - lerp_value)
+            r = r / 255 * self.initial_intensity
+            g = g / 255 * self.initial_intensity
+            b = b / 255 * self.initial_intensity
+            r = min(255, r)
+            g = min(255, g)
+            b = min(255, b)
+            self.initial_intensity -= self.initial_decay
+            self.color = (r, g, b)
+        else: # todo lerp through remaining burst_colors equally
+            r, g, b = self.burst_colors[1]
+            r = r / 255 * self.intensity
+            g = g / 255 * self.intensity
+            b = b / 255 * self.intensity
+            #self.intensity -= self.final_decay
+            r = min(255, r)
+            g = min(255, g)
+            b = min(255, b)
+            self.color = (r, g, b)
+
+    def lerp_colors(self):
+        r = min(255, int(self.secondary_color[0] * 255))
+        g = min(255, int(self.secondary_color[1] * 255))
+        b = min(255, int(self.secondary_color[2] * 255))
+        col2 = (r, g, b)
+        color = libtcod.color_lerp(self.original_color, col2, self.lerp_speed)
+        r = color[0] / 255 * self.intensity
+        g = color[1] / 255 * self.intensity
+        b = color[2] / 255 * self.intensity
         self.color = (r, g, b)
+        if not self.reverse:
+            self.lerp_speed += self.lerp_interval
+        else:
+            self.lerp_speed -= self.lerp_interval
+        if self.lerp_speed >= 1.0 or self.lerp_speed <= 0.0:
+            self.reverse = not self.reverse
+            self.original_color = self.random_color()
+
+    def randomize(self, speed=0.05):
+        self.randomize_color = True
+        self.lerp_speed = speed
+        self.lerp_interval = speed
+        self.secondary_color = self.random_color(True)
+
+    def random_color(self, intensity=None):
+        r = libtcod.random_get_int(0, 1, 255)
+        g = libtcod.random_get_int(0, 1, 255)
+        b = libtcod.random_get_int(0, 1, 255)
+        if intensity:
+            r = r / 255 * self.intensity
+            g = g / 255 * self.intensity
+            b = b / 255 * self.intensity
+        return (r, g, b)
+
+
+
+if __name__ == "__main__":
+    value1 = 1.5
+    prev_value = value1
+    value2 = 1.0
+    def _calc(v1, v2):
+        decrease = v1 - v2
+        end_value = (decrease / v1 )*2
+        return end_value
+
+    end_value = _calc(prev_value, value1)
+    print(end_value)
+
+    value1 -= 0.05
+    end_value = _calc(prev_value, value1)
+    print(end_value)
+
+
+
+
 

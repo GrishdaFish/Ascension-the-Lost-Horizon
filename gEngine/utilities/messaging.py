@@ -17,6 +17,7 @@ class Message:
 
     def message(self, message="", code=4):
         # Add support for custom colored strings (code 0)
+        # NOTE, CANNOT PARSE A COLOR VALUE OF 0 (ZERO) WITH STRING FORMATTING. SET TO 1 OR 256!!
         # Color Coding for messages
         r, g, b = 0, 0, 0
         colors = {1: (100, 100, 100),  # grey

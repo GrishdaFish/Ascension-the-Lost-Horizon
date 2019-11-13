@@ -19,8 +19,8 @@ from game.user_interface import menus
 # todo externalize this data
 dungeon_height = 55
 dungeon_width = 80
-min_room_size = 5
-max_room_size = 8
+min_room_size = 10
+max_room_size = 15
 max_rooms = 15
 max_room_monsters = 0
 max_room_items = 3
@@ -141,9 +141,12 @@ class Game:
 
                     self.player_action = self.handle_keys(key)
                     if mouse.lbutton_pressed:
-                        intensity = libtcod.random_get_float(0, 1.0, 1.5)
-                        l = lights.Light(mouse.cx, mouse.cy, self.light_handler, decay=0.025, flicker=True,intensity=intensity)
-                        self.light_handler.add_light(l)
+                        intensity = 1.0 # libtcod.random_get_float(0, 1.0, 1.5)
+                        # l = lights.Light(mouse.cx, mouse.cy, self.light_handler, flicker=True)
+                        # c = [libtcod.white, libtcod.orange]
+                        # l.staged_lerp(2.0, 1.6, 0.05, 0.0095, c)
+                        #l.randomize()
+                        #self.light_handler.add_light(l)
                     if self.player_action == 'player-moved':
                         self.player_moved = True
 
