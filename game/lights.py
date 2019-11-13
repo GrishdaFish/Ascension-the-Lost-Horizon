@@ -6,6 +6,10 @@ class LightHandler:
     def __init__(self, gEngine):
         self.gEngine = gEngine
         self.lights = []
+        self.tick_speed = 2
+
+    def add_turn(self, ticker):
+        ticker.schedule_turn(self.tick_speed, self)
 
     def add_light(self, light):
         self.lights.append(light)
@@ -19,10 +23,13 @@ class LightHandler:
         for light in range(len(self.lights) - 1, 0, -1):
             if self.lights[light].dead:
                 self.lights.pop(light)
-            else:
-                l = self.lights[light]
-                self.gEngine.lightmask_add_light(l.x, l.y, l.color)
+            #else:
+            #    l = self.lights[light]
+            #    self.gEngine.lightmask_add_light(l.x, l.y, l.color)
 
+    def render(self):
+        for light in self.lights:
+            self.gEngine.lightmask_add_light(light.x, light.y, light.color)
 
 class Light:
     def __init__(self, x, y, handler, duration=0.0, decay=0.0, intensity=1.0, color=libtcod.light_yellow, flicker=False,

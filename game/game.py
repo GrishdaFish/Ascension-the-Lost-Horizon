@@ -142,7 +142,7 @@ class Game:
                     self.player_action = self.handle_keys(key)
                     if mouse.lbutton_pressed:
                         intensity = libtcod.random_get_float(0, 1.0, 1.5)
-                        l = lights.Light(mouse.cx, mouse.cy, self.light_handler, decay=0.05, flicker=True,intensity=intensity)
+                        l = lights.Light(mouse.cx, mouse.cy, self.light_handler, decay=0.025, flicker=True,intensity=intensity)
                         self.light_handler.add_light(l)
                     if self.player_action == 'player-moved':
                         self.player_moved = True
@@ -188,6 +188,7 @@ class Game:
                                                   self.panel, type='xp', gEngine=self.gEngine)
 
         self.ticker.schedule_turn(10, self.player)
+        #self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
         self.game_state = 'playing'
 
     def setup_world(self):
@@ -447,6 +448,7 @@ class Game:
     def update_lighting(self):
         self.gEngine.lightmask_reset()
         self.light_handler.update()
+        self.light_handler.render()
         r = libtcod.random_get_float(0, -0.025, 0.025)
         self.gEngine.lightmask_add_light(self.player.x, self.player.y, (0.75 + r))
         for object in self.objects:

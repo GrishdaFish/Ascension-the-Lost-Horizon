@@ -1,4 +1,4 @@
-
+from game import lights
 class Ticker:
     def __init__(self):
         self.ticks = 0  # current ticks--sys.maxint is 2147483647
@@ -22,7 +22,10 @@ class Ticker:
         ##and then schedule a new turn for the player
         player = False
         for obj in things_to_do:
-            if obj != game.player:
+            if isinstance(obj, lights.LightHandler):
+                obj.update()
+                obj.add_turn(self)
+            elif obj != game.player:
                 if obj.ai:
                     ##Simulate monsters until the players turn
                     obj.ai.take_turn(game)

@@ -35,7 +35,8 @@ def heal(min, max, range, radius, targets, target, player, game):
         if target.fighter.hp == target.fighter.max_hp:
             game.message.message('You are already at full health.', libtcod.cyan)
             return 'cancelled'
-
+        l = lights.Light(target.x, target.y, game.light_handler, decay=0.025, flicker=True, intensity=1.0, color=libtcod.lime)
+        game.light_handler.add_light(l)
         game.message.message('Your wounds start to feel better!', libtcod.light_lime)
     HEAL_AMOUNT = libtcod.random_get_int(0, min, max)
     target.fighter.heal(HEAL_AMOUNT)
