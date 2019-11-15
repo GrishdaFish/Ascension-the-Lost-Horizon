@@ -6,12 +6,12 @@ from game import content_parser
 import cProfile
 import io
 import pstats
-
+import warnings
 if __name__ == "__main__":
     # profiler = cProfile.Profile()
     # profiler.enable()
 
-
+    #warnings.simplefilter('default')
     gEngine = gngine.gEngine()
 
     gEngine.init_root()

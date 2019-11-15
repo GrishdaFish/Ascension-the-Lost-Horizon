@@ -85,7 +85,7 @@ class BasicDungeon:
             x = libtcod.random_get_int(random_instance, room.x1 - 1, room.x2 - 1)
             y = libtcod.random_get_int(random_instance, room.y1 - 1, room.y2 - 1)
             # only place it if the tile is not blocked
-            if not self.is_blocked(x, y, game.objects):
+            if not self.is_blocked(x, y, game):
                 break
         if game:
             self.create_spawn_node(x, y, game)
@@ -244,36 +244,37 @@ class BasicDungeon:
             game.objects.append(up)
             up.send_to_back(game.objects)
 
-        # Down stairs get randomly placed.
-        if depth < MAX_DEPTH:
-            down_placed = False
-            while not down_placed:
-                x = libtcod.random_get_int(rand, 0, self.MAP_WIDTH - w - 1)
-                y = libtcod.random_get_int(rand, 0, self.MAP_HEIGHT - h - 1)
-                # only place it if the tile is not blocked
-                if not self.is_blocked(x, y):
-                    m = Misc(type='down')
-                    down = Object(game.dungeon_console, x, y, '>', 'set of stairs going down', libtcod.white,
-                                  blocks=False, misc=m)
-                    game.objects.append(down)
-                    down.send_to_back(game.objects)
-                    down_placed = True
+            # Down stairs get randomly placed.
 
-        for object in game.objects:
-            object.message = game.message
-            object.objects = game.objects
+            if depth < MAX_DEPTH:
+                down_placed = False
+                while not down_placed:
+                    x = libtcod.random_get_int(rand, 0, self.MAP_WIDTH - w - 1)
+                    y = libtcod.random_get_int(rand, 0, self.MAP_HEIGHT - h - 1)
+                    # only place it if the tile is not blocked
+                    if not self.is_blocked(x, y):
+                        m = Misc(type='down')
+                        down = Object(game.dungeon_console, x, y, '>', 'set of stairs going down', libtcod.white,
+                                      blocks=False, misc=m)
+                        game.objects.append(down)
+                        down.send_to_back(game.objects)
+                        down_placed = True
+
+            for object in game.objects:
+                object.message = game.message
+                object.objects = game.objects
 
         self.gEngine.map_clear()
         self.set_draw_map(self.map)
         fov_map = self.gEngine.get_fov_map()
         mmap = self.gEngine.get_map()
         self.gEngine.log_message(len(self.map))
-        self.gEngine.lightmask_set_persistent_lightmask()
-
-        return Level(self.MAP_WIDTH, self.MAP_HEIGHT, self.gEngine, self.map, game.objects, depth, fov_map, mmap,
-                     self.spawn_nodes, rooms)
-        # else:
-        #    return Level(self.map, depth=depth)
+        #self.gEngine.lightmask_set_persistent_lightmask()
+        if game:
+            return Level(self.MAP_WIDTH, self.MAP_HEIGHT, self.gEngine, self.map, game.objects, depth, fov_map, mmap,
+                         self.spawn_nodes, rooms)
+        else:
+            return Level(self.MAP_WIDTH, self.MAP_HEIGHT, self.gEngine, self.map, fov_map=fov_map)
 
     def set_draw_map(self, map):
         for y in range(self.MAP_HEIGHT):
@@ -309,33 +310,34 @@ class BasicDungeon:
         self.gEngine.lightmask_add_light(x, y, 0.5)
 
     def place_objects(self, room, game, random_instance):
-        object_container = game.objects
-        # choose random number of items
-        num_items = libtcod.random_get_int(random_instance, 0, self.MAX_ROOM_ITEMS)
+        if game:
+            object_container = game.objects
+            # choose random number of items
+            num_items = libtcod.random_get_int(random_instance, 0, self.MAX_ROOM_ITEMS)
 
-        for i in range(num_items):
-            # choose random spot for this item
-            x = libtcod.random_get_int(random_instance, room.x1 + 1, room.x2 - 1)
-            y = libtcod.random_get_int(random_instance, room.y1 + 1, room.y2 - 1)
+            for i in range(num_items):
+                # choose random spot for this item
+                x = libtcod.random_get_int(random_instance, room.x1 + 1, room.x2 - 1)
+                y = libtcod.random_get_int(random_instance, room.y1 + 1, room.y2 - 1)
 
-            # only place it if the tile is not blocked
-            if not self.is_blocked(x, y, object_container):
-                dice = libtcod.random_get_int(random_instance, 0, 100)
-                if dice < 70:
-                    # create a healing potion (70% chance)
-                    object_container.append(game.build_objects.build_potion(game, x, y))
+                # only place it if the tile is not blocked
+                if not self.is_blocked(x, y, game):
+                    dice = libtcod.random_get_int(random_instance, 0, 100)
+                    if dice < 70:
+                        # create a healing potion (70% chance)
+                        object_container.append(game.build_objects.build_potion(game, x, y))
 
-                else:
-                    # create a random scroll (30% chance to get 1 of 3 scrolls (10% chance per scroll))
-                    object_container.append(game.build_objects.build_scroll(game, x, y))
+                    else:
+                        # create a random scroll (30% chance to get 1 of 3 scrolls (10% chance per scroll))
+                        object_container.append(game.build_objects.build_scroll(game, x, y))
 
-    def is_blocked(self, x, y, objects=None):
+    def is_blocked(self, x, y, game=None):
         # first test the map tile
         if self.map[x][y].blocked:
             return True
-        if objects:
+        if game:
             # now check for any blocking objects
-            for object in objects:
+            for object in game.objects:
                 if object.blocks and object.x == x and object.y == y:
                     return True
 

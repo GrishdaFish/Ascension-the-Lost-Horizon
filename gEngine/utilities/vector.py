@@ -65,30 +65,3 @@ class Vector(object):
 
 
 
-
-
-if __name__ == "__main__":
-
-    A = Vector(10.0,20.0)
-    B = Vector(30.0,35.0)
-    C = Vector(15.0,45.0)
-    AB = Vector.from_points(A,B)
-    BC = Vector.from_points(B,C)
-    print "Vector AB is", AB
-    print "Vector BC is", BC
-    print "AB *2 is", AB*2
-    print "AB /2 is", AB/2
-    print "AB + BC is", AB + BC
-    print "AB - BC is", AB - BC
-    print "Magnitude of AB is", AB.get_magnitude()
-    print "AB Normalized is", AB.get_normalized()
-    print "AB Negated is", -AB
-
-    step = AB * .1
-    print "AB step is",step
-
-    position = Vector(A[0],A[1])
-    print "Looping through steps"
-    for n in range(10):
-        position += step
-        print position

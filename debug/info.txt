@@ -1,0 +1,3 @@
+[2019-11-14 19:16:17,293] - main.INFO - [gEngine.log_message():122] - Entering Devmode
+[2019-11-14 19:16:17,293] - main.INFO - [gEngine.log_message():122] - Creating map.
+[2019-11-14 19:16:17,345] - main.INFO - [gEngine.log_message():122] - 80

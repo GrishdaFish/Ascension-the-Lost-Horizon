@@ -5,7 +5,9 @@ import toml
 
 class GameOptions:
     def __init__(self):
-        self.options = open(os.path.join(sys.path[0], 'options.toml')).read()
+        f = open(os.path.join(sys.path[0], 'options.toml'))
+        self.options = f.read()
+        f.close()
 
         self.fullscreen = False
         self.key_set = None
@@ -33,6 +35,7 @@ class GameOptions:
 
         key_options = options.get('keys')
         self.setup_key_config(key_options)
+        #options.close()
 
     def setup_game_options(self, game_options):
         self.fullscreen = game_options.get('fullscreen')

@@ -24,6 +24,7 @@ from gEngine.utilities import status_bar
 from gEngine.utilities import options as _options
 from gEngine.utilities import config
 
+
 def in_rect(x, y, w, h):
     return x < w and y < h
 
@@ -41,36 +42,6 @@ class Tile:
         self.color = color
         self.opacity = opacity
 
-
-class LightSource:
-    def __init__(self, x, y, color, radius, intensity, name='light'):
-        self.x = x
-        self.y = y
-        self.color = color
-        self.radius = radius
-        self.intensity = intensity  # how much the light flickers
-        self.flicker = 0
-        self.name = name
-        self.minx = 0
-        self.miny = 0
-        self.maxx = 0
-        self.maxy = 0
-        self.offset = 0
-        self.factor = 0
-        self.coef = 0
-
-        self.pre_compute()
-
-    def update(self):
-        self.pre_compute()
-
-    def pre_compute(self):
-        self.minx = self.x - self.radius
-        self.miny = self.y - self.radius
-        self.maxx = self.x + self.radius
-        self.maxy = self.y + self.radius
-        self.offset = self.intensity / (1.0 + float(self.radius * self.radius) / 40)
-        self.factor = self.intensity / (1.0 - self.offset)
 
 
 class gEngine:
@@ -111,8 +82,6 @@ class gEngine:
         self.light_map = self.image_new(self.w, self.h)
         self.subcell_light_map = self.image_new(self.w * 2, self.h * 2)
 
-        self.light_sources = []
-        self.noise = libtcod.noise_new(1, libtcod.NOISE_SIMPLEX)
 
         self.lightmask = light_mask.LightMask(self.w, 48)
 
@@ -165,7 +134,8 @@ class gEngine:
         self.light_sources.append(LightSource(x, y, c, r, i, n))
 
     def init_root(self):
-        self.root = libtcod.console_init_root(self.w, self.h, self.name, self.fs)
+        self.root = libtcod.console_init_root(self.w, self.h, self.name, self.fs,
+                                              renderer=libtcod.RENDERER_SDL2, vsync=True)
         libtcod.sys_set_fps(self.fps)
 
     def console_set_key_color(self, con, r, g, b):
@@ -214,22 +184,22 @@ class gEngine:
     def console_set_default_foreground(self, con, r, g, b):
         col = libtcod.Color(r, g, b)
         if con == 0:
-            libtcod.console_set_default_foreground(con, col)
+            self.root.default_foreground = col
         else:
-            libtcod.console_set_default_foreground(self.mConsole[con - 1], col)
+            self.mConsole[con - 1].default_foreground = col
 
     def console_set_default_background(self, con, r, g, b):
         col = libtcod.Color(r, g, b)
         if con == 0:
-            libtcod.console_set_default_background(con, col)
+            self.root.default_background= col
         else:
-            libtcod.console_set_default_background(self.mConsole[con - 1], col)
+            self.mConsole[con - 1].default_background = col
 
     def console_print_frame(self, con, x, y, width, height, clear):
         if con == 0:
-            libtcod.console_print_frame(self.root, int(x), int(y), int(width), int(height), clear)
+            self.root.print_frame(int(x), int(y), int(width), int(height), clear)
         else:
-            libtcod.console_print_frame(self.mConsole[con - 1], int(x), int(y), int(width), int(height), clear)
+            self.mConsole[con - 1].print_frame( int(x), int(y), int(width), int(height), clear)
 
     def console_print_rect(self, con, x, y, width, height, fmt):
         if con == 0:
@@ -262,11 +232,11 @@ class gEngine:
         else:
             libtcod.console_set_char(self.mConsole[con - 1], x, y, c)
 
-    def console_set_alignment(self, con, align):
+    def console_set_alignment(self, con, align): # Depreciated. Requires refactor then removal
         if con == 0:
-            libtcod.console_set_alignment(con, align)
+            self.root.default_alignment = align
         else:
-            libtcod.console_set_alignment(self.mConsole[con - 1], align)
+            self.mConsole[con - 1].default_alignment = align
 
     def console_print(self, con, x, y, fmt):
         if con == 0:
@@ -331,7 +301,7 @@ class gEngine:
         return self.mImages[i - 1].get_pixel(x, y)
 
     def image_blit(self, i, c, x, y, w=-1, h=-1):
-        if c == 0:
+        if c == 0 or c == self.root:
             self.mImages[i - 1].blit(self.root, float(x), float(y), libtcod.BKGND_SET, 1.0, 1.0, 0)
         else:
             self.mImages[i - 1].blit(self.mConsole[c - 1], float(x), float(y), libtcod.BKGND_SET, 1.0, 1.0, 0)
@@ -387,7 +357,7 @@ class gEngine:
         if con == 0:
             for tile in self.mMap2x:
                 r, g, b = tile.color
-                brightness = self.light_mask.mask[tile.x + tile.y * (self.w * 2)]
+                brightness = self.lightmask.mask[tile.x + tile.y * (self.w * 2)]
                 r *= brightness[0]
                 g *= brightness[1]
                 b *= brightness[2]
@@ -399,42 +369,39 @@ class gEngine:
                     r,g,b = self.color_light_ground
                     self.image_put_pixel(self.subcell_map_image, tile.x, tile.y, r, g, b)'''
 
-            #self.render_ground_effects()
-            #self.render_light_sources()
             self.console_clear(con)
             self.image_blit_2x(self.subcell_map_image, con, 0, 0)
 
     def clamp_float(self, f, l=1 ):
         return f - f % 1e-2
 
-    def map_draw(self, con, x, y, run_fov=True):
+    def map_draw(self, con, x=0, y=0, run_fov=True):
         self.image_clear(self.map_image, 0, 0, 0)
         if con == 0:
             con = self.root
-        #libtcod.map_compute_fov(self.FOV, x, y, 0, True, libtcod.FOV_SHADOW)
         for tile in self.mMap:
             r, g, b = tile.color
-            if libtcod.map_is_in_fov(self.FOV, tile.x, tile.y):
-                brightness = self.lightmask_get_mask_value(tile.x, tile.y)
-                new_bright = []
-                for f in range(len(brightness)):
-                    new_bright.append(self.clamp_float(brightness[f]))
-                brightness = new_bright
-                # print(brightness)
-                # this is  VERY slow for some reason
-                r *= brightness[0]
-                g *= brightness[1]
-                b *= brightness[2]
-                #elf.image_put_pixel(self.map_image, tile.x, tile.y, int(r), int(g), int(b))
-                tile.explored = True
-            else:
-                if tile.explored:
-                    r *= self.lightmask.ambient
-                    g *= self.lightmask.ambient
-                    b *= self.lightmask.ambient
-
+            if run_fov:
+                if libtcod.map_is_in_fov(self.FOV, tile.x, tile.y):
+                    brightness = self.lightmask_get_mask_value(tile.x, tile.y)
+                    new_bright = []
+                    for f in range(len(brightness)):
+                        new_bright.append(self.clamp_float(brightness[f]))
+                    brightness = new_bright
+                    # print(brightness)
+                    # this is  VERY slow for some reason
+                    r *= brightness[0]
+                    g *= brightness[1]
+                    b *= brightness[2]
+                    tile.explored = True
                 else:
-                    r, g, b = 0, 0, 0
+                    if tile.explored:
+                        r *= self.lightmask.ambient
+                        g *= self.lightmask.ambient
+                        b *= self.lightmask.ambient
+
+                    else:
+                        r, g, b = 0, 0, 0
             self.image_put_pixel(self.map_image, tile.x, tile.y, int(r), int(g), int(b))
         self.image_blit(self.map_image, con, self.w / 2, self.h / 2)
 
@@ -476,33 +443,6 @@ class gEngine:
         for tile in self.mMap:
             if tile.x == x and tile.y == y:
                 return tile.explored
-
-    def render_ground_effects(self):
-        pass
-
-    def render_light_sources(self):
-        self.image_clear(self.light_map, 0, 0, 0)
-        for l in self.light_sources:
-            minx = max(1, l.minx)
-            miny = max(1, l.miny)
-            maxx = min(l.maxx, self.w - 1)
-            maxy = min(l.maxy, self.h - 1)
-            l.flicker += 0.05
-            n = self.noise
-            v = 0.5 * libtcod.noise_get(n, [l.flicker])
-            factor = l.factor + v
-            for x in range(minx, maxx):
-                for y in range(miny, maxy):
-                    if libtcod.map_is_in_fov(self.FOV, x, y):
-                        squaredDist = int((l.x - x) * (l.x - x) + (l.y - y) * (l.y - y))
-                        coef = (1.0 / (1.0 + float(squaredDist) / 40) - l.offset) * factor
-                        col = self.image_get_pixel(self.map_image, x, y)
-                        col = libtcod.color_lerp(col, l.color, coef)  #  col + (l.color * coef)
-                        r, g, b = col
-                        self.image_put_pixel(self.map_image, x, y, r, g, b)
-
-                        #self.offset = self.intensity /(1.0 + float(self.radius * self.radius)/40)
-                        #self.factor = self.intensity / (1.0 - self.offset)
 
     def lightmask_set_size(self, w, h):
         self.lightmask.width = w

@@ -1,5 +1,6 @@
 import tcod as libtcod
 from game import game
+from game import dev_mode
 from gEngine.utilities.user_interface.menu import Menus
 import os
 import sys
@@ -81,6 +82,8 @@ class MainMenu:
             if choice == 4:  # dev mode
                 self.gEngine.log_message('Entering Devmode')
                 self.gEngine.remove_module(self)
+                d = dev_mode.DevMode(self.gEngine)
+                self.gEngine.add_module(d)
                 return
                 # self.dev_mode.run()
                 # self.main_menu()

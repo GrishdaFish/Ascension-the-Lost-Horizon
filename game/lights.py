@@ -57,6 +57,7 @@ class Light:
         self.lerp_interval = 0
         self.secondary_color = None
         self.reverse = False
+        self.staged = False
 
     def update(self):
         self.compute()
@@ -166,26 +167,6 @@ class Light:
             g = g / 255 * self.intensity
             b = b / 255 * self.intensity
         return (r, g, b)
-
-
-
-if __name__ == "__main__":
-    value1 = 1.5
-    prev_value = value1
-    value2 = 1.0
-    def _calc(v1, v2):
-        decrease = v1 - v2
-        end_value = (decrease / v1 )*2
-        return end_value
-
-    end_value = _calc(prev_value, value1)
-    print(end_value)
-
-    value1 -= 0.05
-    end_value = _calc(prev_value, value1)
-    print(end_value)
-
-
 
 
 
