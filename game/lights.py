@@ -58,6 +58,7 @@ class Light:
         self.secondary_color = None
         self.reverse = False
         self.staged = False
+        self.ramped = False
 
     def update(self):
         self.compute()
@@ -85,6 +86,8 @@ class Light:
             self.lerp_colors()
         elif self.staged:
             self.staged_lerp_compute()
+        elif self.ramped:
+            self.ramped_compute()
         else:
             r = self.original_color[0] / 255 * self.intensity
             g = self.original_color[1] / 255 * self.intensity
@@ -168,5 +171,31 @@ class Light:
             b = b / 255 * self.intensity
         return (r, g, b)
 
+    def ramped_light(self, initial, target, ramp_speed, smooth_ramp=True):
+        self.initial_intensity = initial
+        self.target_intensity = target
+        self.ramped = True
+        self.ramp_speed = ramp_speed
+        self.smooth_ramp = smooth_ramp
 
+    def ramped_compute(self):
+        if self.initial_intensity < self.target_intensity:
+            if self.smooth_ramp:
+                i = self.initial_intensity + self.decay + self.ramp_speed
+            else:
+                i = self.initial_intensity + self.decay + self.ramp_speed
+                self.ramp_speed = self.ramp_speed + (self.ramp_speed * self.ramp_speed)
 
+            self.initial_intensity = i
+            self.intensity = i
+            r, g, b = self.original_color
+            r = r / 255 * self.intensity
+            g = g / 255 * self.intensity
+            b = b / 255 * self.intensity
+            r = min(255, r)
+            g = min(255, g)
+            b = min(255, b)
+            self.color = (r, g, b)
+        else:
+            self.intensity = self.target_intensity
+            self.ramped = False

@@ -142,10 +142,11 @@ class Game:
                     self.player_action = self.handle_keys(key)
                     if mouse.lbutton_pressed:
                         intensity = 1.0 # libtcod.random_get_float(0, 1.0, 1.5)
-                        # l = lights.Light(mouse.cx, mouse.cy, self.light_handler, flicker=True)
+                        #l = lights.Light(mouse.cx, mouse.cy, self.light_handler, flicker=True, decay=0.005)
                         # c = [libtcod.white, libtcod.orange]
                         # l.staged_lerp(2.0, 1.6, 0.05, 0.0095, c)
                         #l.randomize()
+                        #l.ramped_light(0.1, 1.5, 0.0005, False)
                         #self.light_handler.add_light(l)
                     if self.player_action == 'player-moved':
                         self.player_moved = True

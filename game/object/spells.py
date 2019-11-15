@@ -70,7 +70,10 @@ def lightning(min, max, range, radius, targets, target, player, game):
     if monster is None:  # no enemy found within maximum range
         game.message.message('No enemy is close enough to strike.', libtcod.light_cyan)
         return 'cancelled'
-
+    l = lights.Light(monster.x, monster.y, game.light_handler, flicker=True)
+    c = [libtcod.white, libtcod.light_blue]
+    l.staged_lerp(2.0, 1.0, 0.05, 0.0095, c)
+    game.light_handler.add_light(l)
     LIGHTNING_DAMAGE = libtcod.random_get_int(0, min, max)
     game.message.message('A lighting bolt strikes the ' + monster.name +
                          ' with a loud thunder! The damage is '
@@ -90,7 +93,9 @@ def confuse(min, max, range, radius, targets, target, player, game):
     if monster is None:
         game.message.message('You cancelled the spell!', libtcod.cyan)
         return 'cancelled'
-
+    l = lights.Light(monster.x, monster.y, game.light_handler, flicker=True, intensity=0.95, decay=0.0005)
+    l.randomize()
+    game.light_handler.add_light(l)
     numturns = libtcod.random_get_int(0, min, max)
     # replace the monster's AI with a "confused" one; after some turns it will restore the old AI
     old_ai = monster.ai

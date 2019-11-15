@@ -215,7 +215,7 @@ def town_menu(con, header, game, width, screen_height, screen_width):
         weapon.append(item)
         item = game.build_objects.build_equipment(game, 0, 0, 'armor')
         armor.append(item)
-    for i in range(5):
+    for i in range(10):
         consume = game.build_objects.build_potion(game, 0, 0)
         consum.append(consume)
         consume = game.build_objects.build_scroll(game, 0, 0)

@@ -82,6 +82,8 @@ class gEngine:
         self.light_map = self.image_new(self.w, self.h)
         self.subcell_light_map = self.image_new(self.w * 2, self.h * 2)
 
+        self.light_sources = []
+        self.noise = libtcod.noise_new(1, libtcod.NOISE_SIMPLEX)
 
         self.lightmask = light_mask.LightMask(self.w, 48)
 
@@ -134,8 +136,7 @@ class gEngine:
         self.light_sources.append(LightSource(x, y, c, r, i, n))
 
     def init_root(self):
-        self.root = libtcod.console_init_root(self.w, self.h, self.name, self.fs,
-                                              renderer=libtcod.RENDERER_SDL2, vsync=True)
+        self.root = libtcod.console_init_root(self.w, self.h, self.name, self.fs, renderer=libtcod.RENDERER_SDL2)
         libtcod.sys_set_fps(self.fps)
 
     def console_set_key_color(self, con, r, g, b):
@@ -184,22 +185,22 @@ class gEngine:
     def console_set_default_foreground(self, con, r, g, b):
         col = libtcod.Color(r, g, b)
         if con == 0:
-            self.root.default_foreground = col
+            libtcod.console_set_default_foreground(self.root, col)
         else:
-            self.mConsole[con - 1].default_foreground = col
+            libtcod.console_set_default_foreground(self.mConsole[con - 1], col)
 
     def console_set_default_background(self, con, r, g, b):
         col = libtcod.Color(r, g, b)
         if con == 0:
-            self.root.default_background= col
+            libtcod.console_set_default_background(con, col)
         else:
-            self.mConsole[con - 1].default_background = col
+            libtcod.console_set_default_background(self.mConsole[con - 1], col)
 
     def console_print_frame(self, con, x, y, width, height, clear):
         if con == 0:
-            self.root.print_frame(int(x), int(y), int(width), int(height), clear)
+            libtcod.console_print_frame(self.root, int(x), int(y), int(width), int(height), clear)
         else:
-            self.mConsole[con - 1].print_frame( int(x), int(y), int(width), int(height), clear)
+            libtcod.console_print_frame(self.mConsole[con - 1], int(x), int(y), int(width), int(height), clear)
 
     def console_print_rect(self, con, x, y, width, height, fmt):
         if con == 0:
@@ -234,9 +235,9 @@ class gEngine:
 
     def console_set_alignment(self, con, align): # Depreciated. Requires refactor then removal
         if con == 0:
-            self.root.default_alignment = align
+            libtcod.console_set_alignment(con, align)
         else:
-            self.mConsole[con - 1].default_alignment = align
+            libtcod.console_set_alignment(self.mConsole[con - 1], align)
 
     def console_print(self, con, x, y, fmt):
         if con == 0:

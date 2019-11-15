@@ -40,6 +40,12 @@ class DijikstraMap:
             if changes is False:
                 break
 
+    def multiply_map(self, value, dungeon_map):
+        for x in range(self.w):
+            for y in range(self.h):
+                if not dungeon_map[x][y].blocked:
+                    self.map[x][y] = int(self.map[x][y] * value)
+
     def add_point(self, x, y, value):
         self.map[x][y] = value
         self.points.append(DijikstraPoint(x, y, value))

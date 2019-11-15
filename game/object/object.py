@@ -413,12 +413,12 @@ class WanderingMonster(AI_Base):
 
                 # make sure min and max values are within the boundaries of the map
                 if not min_x <= 0 or not min_y <= 0 or not max_x >= my or not max_y >= mx: # fix this
-                    self.dest_x = libtcod.random_get_int(0, min_x + 1, max_x - 1)
-                    self.dest_y = libtcod.random_get_int(0, min_y + 1, max_y - 1)
+                    self.dest_x = libtcod.random_get_int(0, min_x, max_x)
+                    self.dest_y = libtcod.random_get_int(0, min_y, max_y)
                     if self.dest_x > game.dungeon_width:
-                        self.dest_x = game.dungeon_width - 1
+                        self.dest_x = game.dungeon_width
                     if self.dest_y > game.dungeon_height:
-                        self.dest_y = game.dungeon_height - 1
+                        self.dest_y = game.dungeon_height
 
                     if not game.level.dungeon[self.dest_x][self.dest_y].blocked and not self.owner.distance(self.dest_x,
                                                                                                       self.dest_y) == 0:
