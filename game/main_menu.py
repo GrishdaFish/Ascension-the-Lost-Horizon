@@ -4,16 +4,19 @@ from game import dev_mode
 from gEngine.utilities.user_interface.menu import Menus
 import os
 import sys
-
+from gEngine import gEngine as _gEngine
 
 class MainMenu:
     def __init__(self, gEngine):
         self.gEngine = gEngine
         self.active = True
         self.con = self.gEngine.console_new(self.gEngine.SCREEN_WIDTH, self.gEngine.SCREEN_HEIGHT)
-
-        path = os.path.join(sys.path[0], 'content')
-        path = path.replace('core.exe', '')
+        if _gEngine.RELEASE:
+            path = getattr(sys, "_MEIPASS", ".")
+        else:
+            path = sys.path[0]
+        path = os.path.join(path, 'content')
+        #path = path.replace('core.exe', '')
         self.img = self.gEngine.image_load(os.path.join(path, 'img', 'menu_background_2.png'))
         self.m_menu = Menus(self.gEngine, int(self.gEngine.SCREEN_HEIGHT / 2 + 22),
                             int(self.gEngine.SCREEN_WIDTH), 24, '',  # TODO: remove magic numbers

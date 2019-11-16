@@ -7,7 +7,7 @@ from game.object.spells import *
 from game import combat
 from game import content_parser
 from game.object.actor import entity
-
+from gEngine import gEngine
 class GameObjects:
     def __init__(self):
         self.threat_list = []
@@ -33,15 +33,19 @@ class GameObjects:
         self.sort_materials()
 
     def load_content(self):
-        self.monsters = content_parser.load_content(os.path.join(sys.path[0], 'content', 'actors', 'monsters.toml'))
+        if gEngine.RELEASE:
+            path = getattr(sys, "_MEIPASS", ".")
+        else:
+            path = sys.path[0]
+        self.monsters = content_parser.load_content(os.path.join(path, 'content', 'actors', 'monsters.toml'))
         self.consumables = content_parser.load_content(
-            os.path.join(sys.path[0], 'content', 'items', 'consumables.toml'))
-        self.currency = content_parser.load_content(os.path.join(sys.path[0], 'content', 'items', 'currency.toml'))
-        self.materials = content_parser.load_content(os.path.join(sys.path[0], 'content', 'items', 'materials.toml'))
+            os.path.join(path, 'content', 'items', 'consumables.toml'))
+        self.currency = content_parser.load_content(os.path.join(path, 'content', 'items', 'currency.toml'))
+        self.materials = content_parser.load_content(os.path.join(path, 'content', 'items', 'materials.toml'))
         self.monster_weapons = content_parser.load_content(
-            os.path.join(sys.path[0], 'content', 'items', 'monster_weapons.toml'))
-        self.armor = content_parser.load_content(os.path.join(sys.path[0], 'content', 'items', 'armor.toml'))
-        self.weapons = content_parser.load_content(os.path.join(sys.path[0], 'content', 'items', 'weapons.toml'))
+            os.path.join(path, 'content', 'items', 'monster_weapons.toml'))
+        self.armor = content_parser.load_content(os.path.join(path, 'content', 'items', 'armor.toml'))
+        self.weapons = content_parser.load_content(os.path.join(path, 'content', 'items', 'weapons.toml'))
         for item in self.armor:
             self.equipment.append(item)
         for item in self.weapons:

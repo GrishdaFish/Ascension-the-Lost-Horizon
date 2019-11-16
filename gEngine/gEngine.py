@@ -4,13 +4,22 @@
 ##pretty much a c++ port, not very pythonic, doesnt need to be.
 ##Might clean it up later
 # TODO: remove r, g, b from method calls and accept  tcod color, then grab r, g, b in the engine to simply calls
+
+
+
 import imp
 import tcod as libtcod
 import logging
 import sys
 import os
+
+RELEASE = True
+if RELEASE:
+    path = getattr(sys, "_MEIPASS", ".")
+else:
+    path = sys.path[0]
 try:
-    path = os.path.join(sys.path[0], 'gEngine', 'pyds', 'gEngine', 'pyds')
+    path = os.path.join(path, 'gEngine', 'pyds', 'gEngine', 'pyds')
     fp, pathname, description = imp.find_module('cy_light_mask', [path])
     light_mask = imp.load_module('cy_light_mask', fp, pathname, description)
 except ImportError as e:
@@ -110,7 +119,6 @@ class gEngine:
             #self.render_all()
 
     def render_all(self):
-
         self.console_flush()
 
     def add_module(self, module):
@@ -132,11 +140,8 @@ class gEngine:
     def logger_set_level(self, level='debug'):
         pass
 
-    def add_light_source(self, x, y, c, r, i, n='light'):
-        self.light_sources.append(LightSource(x, y, c, r, i, n))
-
     def init_root(self):
-        self.root = libtcod.console_init_root(self.w, self.h, self.name, self.fs, renderer=libtcod.RENDERER_SDL2)
+        self.root = libtcod.console_init_root(self.w, self.h, self.name, self.fs, renderer=libtcod.RENDERER_OPENGL2)
         libtcod.sys_set_fps(self.fps)
 
     def console_set_key_color(self, con, r, g, b):

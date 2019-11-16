@@ -1,11 +1,15 @@
 import sys
 import os
 import toml
-
+from gEngine import gEngine
 
 class GameOptions:
     def __init__(self):
-        f = open(os.path.join(sys.path[0], 'options.toml'))
+        if gEngine.RELEASE:
+            path = getattr(sys, "_MEIPASS", ".")
+        else:
+            path = sys.path[0]
+        f = open(os.path.join(path, 'options.toml'))
         self.options = f.read()
         f.close()
 

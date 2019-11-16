@@ -1,15 +1,16 @@
 import os
 import sys
 import logging
-
+from gEngine import gEngine
 class log_manager:
     def __init__(self):
         self.log = logging.getLogger('main')
         self.log.setLevel(logging.DEBUG)
         # for py2exe, cant create a path in the libray.zip file
-        path = os.path.join(sys.path[0] ,'debug')
-        # path = path.replace('library.zip','')
-        path = path.replace('core.exe' ,'')
+        if gEngine.RELEASE:
+            path = getattr(sys, "_MEIPASS", ".")
+        else:
+            path = sys.path[0]
         if not os.path.exists(path):
             os.makedirs(path)
             open(os.path.join(path ,'debug.txt') ,'w').close()

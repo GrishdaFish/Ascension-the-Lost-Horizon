@@ -7,7 +7,7 @@ from game.user_interface import shop
 import tcod as libtcod
 import os
 import sys
-
+from gEngine import gEngine as _gEngine
 
 def equipment_menu(equipment ,screen_height ,screen_width ,game):
     slots = ['torso',
@@ -201,7 +201,11 @@ def town_menu(con, header, game, width, screen_height, screen_width):
                "Fizzilip's Magiteria",
                'Quests',
                'Finished', ]
-    path = os.path.join(sys.path[0], 'content')
+    if _gEngine.RELEASE:
+        path = getattr(sys, "_MEIPASS", ".")
+    else:
+        path = sys.path[0]
+    path = os.path.join(path, 'content')
     path = path.replace('core.exe', '')
     backgrounds = [os.path.join(path, 'img', 'bg-arm.png'),
                    os.path.join(path, 'img', 'bg-wep.png'),

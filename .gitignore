@@ -5,3 +5,9 @@
 /Thumbs.db
 /logs/
 /debug/
+/debug/
+/dist/
+/build/
+/core.spec
+/setup.bat
+/DIST_FOLDERS/

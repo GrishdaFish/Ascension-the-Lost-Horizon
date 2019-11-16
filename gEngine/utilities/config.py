@@ -1,7 +1,7 @@
 import os
 import sys
 import toml
-
+from gEngine import gEngine
 font = os.path.join(sys.path[0], 'terminal10x10_gs_tc.png')
 
 
@@ -21,14 +21,18 @@ class EngineConfig:
         self.load_config()
 
     def load_config(self):
-        with open(os.path.join(sys.path[0], 'gEngine', 'config.toml')) as config:
+        if gEngine.RELEASE:
+            path = getattr(sys, "_MEIPASS", ".")
+        else:
+            path = sys.path[0]
+        with open(os.path.join(path, 'gEngine', 'config.toml')) as config:
             config = config.read()
             config = toml.loads(config)
             config = config.get('engine_config')
             self.screen_width = config.get('screen_width')
             self.screen_height = config.get('screen_height')
             self.font_name = config.get('font')
-            self.font = os.path.join(sys.path[0], self.font_name)
+            self.font = os.path.join(path, self.font_name)
             self.name = config.get('name')
             self.version = config.get('version')
             self.font_layout = config.get('font_layout')
@@ -38,13 +42,17 @@ class EngineConfig:
         pass
 
     def setup_config_default(self):
-        path = os.path.join(sys.path[0], 'gEngine', 'config.toml')
-        if not os.path.exists(path):
+        if gEngine.RELEASE:
+            path = getattr(sys, "_MEIPASS", ".")
+        else:
+            path = sys.path[0]
+        path2 = os.path.join(path, 'gEngine', 'config.toml')
+        if not os.path.exists(path2):
             default_config = ("[engine_config] \n"
                              "screen_width = 80 \n" 
                              "screen_height = 55 \n" 
                              "font = 'terminal10x10_gs_tc.png'")
 
-            with open(os.path.join(sys.path[0], 'gEngine', 'config.toml'), 'w') as f:
+            with open(os.path.join(path, 'gEngine', 'config.toml'), 'w') as f:
                 f.write(default_config)
                 f.close()
