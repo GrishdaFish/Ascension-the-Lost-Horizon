@@ -12,8 +12,9 @@ import tcod as libtcod
 import logging
 import sys
 import os
+import numpy as np
 
-RELEASE = True
+RELEASE = False
 if RELEASE:
     path = getattr(sys, "_MEIPASS", ".")
 else:
@@ -318,6 +319,9 @@ class gEngine:
         else:
             self.mImages[i - 1].blit_2x(self.mConsole[c - 1], x, y, sx, sy, w, h)
 
+    def image_replace(self, image, replacement):
+        self.mImages[image - 1] = replacement
+
     def map_init_level(self, sizeX, sizeY):
         self.FOV = libtcod.map_new(sizeX, sizeY)
         for tile in self.mMap:
@@ -380,6 +384,44 @@ class gEngine:
 
     def clamp_float(self, f, l=1 ):
         return f - f % 1e-2
+
+    def map_get_final_color(self, x, y):
+        r, g, b = self.mMap[x][y].color
+        if libtcod.map_is_in_fov(self.FOV, x, y):
+            brightness = self.lightmask_get_mask_value(x, y)
+            new_bright = []
+            for f in range(len(brightness)):
+                new_bright.append(self.clamp_float(brightness[f]))
+            brightness = new_bright
+            # print(brightness)
+            # this is  VERY slow for some reason
+            r *= brightness[0]
+            g *= brightness[1]
+            b *= brightness[2]
+            self.mMap[x][y].explored = True
+        else:
+            if self.mMap[x][y].explored:
+                r *= self.lightmask.ambient
+                g *= self.lightmask.ambient
+                b *= self.lightmask.ambient
+
+            else:
+                r, g, b = 0, 0, 0
+        return int(r), int(g), int(b)
+
+    def map_draw_fast(self, con, xx, yy):
+        #self.image_clear(self.map_image, 0, 0, 0)
+
+        if con == 0:
+            con = self.root
+        new_img_array = np.array([[self.map_get_final_color(x, y) for y in range(48)] for x in range(self.w)])
+        ##arr = np.asarray(new_img_array)
+        arr = new_img_array.transpose(1, 0, 2)
+        self.image_replace(self.map_image, libtcod.image.Image.from_array(arr))
+        self.image_blit(self.map_image, con, self.w / 2, self.h / 2 - 4)
+
+
+
 
     def map_draw(self, con, x=0, y=0, run_fov=True):
         self.image_clear(self.map_image, 0, 0, 0)

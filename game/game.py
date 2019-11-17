@@ -15,7 +15,7 @@ from game.object import object
 from game.user_interface import inventory
 from game.user_interface import character
 from game.user_interface import menus
-
+from game import ranged_combat
 # todo externalize this data
 dungeon_height = 55
 dungeon_width = 80
@@ -141,13 +141,16 @@ class Game:
 
                     self.player_action = self.handle_keys(key)
                     if mouse.lbutton_pressed:
-                        intensity = 1.0 # libtcod.random_get_float(0, 1.0, 1.5)
+                        #intensity = 1.0 # libtcod.random_get_float(0, 1.0, 1.5)
                         #l = lights.Light(mouse.cx, mouse.cy, self.light_handler, flicker=True, decay=0.005)
                         # c = [libtcod.white, libtcod.orange]
                         # l.staged_lerp(2.0, 1.6, 0.05, 0.0095, c)
                         #l.randomize()
                         #l.ramped_light(0.1, 1.5, 0.0005, False)
                         #self.light_handler.add_light(l)
+                        target = self.check_for_target(mouse.cx, mouse.cy)
+                        ranged_combat.fire_shot(self.player.x, self.player.y, mouse.cx, mouse.cy, self.player, self, target)
+
                     if self.player_action == 'player-moved':
                         self.player_moved = True
 
@@ -211,6 +214,7 @@ class Game:
         self.message.message('Welcome to %s' % self.gEngine.name)
         self.path = libtcod.path_new_using_function(self.dungeon_width, self.dungeon_height, path_callback, self)
         self.newgame = True
+        #self.gEngine.mMap = self.level.dungeon
 
     def handle_keys(self, key):
         turn = self.handle_misc(key)
@@ -364,6 +368,7 @@ class Game:
         for object in self.objects:
             if object.fighter and object.x == x and object.y == y:
                 return object
+        return None
 
     def player_move_or_attack(self, dx, dy, direction=None):
         # the coordinates the player is moving to/attacking
@@ -435,6 +440,7 @@ class Game:
             libtcod.map_compute_fov(self.fov, self.player.x, self.player.y)
         self.update_lighting()
 
+        #self.gEngine.map_draw_fast(self.dungeon_console, self.player.x, self.player.y)
         self.gEngine.map_draw(self.dungeon_console, self.player.x, self.player.y)
 
         self.draw_objects()

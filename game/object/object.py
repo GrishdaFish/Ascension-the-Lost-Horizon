@@ -240,6 +240,15 @@ class Fighter:
                 return skill
         return None
 
+    def ranged_targeted_attack(self, target, player=False, game=None):
+        if not player:
+            col = 2
+        else:
+            col = 5
+        msg = "shot " + target.name + "! PEW PEW"
+        if game:
+            game.message.message(msg, col)
+
     def attack(self, target, player=False, direction=None, game=None):
         if not player:
             col = 2
@@ -280,8 +289,8 @@ class Fighter:
                     dmg *= 0.25
                     dmg = int(dmg)
                 # make the target take some damage
-                msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' for ' + str(dmg) + '!'
                 target.fighter.take_damage(dmg, self.owner)
+                msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' for ' + str(dmg) + '!'
             else:
                 if libtcod.random_get_int(0, 0, 100) < 25:  # 25% chance to always do at least 1 damage
                     dmg = 1

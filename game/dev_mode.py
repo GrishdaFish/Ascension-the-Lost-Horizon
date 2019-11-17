@@ -48,6 +48,7 @@ class DevMode:
         self.m = None
         self.cx, self.cy = 0, 0
         self.v_map = None
+        self.gEngine.mMap = self.level.dungeon
 
     def run(self, key, mouse):
         while not libtcod.console_is_window_closed():
@@ -55,13 +56,14 @@ class DevMode:
             key = libtcod.Key()
             mouse = libtcod.Mouse()
             libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
-            #libtcod.map_compute_fov(self.level.fov_map, mouse.cx, mouse.cy)
-            #self.gEngine.lightmask_reset()
+            libtcod.map_compute_fov(self.level.fov_map, mouse.cx, mouse.cy)
+            self.gEngine.lightmask_reset()
 
             self.testing(key, mouse)
 
-            #self.gEngine.lightmask_compute(self.level.dungeon)
-            self.gEngine.map_draw(self.con, mouse.cx, mouse.cy, run_fov=False)
+            self.gEngine.lightmask_compute(self.level.dungeon)
+            #self.gEngine.map_draw(self.con, mouse.cx, mouse.cy)
+            self.gEngine.map_draw_fast(self.con, mouse.cx, mouse.cy)
 
             self.gEngine.console_blit(self.con, 0, 0, 0, 0, 0, 0, 0, 1.0, 1.0)
             self.gEngine.console_flush()
@@ -70,12 +72,15 @@ class DevMode:
 
     def testing(self, key, mouse):
         cx, cy = 0, 0
+        self.gEngine.console_print(self.con, 1, 5, "(%dfps) Depth: %d" % (libtcod.sys_get_fps(), 1))
         if mouse.cx < self.level.MAP_WIDTH and mouse.cy < self.level.MAP_HEIGHT:
             self.gEngine.lightmask.add_light(mouse.cx, mouse.cy, 1.0)
         fr, fg, fb = libtcod.black
         br, bg, bb = libtcod.grey
+
         if key.vk == libtcod.KEY_SPACE:
             self.print_d_map = not self.print_d_map
+
         if mouse.lbutton_pressed:
             self.d.add_point(mouse.cx, mouse.cy, 0)
             self.d.compute(self.level.dungeon)

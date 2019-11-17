@@ -8,6 +8,8 @@ from game import combat
 from game import content_parser
 from game.object.actor import entity
 from gEngine import gEngine
+
+
 class GameObjects:
     def __init__(self):
         self.threat_list = []

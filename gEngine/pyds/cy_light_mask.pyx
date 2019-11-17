@@ -96,6 +96,7 @@ class LightMask:
                 )
 
     def backward_prop(self, map):
+        fx = self.width -1
         for x in range(self.width-2, 0, -1):
             y = self.height - 1
             self.mask[self.idx(x, y)] = self.compute_intensity(self.mask[self.idx(x,y)],
@@ -104,7 +105,6 @@ class LightMask:
                                                                self.opacity[self.idx(x,y)])
 
         for y in range(self.height-2, 0, -1):
-            fx = self.width -1
             self.mask[self.idx(fx, y)] = self.compute_intensity(self.mask[self.idx(fx,y)],
                                                                 self.mask[self.idx(fx, y+1)],
                                                                 (0.0, 0.0, 0.0),
