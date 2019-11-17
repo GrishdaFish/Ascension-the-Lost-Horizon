@@ -61,7 +61,7 @@ def fireball(min, max, range, radius, targets, target, player, game):
             if obj.distance(int(x), int(y)) <= radius and obj.fighter:
                 game.message.message('The ' + obj.name + ' gets burned for ' + str(FIREBALL_DAMAGE) + ' hit points.',
                                      libtcod.light_crimson)
-                obj.fighter.take_damage(FIREBALL_DAMAGE, player)
+                obj.fighter.take_damage(FIREBALL_DAMAGE, player, game)
 
 
 def lightning(min, max, range, radius, targets, target, player, game):
@@ -78,10 +78,10 @@ def lightning(min, max, range, radius, targets, target, player, game):
     game.message.message('A lighting bolt strikes the ' + monster.name +
                          ' with a loud thunder! The damage is '
                          + str(LIGHTNING_DAMAGE) + ' hit points.', libtcod.light_crimson)
-    monster.fighter.take_damage(LIGHTNING_DAMAGE, player)
+    monster.fighter.take_damage(LIGHTNING_DAMAGE, player, game)
 
     # draw the effect
-    game.gEngine.particle_projectile(1, player.x, player.y, monster.x, monster.y, color=libtcod.lightest_blue)
+    #game.gEngine.particle_projectile(1, player.x, player.y, monster.x, monster.y, color=libtcod.lightest_blue)
     # spell_effects.path_effect(game,player.x,player.y,monster.x,monster.y,5)
 
 

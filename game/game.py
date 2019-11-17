@@ -10,6 +10,7 @@ from gEngine.utilities import messaging
 from gEngine.utilities.user_interface import menu
 from gEngine.utilities.user_interface import hot_bar
 from game import lights
+from game import bark
 from game.object import build_objects
 from game.object import object
 from game.user_interface import inventory
@@ -46,7 +47,7 @@ class Game:
         self.screen_width = self.gEngine.w
         self.screen_height = self.gEngine.h
         self.panel_height = 7
-        self.dungeon_height = self.screen_height - self.panel_height
+        self.dungeon_height = self.screen_height - self.panel_height - 5
         self.dungeon_width = self.screen_width
         self.bar_width = 20
         self.panel_y = self.screen_height - self.panel_height
@@ -87,6 +88,7 @@ class Game:
             z += 3
             index += 1
         self.player_action = None
+        self.bark_manager = bark.BarkManager()
 
     def activate(self):
         self.active = True
@@ -102,6 +104,9 @@ class Game:
             menus.town_menu(self.dungeon_console, 'Welcome to Town', self, self.inventory_width, self.gEngine.h,
                             self.gEngine.w)
             self.newgame = False
+        r = libtcod.random_get_int(0, 0, len(bark.player_new_level_barks)-1)
+        b = bark.Bark(self.gEngine, self.dungeon_console, self.player, 4.0, bark.player_new_level_barks[r])
+        self.bark_manager.add_bark(b)
 
         while not libtcod.console_is_window_closed():
             libtcod.map_compute_fov(self.fov, self.player.x, self.player.y)
@@ -158,12 +163,15 @@ class Game:
                         self.player_action = 'exit'
 
                     self.hotbar.update(mouse, key, self)
+                    self.bark_manager.update_barks()
 
                     for object in self.objects:
                         object.clear(self.gEngine)
 
                     if self.player_action == 'turn-used' or self.player_action == 'player-moved':
                         self.ticker.schedule_turn(self.player.fighter.speed, self.player)
+
+
 
                     self.render_all()
                     self.gEngine.console_flush()
@@ -376,11 +384,7 @@ class Game:
         y = self.player.y + dy
 
         # try to find an attackable object there
-        target = None
-        for object in self.objects:
-            if object.fighter and object.x == x and object.y == y:
-                target = object
-                break
+        target = self.check_for_target(x, y)
 
         # attack if target found, move otherwise
         if target is not None:
@@ -452,6 +456,8 @@ class Game:
         self.get_names_under_player()
 
         self.message.flush_messages()
+
+        self.bark_manager.render_barks()
 
         self.render_consoles()
 

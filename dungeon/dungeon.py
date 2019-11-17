@@ -16,6 +16,7 @@ from dungeon.level import Level
 from dungeon.spawn_node import SpawnNode
 from game.object.misc import *
 from game.object.object import *
+from game import lights
 
 MAX_DEPTH = 25
 # Variables for tile bitmasking
@@ -201,7 +202,7 @@ class BasicDungeon:
 
                 # add some contents to this room, such as monsters
                 if not empty:
-                    self.place_light(new_room, rand)
+                    self.place_light(new_room, rand, game)
                     self.place_objects(new_room, game, rand)
 
                 # center coordinates of new room, will be useful later
@@ -304,10 +305,12 @@ class BasicDungeon:
                 self.gEngine.map_add_tile_2x(x * 2 + 1, y * 2 + 1, c.tile, c.blocked, c.block_sight, c.explored,
                                              c.spawn_node, c.color, c.opacity)
 
-    def place_light(self, room, random_instance):
+    def place_light(self, room, random_instance, game):
         x = libtcod.random_get_int(random_instance, room.x1 + 1, room.x2 - 1)
         y = libtcod.random_get_int(random_instance, room.y1 + 1, room.y2 - 1)
-        self.gEngine.lightmask_add_light(x, y, 0.5)
+        i = libtcod.random_get_float(random_instance, 0.95, 1.15)
+        l = lights.Light(x, y, game.light_handler, flicker=True, intensity=i)
+        game.light_handler.add_light(l)
 
     def place_objects(self, room, game, random_instance):
         if game:

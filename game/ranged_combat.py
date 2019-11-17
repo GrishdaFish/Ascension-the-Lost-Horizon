@@ -33,7 +33,6 @@ def blind_fire(dx, dy, ox, oy, game, shooter):
 
     ddx = math.cos(angle * 1.0)
     ddy = math.sin(angle * 1.0)
-    print(angle)
     final_x = ox + ddx
     final_y = oy + ddy
     target = None

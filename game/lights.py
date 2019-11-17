@@ -1,6 +1,14 @@
 import tcod as libtcod
 import time
 
+default_light_colors = [
+    libtcod.lighter_amber,
+    libtcod.light_orange,
+    libtcod.lighter_flame,
+    libtcod.lightest_amber,
+    libtcod.lightest_orange,
+    libtcod.lightest_flame,
+]
 
 class LightHandler:
     def __init__(self, gEngine):
@@ -30,7 +38,7 @@ class LightHandler:
 
 
 class Light:
-    def __init__(self, x, y, handler, duration=0.0, decay=0.0, intensity=1.0, color=libtcod.light_yellow, flicker=False,
+    def __init__(self, x, y, handler, duration=0.0, decay=0.0, intensity=1.0, color=None, flicker=False,
                  flicker_intensity=0.025):
         self.x = x
         self.y = y
@@ -38,6 +46,9 @@ class Light:
         self.duration = duration
         self.decay = decay
         self.intensity = intensity
+        if not color:
+            r = libtcod.random_get_int(0, 0, len(default_light_colors)-1)
+            color = default_light_colors[r]
         r = color[0]/255 * intensity
         g = color[1]/255 * intensity
         b = color[2]/255 * intensity
@@ -59,6 +70,7 @@ class Light:
         self.reverse = False
         self.staged = False
         self.ramped = False
+        self.original_intensity = intensity
 
     def update(self):
         self.compute()
@@ -77,11 +89,12 @@ class Light:
     def compute(self):
         if self.time_now:
             self.time_now += (time.time() - self.time_now)
-        if self.decay > 0:
-            self.intensity -= self.decay
+        if self.decay > 0.0:
+            self.original_intensity -= self.decay
+            self.intensity = self.original_intensity
         if self.flicker:
             r = libtcod.random_get_float(0, -self.flicker_intensity, self.flicker_intensity)
-            self.intensity += r
+            self.intensity = self.original_intensity + r
         if self.randomize_color:
             self.lerp_colors()
         elif self.staged:

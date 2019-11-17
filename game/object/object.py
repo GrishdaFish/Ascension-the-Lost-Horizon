@@ -7,7 +7,7 @@ import logging
 sys.path.append(sys.path[0])
 import tcod as libtcod
 from game import combat
-
+from game import bark
 
 # I might rewrite this system, the bigger the game gets, the more cumbersome this
 # system gets. :(
@@ -289,12 +289,12 @@ class Fighter:
                     dmg *= 0.25
                     dmg = int(dmg)
                 # make the target take some damage
-                target.fighter.take_damage(dmg, self.owner)
+                target.fighter.take_damage(dmg, self.owner, game)
                 msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' for ' + str(dmg) + '!'
             else:
                 if libtcod.random_get_int(0, 0, 100) < 25:  # 25% chance to always do at least 1 damage
                     dmg = 1
-                    target.fighter.take_damage(dmg, self.owner)
+                    target.fighter.take_damage(dmg, self.owner, game)
                     msg = self.owner.name.capitalize() + ' scratches ' + target.name + ' for ' + str(dmg) + '!'
                 else:
                     msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' but it has no effect!'
@@ -306,26 +306,32 @@ class Fighter:
             if direction == "north" or direction == 'south':
                 t = game.check_for_target(target.x + 1, target.y)
                 if t:
-                    game.player.fighter.attack(t, player=True)
+                    game.player.fighter.attack(t, player=True, game=game)
                     t = None
                 t = game.check_for_target(target.x - 1, target.y)
                 if t:
-                    game.player.fighter.attack(t, player=True)
+                    game.player.fighter.attack(t, player=True, game=game)
             elif direction == "east" or direction == 'west':
                 t = game.check_for_target(target.x, target.y + 1)
                 if t:
-                    game.player.fighter.attack(t, player=True)
+                    game.player.fighter.attack(t, player=True, game=game)
                     t = None
                 t = game.check_for_target(target.x - 1, target.y - 1)
                 if t:
-                    game.player.fighter.attack(t, player=True)
+                    game.player.fighter.attack(t, player=True, game=game)
 
-    def take_damage(self, damage, attacker):
+    def take_damage(self, damage, attacker, game):
         # apply damage if possible
         if damage > 0:
             self.hp -= damage
             self.owner.flashing = True
             self.owner.flash_duration = 1
+            r = libtcod.random_get_int(0, 0, 100)
+            if r > 75:
+                r = libtcod.random_get_int(0, 0, len(bark.hit_barks)-1)
+                b = bark.Bark(game.gEngine, game.dungeon_console, self.owner, 2.0, bark.hit_barks[r])
+                game.bark_manager.add_bark(b)
+
             # check for death. if there's a death function, call it
             if self.hp <= 0:
                 attacker.fighter.current_xp += self.current_xp
@@ -359,10 +365,13 @@ def get_next_to_player(mob, player, map):
     return dx, dy
 
 
+
+
 class AI_Base:
     def __init__(self):
         self.node = None
         self.owner = None
+        self.found_player = False
 
     def remove_from_node(self):
         self.node.remove_from_group(self.owner)
@@ -396,11 +405,12 @@ class BasicMonster(AI_Base):
 
 class WanderingMonster(AI_Base):
     # Ai for a monster to randomly wander around when not in the view of the player
-    def __init__(self, radius=3, x=0, y=0):
+    def __init__(self, radius=3, x=1, y=1):
         self.radius = radius
         self.dest = False
         self.home_x = x
         self.home_y = y
+
         AI_Base.__init__(self)
 
     def take_turn(self, game):
@@ -425,9 +435,9 @@ class WanderingMonster(AI_Base):
                     self.dest_x = libtcod.random_get_int(0, min_x, max_x)
                     self.dest_y = libtcod.random_get_int(0, min_y, max_y)
                     if self.dest_x > game.dungeon_width:
-                        self.dest_x = game.dungeon_width
+                        self.dest_x = game.dungeon_width-1
                     if self.dest_y > game.dungeon_height:
-                        self.dest_y = game.dungeon_height
+                        self.dest_y = game.dungeon_height-1
 
                     if not game.level.dungeon[self.dest_x][self.dest_y].blocked and not self.owner.distance(self.dest_x,
                                                                                                       self.dest_y) == 0:
@@ -440,6 +450,15 @@ class WanderingMonster(AI_Base):
             self.owner.ai = BasicMonster()
             self.owner.ai.owner = self.owner
             self.owner.ai.node = node
+            if not self.owner.ai.found_player:
+                will_bark = libtcod.random_get_int(0, 0, 100)
+                if will_bark >=  75:
+                    bark_number = libtcod.random_get_int(0, 1, len(bark.player_found_barks)-1)
+                    b = bark.Bark(game.gEngine, game.dungeon_console, self.owner, 3.5, bark.player_found_barks[bark_number])
+                    game.bark_manager.add_bark(b)
+                # add a bark here
+                self.owner.ai.found_player = True
+
 
 
 class ConfusedMonster(AI_Base):
