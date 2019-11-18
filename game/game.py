@@ -105,7 +105,7 @@ class Game:
                             self.gEngine.w)
             self.newgame = False
         r = libtcod.random_get_int(0, 0, len(bark.player_new_level_barks)-1)
-        b = bark.Bark(self.gEngine, self.dungeon_console, self.player, 4.0, bark.player_new_level_barks[r])
+        b = bark.Bark(self.gEngine, self.dungeon_console, self.player, 3.0, bark.player_new_level_barks[r])
         self.bark_manager.add_bark(b)
 
         while not libtcod.console_is_window_closed():
@@ -466,7 +466,7 @@ class Game:
         self.light_handler.update()
         self.light_handler.render()
         r = libtcod.random_get_float(0, -0.025, 0.025)
-        self.gEngine.lightmask_add_light(self.player.x, self.player.y, (0.75 + r))
+        self.gEngine.lightmask_add_light(self.player.x, self.player.y, (0.65 + r))
         for object in self.objects:
             if object.fighter:
                 r = libtcod.random_get_float(0, -0.025, 0.025)

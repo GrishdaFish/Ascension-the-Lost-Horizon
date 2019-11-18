@@ -51,9 +51,9 @@ def fireball(min, max, range, radius, targets, target, player, game):
         return 'cancelled'
     game.message.message('The fireball explodes, burning everything within ' + str(radius) + ' tiles!', 5)
     #game.gEngine.particle_explosion(5, x, y, b=True, color=libtcod.red)
-    l = lights.Light(x, y, game.light_handler, flicker=True)
-    c = [libtcod.white, libtcod.orange]
-    l.staged_lerp(2.0, 1.6, 0.05, 0.0095, c)
+    l = lights.Light(x, y, game.light_handler, flicker=True, flicker_intensity=0.15)
+    c = [libtcod.white, libtcod.flame]
+    l.staged_lerp(2.0, 1.2, 0.075, 0.0075, c)
     game.light_handler.add_light(l)
     FIREBALL_DAMAGE = libtcod.random_get_int(0, min, max)
     if game.objects:
@@ -93,7 +93,7 @@ def confuse(min, max, range, radius, targets, target, player, game):
     if monster is None:
         game.message.message('You cancelled the spell!', libtcod.cyan)
         return 'cancelled'
-    l = lights.Light(monster.x, monster.y, game.light_handler, flicker=True, intensity=0.95, decay=0.0005)
+    l = lights.Light(monster.x, monster.y, game.light_handler, flicker=True, intensity=1.35, decay=0.0005)
     l.randomize()
     game.light_handler.add_light(l)
     numturns = libtcod.random_get_int(0, min, max)

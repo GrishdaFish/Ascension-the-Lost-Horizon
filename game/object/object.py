@@ -329,7 +329,7 @@ class Fighter:
             r = libtcod.random_get_int(0, 0, 100)
             if r > 75:
                 r = libtcod.random_get_int(0, 0, len(bark.hit_barks)-1)
-                b = bark.Bark(game.gEngine, game.dungeon_console, self.owner, 2.0, bark.hit_barks[r])
+                b = bark.Bark(game.gEngine, game.dungeon_console, self.owner, 1.0, bark.hit_barks[r])
                 game.bark_manager.add_bark(b)
 
             # check for death. if there's a death function, call it
@@ -454,7 +454,7 @@ class WanderingMonster(AI_Base):
                 will_bark = libtcod.random_get_int(0, 0, 100)
                 if will_bark >=  75:
                     bark_number = libtcod.random_get_int(0, 1, len(bark.player_found_barks)-1)
-                    b = bark.Bark(game.gEngine, game.dungeon_console, self.owner, 3.5, bark.player_found_barks[bark_number])
+                    b = bark.Bark(game.gEngine, game.dungeon_console, self.owner, 2.5, bark.player_found_barks[bark_number])
                     game.bark_manager.add_bark(b)
                 # add a bark here
                 self.owner.ai.found_player = True

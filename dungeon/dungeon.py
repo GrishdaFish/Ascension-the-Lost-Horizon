@@ -308,7 +308,7 @@ class BasicDungeon:
     def place_light(self, room, random_instance, game):
         x = libtcod.random_get_int(random_instance, room.x1 + 1, room.x2 - 1)
         y = libtcod.random_get_int(random_instance, room.y1 + 1, room.y2 - 1)
-        i = libtcod.random_get_float(random_instance, 0.95, 1.15)
+        i = libtcod.random_get_float(random_instance, 0.75, 1.0)
         l = lights.Light(x, y, game.light_handler, flicker=True, intensity=i)
         game.light_handler.add_light(l)
 

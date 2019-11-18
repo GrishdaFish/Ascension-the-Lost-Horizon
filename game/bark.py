@@ -72,8 +72,17 @@ class Bark:
 
     def draw(self):
         if not self.dead:
-            self.gEngine.console_blit(self.console, 0, 0, self.width, self.height, self.target_console, self.owner.x - self.width/2,
-                                      self.owner.y -1, self.alpha, self.alpha)
+            y_pos = self.owner.y - 1
+            x_pos = int(self.owner.x - (self.width /2))
+            # Clamp bark to the window
+            if x_pos < 0:
+                x_pos = 0
+            elif x_pos + self.width > self.gEngine.w:
+                x_pos = self.gEngine.w - self.width
+            if y_pos < 0:
+                y_pos = self.owner + 1
+            self.gEngine.console_blit(self.console, 0, 0, self.width, self.height, self.target_console, x_pos,
+                                      y_pos, self.alpha, self.alpha)
 
     def update(self):
         if not self.dead:
