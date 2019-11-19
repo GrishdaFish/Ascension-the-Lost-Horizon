@@ -1,4 +1,6 @@
-from game import lights
+from gEngine import lights
+
+
 class Ticker:
     def __init__(self):
         self.ticks = 0  # current ticks--sys.maxint is 2147483647

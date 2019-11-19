@@ -1,9 +1,17 @@
 
 
 class LevelHandler:
-    def __init__(self, gEngine):
+    def __init__(self, gEngine, generator, game):
         self.gEngine = gEngine
         self.levels = []
+        self.generator = generator
+        self.game = game
+
+    def new_level(self, depth):
+        pass
+
+    def prev_level(self, depth):
+        pass
 
 
 class Level:
@@ -25,8 +33,9 @@ class Level:
         self.light_handler = None
         self.rooms = []
 
-    def new_level(self, depth):
-        self.depth = depth
+    def new_level(self):
+
+        #self.depth += 1
         # self.dungeon, self.rooms = dungeongenerator
         self.gEngine.map_clear()
         self.set_draw_map()
@@ -46,6 +55,7 @@ class Level:
         for y in range(self.MAP_HEIGHT):
             for x in range(self.MAP_WIDTH):
                 c = self.dungeon[x][y]
+                self.gEngine.lightmask_set_opacity_value(x, y, c.opacity)
                 self.gEngine.map_add_tile(x, y, c.tile, c.blocked, c.block_sight, c.explored, c.spawn_node, c.color,
                                      c.opacity)
         self.gEngine.map_init_level(self.MAP_WIDTH, self.MAP_HEIGHT)

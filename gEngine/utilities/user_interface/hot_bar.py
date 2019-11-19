@@ -81,6 +81,10 @@ class HotBar():
             self.gEngine.console_blit(slot.window, 0, 0, 3, 3, self.window, slot.position, 1, 1.0, 1.0)
         self.gEngine.console_blit(self.window, 0, 0, 32, 5, self.con, self.x, self.y, 1.0, 1.0)
 
+    def reinit_all(self, con):
+        self.con = con
+        for slot in self.slots:
+            slot.reinit()
 
 class HotBarSlot():
     def __init__(self, con, cx, cy, p, label, gEngine):
@@ -104,6 +108,9 @@ class HotBarSlot():
         self.window = gEngine.console_new(3, 3)
         self.obj = None
         self.owner = None
+
+    def reinit(self):
+        self.window = self.gEngine.console_new(3, 3)
 
     def attach_object(self, obj):
         """

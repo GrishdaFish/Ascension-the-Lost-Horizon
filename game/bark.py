@@ -53,6 +53,9 @@ class BarkManager:
             if obark == bark:
                 self.barks.remove(obark)
 
+    def empty(self):
+        self.barks = []
+
 
 class Bark:
     def __init__(self, gEngine, console, owner, duration, message):

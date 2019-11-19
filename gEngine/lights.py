@@ -32,6 +32,9 @@ class LightHandler:
             if self.lights[light].dead:
                 self.lights.pop(light)
 
+    def empty(self):
+        self.lights = []
+
     def render(self):
         for light in self.lights:
             self.gEngine.lightmask_add_light(light.x, light.y, light.color)

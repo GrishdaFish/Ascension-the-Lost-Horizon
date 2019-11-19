@@ -10,13 +10,12 @@ from object.spells import *
 from object.item import *
 from object.misc import *
 '''
-import tcod as libtcod
 from dungeon.tile import Tile
 from dungeon.level import Level
 from dungeon.spawn_node import SpawnNode
 from game.object.misc import *
 from game.object.object import *
-from game import lights
+from gEngine import lights
 
 MAX_DEPTH = 25
 # Variables for tile bitmasking
@@ -163,7 +162,7 @@ class BasicDungeon:
         node_obj.node.ticker.schedule_turn(0, node_obj)
         self.spawn_nodes.append(node_obj)
 
-    def make_map(self, game=None, depth=0, empty=False):
+    def make_map(self, game=None, depth=0, empty=False, light_handler=None):
         # TODO remove game related logic and move to a populate class/file/method
         self.gEngine.log_message('Creating map.')
         # if game:
@@ -202,7 +201,7 @@ class BasicDungeon:
 
                 # add some contents to this room, such as monsters
                 if not empty:
-                    self.place_light(new_room, rand, game)
+                    self.place_light(new_room, rand, game, light_handler)
                     self.place_objects(new_room, game, rand)
 
                 # center coordinates of new room, will be useful later
@@ -305,12 +304,16 @@ class BasicDungeon:
                 self.gEngine.map_add_tile_2x(x * 2 + 1, y * 2 + 1, c.tile, c.blocked, c.block_sight, c.explored,
                                              c.spawn_node, c.color, c.opacity)
 
-    def place_light(self, room, random_instance, game):
+    def place_light(self, room, random_instance, game, light_handler):
         x = libtcod.random_get_int(random_instance, room.x1 + 1, room.x2 - 1)
         y = libtcod.random_get_int(random_instance, room.y1 + 1, room.y2 - 1)
         i = libtcod.random_get_float(random_instance, 0.75, 1.0)
-        l = lights.Light(x, y, game.light_handler, flicker=True, intensity=i)
-        game.light_handler.add_light(l)
+        if light_handler:
+            l = lights.Light(x, y, light_handler, flicker=True, intensity=i)
+            light_handler.add_light(l)
+        else:
+            l = lights.Light(x, y, game.light_handler, flicker=True, intensity=i)
+            game.light_handler.add_light(l)
 
     def place_objects(self, room, game, random_instance):
         if game:

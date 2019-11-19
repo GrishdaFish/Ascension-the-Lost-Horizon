@@ -425,22 +425,31 @@ class WanderingMonster(AI_Base):
         if not self.dest:
             picked = False
             while not picked:
-                min_x, max_x = self.home_x - self.radius, self.home_x + self.radius
-                min_y, max_y = self.home_y - self.radius, self.home_y + self.radius
+                min_x = self.home_x - self.radius
+                max_x = self.home_x + self.radius
+
+                min_y = self.home_y - self.radius
+                max_y = self.home_y + self.radius
 
                 mx, my = game.dungeon_width, game.dungeon_height
-
+                if max_x > mx:
+                    max_x = mx
+                if max_y > my:
+                    max_y = my
+                if min_x <= 0:
+                    min_x = 1
+                if min_y <= 0:
+                    min_y = 1
                 # make sure min and max values are within the boundaries of the map
-                if not min_x <= 0 or not min_y <= 0 or not max_x >= my or not max_y >= mx: # fix this
-                    self.dest_x = libtcod.random_get_int(0, min_x, max_x)
-                    self.dest_y = libtcod.random_get_int(0, min_y, max_y)
-                    if self.dest_x > game.dungeon_width:
-                        self.dest_x = game.dungeon_width-1
-                    if self.dest_y > game.dungeon_height:
-                        self.dest_y = game.dungeon_height-1
+                self.dest_x = libtcod.random_get_int(0, min_x, max_x)
+                self.dest_y = libtcod.random_get_int(0, min_y, max_y)
+                if self.dest_x >= game.dungeon_width:
+                    self.dest_x = game.dungeon_width-1
+                if self.dest_y >= game.dungeon_height:
+                    self.dest_y = game.dungeon_height-1
 
-                    if not game.level.dungeon[self.dest_x][self.dest_y].blocked and not self.owner.distance(self.dest_x,
-                                                                                                      self.dest_y) == 0:
+                if not game.level.dungeon[self.dest_x][self.dest_y].blocked:
+                    if not self.owner.distance(self.dest_x, self.dest_y) == 0:
                         picked = True
 
             self.owner.move_towards(self.dest_x, self.dest_y, game.level.dungeon, game.objects)

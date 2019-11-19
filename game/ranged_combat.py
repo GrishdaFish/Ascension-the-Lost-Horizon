@@ -1,5 +1,5 @@
 import math
-from game import lights
+from gEngine import lights
 import tcod as libtcod
 
 def fire_shot(ox, oy, dx, dy, shooter, game, target=None):
@@ -43,7 +43,7 @@ def blind_fire(dx, dy, ox, oy, game, shooter):
         if game.level.dungeon[int(final_x)][int(final_y)].blocked:
             game.message.message('hit wall')
             i = libtcod.random_get_float(0, 0.65, 0.85)
-            l = lights.Light(int(final_x-ddx), int(final_y-ddy), game.light_handler, 2.0, 0.05, i)
+            l = lights.Light(int(final_x - ddx), int(final_y - ddy), game.light_handler, 2.0, 0.05, i)
             game.light_handler.add_light(l)
             break
         final_x += ddx * 1.0

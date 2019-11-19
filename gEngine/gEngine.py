@@ -182,6 +182,9 @@ class gEngine:
             c = self.mConsole.pop(con - 1)
             libtcod.console_delete(c)
 
+    def console_remove_all(self):
+        self.mConsole = []
+
     def console_get_height_rect(self, con, x, y, width, height, fmt):
         if con == 0:
             return libtcod.console_get_height_rect(con, x, y, width, height, fmt)

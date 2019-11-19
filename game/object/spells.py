@@ -1,9 +1,7 @@
 import tcod as libtcod
-import random
-from game import lights
+from gEngine import lights
 from game.object import object
-import sys
-import os
+
 
 #sys.path.append(os.path.join(sys.path[0], 'utils'))
 #import utils.spell_effects as spell_effects
@@ -36,7 +34,7 @@ def heal(min, max, range, radius, targets, target, player, game):
             game.message.message('You are already at full health.', libtcod.cyan)
             return 'cancelled'
         l = lights.Light(target.x, target.y, game.light_handler, decay=0.025, flicker=True, intensity=1.0, color=libtcod.lime)
-        game.light_handler.add_light(l)
+        game.level.light_handler.add_light(l)
         game.message.message('Your wounds start to feel better!', libtcod.light_lime)
     HEAL_AMOUNT = libtcod.random_get_int(0, min, max)
     target.fighter.heal(HEAL_AMOUNT)
@@ -54,7 +52,7 @@ def fireball(min, max, range, radius, targets, target, player, game):
     l = lights.Light(x, y, game.light_handler, flicker=True, flicker_intensity=0.15)
     c = [libtcod.white, libtcod.flame]
     l.staged_lerp(2.0, 1.2, 0.075, 0.0075, c)
-    game.light_handler.add_light(l)
+    game.level.light_handler.add_light(l)
     FIREBALL_DAMAGE = libtcod.random_get_int(0, min, max)
     if game.objects:
         for obj in game.objects:  # damage every fighter in range, including the player
@@ -73,7 +71,7 @@ def lightning(min, max, range, radius, targets, target, player, game):
     l = lights.Light(monster.x, monster.y, game.light_handler, flicker=True)
     c = [libtcod.white, libtcod.light_blue]
     l.staged_lerp(2.0, 1.0, 0.05, 0.0095, c)
-    game.light_handler.add_light(l)
+    game.level.light_handler.add_light(l)
     LIGHTNING_DAMAGE = libtcod.random_get_int(0, min, max)
     game.message.message('A lighting bolt strikes the ' + monster.name +
                          ' with a loud thunder! The damage is '
@@ -95,7 +93,7 @@ def confuse(min, max, range, radius, targets, target, player, game):
         return 'cancelled'
     l = lights.Light(monster.x, monster.y, game.light_handler, flicker=True, intensity=1.35, decay=0.0005)
     l.randomize()
-    game.light_handler.add_light(l)
+    game.level.light_handler.add_light(l)
     numturns = libtcod.random_get_int(0, min, max)
     # replace the monster's AI with a "confused" one; after some turns it will restore the old AI
     old_ai = monster.ai

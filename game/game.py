@@ -1,15 +1,16 @@
 __author__ = 'Grishnak'
+from copy import deepcopy
 from dungeon import dungeon
 import tcod as libtcod
 import esper
-from game.ecs import components
 from game.ecs import systems
 from gEngine.utilities.timing import ticker
 from gEngine.utilities import status_bar
 from gEngine.utilities import messaging
 from gEngine.utilities.user_interface import menu
 from gEngine.utilities.user_interface import hot_bar
-from game import lights
+from gEngine.utilities.user_interface import dialog_box
+from gEngine import lights
 from game import bark
 from game.object import build_objects
 from game.object import object
@@ -43,6 +44,7 @@ class Game:
         self.max_depth = 25
         self.fov = None
         self.level = None
+        self.levels = []
         # Ui variables
         self.screen_width = self.gEngine.w
         self.screen_height = self.gEngine.h
@@ -56,7 +58,7 @@ class Game:
         self.message_height = self.panel_height - 1
         self.inventory_width = 50
         self.light_handler = lights.LightHandler(self.gEngine)
-
+        self.depth = 0
         self.path = None
         # create all of the consoles for drawing and UI
         self.dungeon_console = self.gEngine.console_new(self.dungeon_width, self.dungeon_height)  # main viewport
@@ -215,8 +217,16 @@ class Game:
 
     def new_game(self):
         self.setup_player()
-        self.level = self.basic_dungeon.make_map(game=self)
-        self.level.depth = 1
+        self.light_handler.empty()
+        l = lights.LightHandler(self.gEngine)
+        level = self.basic_dungeon.make_map(game=self, light_handler=l)
+        level.depth = self.depth + 1
+        self.depth += 1
+        level.light_handler = l
+        for item in self.objects:
+            level.objects.append(item)
+        self.levels.append(level)
+        self.level = level
         self.fov = self.level.fov_map
         self.gEngine.log_message('Map made')
         self.setup_world()
@@ -224,6 +234,58 @@ class Game:
         self.path = libtcod.path_new_using_function(self.dungeon_width, self.dungeon_height, path_callback, self)
         self.newgame = True
         #self.gEngine.mMap = self.level.dungeon
+
+    def new_level(self):
+        '''self.gEngine.console_remove_all()
+        self.dungeon_console = self.gEngine.console_new(self.dungeon_width, self.dungeon_height)  # main viewport
+        self.panel = self.gEngine.console_new(self.screen_width, self.panel_height)  # for messages and others
+        self.toolbar = self.gEngine.console_new(self.screen_width, 5)  # for the hotbar
+        self.hotbar.reinit_all(self.toolbar)'''
+
+        self.ticker.clear_ticker()
+        self.level.objects = []
+        for objects in self.objects:
+            self.level.objects.append(objects)
+        self.objects = []
+
+        l = lights.LightHandler(self.gEngine)
+        level = self.basic_dungeon.make_map(game=self, light_handler=l)
+        level.depth = self.depth + 1
+        self.depth += 1
+        level.light_handler = l
+        self.levels.append(level)
+        self.level = level
+        self.fov = self.level.fov_map
+        self.ticker.schedule_turn(10, self.player)
+        # self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
+        self.game_state = 'playing'
+
+    def prev_level(self):
+        # self.gEngine.console_remove_all()
+        # self.dungeon_console = self.gEngine.console_new(self.dungeon_width, self.dungeon_height)  # main viewport
+        # self.panel = self.gEngine.console_new(self.screen_width, self.panel_height)  # for messages and others
+        # self.toolbar = self.gEngine.console_new(self.screen_width, 5)  # for the hotbar
+        # self.hotbar.reinit_all(self.toolbar)
+        self.objects = []
+        self.ticker.clear_ticker()
+        self.depth -= 1
+        self.level = None
+        self.level = self.levels[self.depth-1]
+        self.level.new_level()
+
+        for object in self.level.objects:
+            self.objects.append(object)
+            if object.misc:
+                if object.misc.type == 'down':  # place the player at the down stairs on the previous level
+                    self.player.x = object.x
+                    self.player.y = object.y
+
+        # self.objects = self.level.objects
+        self.fov = self.level.fov_map
+        self.ticker.schedule_turn(10, self.player)
+        # add in spawn node or monster turns
+        # self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
+        self.game_state = 'playing'
 
     def handle_keys(self, key):
         turn = self.handle_misc(key)
@@ -324,26 +386,32 @@ class Game:
         if key.vk == libtcod.KEY_ESCAPE:
             turn = self.handle_quit()
 
+        # if key.vk == libtcod.KEY_SPACE:
+        #     for item in self.objects:
+        #         if item.misc:
+        #             if item.misc.type == 'down':
+        #                 self.player.x = item.x
+        #                 self.player.y = item.y
         return turn
 
     def handle_quit(self, key):
-        return 'quit'
-        # elif key.vk == libtcod.KEY_ESCAPE:
-        #    message = 'Return to main menu?'
-        #    w = len(message) * 2
-        #    d_box = DialogBox(self, w, 10, 20, 20, message, type='option', con=self.con)
-        #    first = True
-        #    while 1:
-        #        confirm = d_box.display_box()
-        #        if confirm == 1:
-        #            d_box.destroy_box()
-        #            return 'exit'  # exit game
-        #        elif confirm == 0:
-        #            if first:
-        #                first = False
-        #            else:
-        #                d_box.destroy_box()
-        #                return 'didnt-take-turn'
+        #return 'quit'
+        if key.vk == libtcod.KEY_ESCAPE:
+           message = 'Return to main menu?'
+           w = len(message) * 2
+           d_box = dialog_box.DialogBox(self, w, 10, 20, 20, message, type='option', con=self.dungeon_console)
+           first = True
+           while 1:
+               confirm = d_box.display_box()
+               if confirm == 1:
+                   d_box.destroy_box()
+                   return 'quit'  # exit game
+               elif confirm == 0:
+                   if first:
+                       first = False
+                   else:
+                       d_box.destroy_box()
+                       return 'didnt-take-turn'
 
     def handle_stairs(self, key, turn):
         if key.text == '<':
@@ -356,8 +424,7 @@ class Game:
                                             self.gEngine.w)
                             turn = 'turn-used'
                         else:
-                            #self.depth -= 1
-                            #self.load_level(self.depth, 'up')
+                            self.prev_level()
 
                             turn = 'turn-used'
 
@@ -365,11 +432,7 @@ class Game:
             for object in self.objects:
                 if object.x == self.player.x and object.y == self.player.y and object.misc:
                     if object.misc.type == 'down':
-                        # save previous level
-                        # self.current_dungeon.append(Level(self.Map.map, self.objects, self.Map.depth))
-                        #self.depth += 1
-                        #self.load_level(self.depth, 'down')
-                        # self.new_level()
+                        self.new_level()
                         turn = 'turn-used'
         return turn
 
@@ -464,8 +527,8 @@ class Game:
 
     def update_lighting(self):
         self.gEngine.lightmask_reset()
-        self.light_handler.update()
-        self.light_handler.render()
+        self.level.light_handler.update()
+        self.level.light_handler.render()
         r = libtcod.random_get_float(0, -0.025, 0.025)
         self.gEngine.lightmask_add_light(self.player.x, self.player.y, (0.65 + r))
         for object in self.objects:
