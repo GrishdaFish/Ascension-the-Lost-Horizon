@@ -28,10 +28,16 @@ class CheckBox:
             libtcod.console_print(0, self.x, self.y, msg)
 
     def update(self, mouse=None, width=None):
+        #key = libtcod.Key()
+        #mouse = libtcod.Mouse()
+        #libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
         if not width:
-            width = 1
+            width = 0
+        else:
+            width = width/2
         if mouse:
-            if (mouse.cx - width / 2) == self.x and mouse.cy == self.y:
+            #print(mouse.cx - int(width/2))
+            if (mouse.cx - width) == self.x and mouse.cy == self.y:
                 if mouse.lbutton_pressed:
                     self.is_checked = not self.is_checked
                     self.change_button()

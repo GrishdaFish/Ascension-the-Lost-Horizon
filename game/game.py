@@ -20,9 +20,9 @@ from game import ranged_combat
 # todo externalize this data
 dungeon_height = 55
 dungeon_width = 80
-min_room_size = 10
+min_room_size = 5
 max_room_size = 15
-max_rooms = 15
+max_rooms = 25
 max_room_monsters = 0
 max_room_items = 3
 
@@ -155,6 +155,7 @@ class Game:
                         #self.light_handler.add_light(l)
                         target = self.check_for_target(mouse.cx, mouse.cy)
                         ranged_combat.fire_shot(self.player.x, self.player.y, mouse.cx, mouse.cy, self.player, self, target)
+                        self.player_action = 'turn-used'
 
                     if self.player_action == 'player-moved':
                         self.player_moved = True

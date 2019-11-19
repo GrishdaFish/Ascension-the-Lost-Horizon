@@ -24,6 +24,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
     :param splash: Whether or not to display the splash screen
     :return: Nothing
     """
+    #libtcod.sys_set_fps(0)
     if bg:
         dark_bg = game.gEngine.image_load(bg)
         bg = game.gEngine.image_load(bg)
@@ -118,16 +119,6 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
         splash_screen = game.gEngine.console_new(width, height)
 
     while key.vk != libtcod.KEY_ESCAPE:
-        game.gEngine.console_flush()
-        libtcod.console_flush()
-        # get input just after flush
-        key = libtcod.Key()
-        mouse = libtcod.Mouse()
-        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY, key, mouse)
-        exit_input = exit_button.display()
-        sell_input = sell_button.display()
-        buy_input = buy_button.display()
-
         if splash:
             if bg:
                 if fade > 0:
@@ -136,18 +127,66 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                     fade -= 0.045
                 else:
                     fade = 0
+        game.gEngine.console_flush()
+        libtcod.console_flush()
+        # get input just after flush
+        key = libtcod.Key()
+        mouse = libtcod.Mouse()
+        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY, key, mouse)
+
+        exit_input = exit_button.display()
+        sell_input = sell_button.display()
+        buy_input = buy_button.display()
+
         game.gEngine.console_clear(inventory_window)
         game.gEngine.console_clear(shop_window)
         game.gEngine.console_clear(compare_window)
         game.gEngine.console_clear(0)
+        if bg:
+            game.gEngine.image_blit_2x(dark_bg, inventory_window, 0, 0, width, 0)
+            game.gEngine.image_blit_2x(dark_bg, shop_window, 0, 0)
+            game.gEngine.image_blit_2x(dark_bg, compare_window, 0, 0, sx=0, sy=compare_y * 2)
         # set up draw screen
+
+
+        i_mc = i_master_check.update(mouse, width)
+        # print(i_master_check.x)
+        sell_value = 0
+
+        if not i_mc:
+            for box in i_check_boxes:
+                box.update(mouse, width)
+                # box.render(inventory_window, game)
+                if box.get_checked():
+                    sell_value += player.fighter.inventory[box.y - 1].item.value / 2
+        else:
+            for box in i_check_boxes:
+                box.set_checked(i_master_check.get_checked())
+                # box.render(inventory_window, game)
+                if box.get_checked():
+                    sell_value += player.fighter.inventory[box.y - 1].item.value / 2
+
+        s_mc = s_master_check.update(mouse)
+        buy_value = 0
+        if not s_mc:
+            for box in s_check_boxes:
+                box.update(mouse)
+                # box.render(shop_window, game)
+                if box.get_checked():
+                    buy_value += container[box.y - 1].item.value
+        else:
+            for box in s_check_boxes:
+                box.set_checked(s_master_check.get_checked())
+                # box.render(shop_window, game)
+                if box.get_checked():
+                    buy_value += container[box.y - 1].item.value
         r, g, b = libtcod.white
 
         # ========================================================================
         # print inventory
         # ========================================================================
-        if bg:
-            game.gEngine.image_blit_2x(dark_bg, inventory_window, 0, 0, width, 0)
+        # if bg:
+        #     game.gEngine.image_blit_2x(dark_bg, inventory_window, 0, 0, width, 0)
         game.gEngine.console_set_default_foreground(inventory_window, r, g, b)
         game.gEngine.console_print_frame(inventory_window, 0, 0, width / 2, height, False)
         game.gEngine.console_print(inventory_window, i_header_pos, 0, i_header)
@@ -172,8 +211,8 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
         # ========================================================================
         # Print Shop Window
         # ========================================================================
-        if bg:
-            game.gEngine.image_blit_2x(dark_bg, shop_window, 0, 0)
+        # if bg:
+        #     game.gEngine.image_blit_2x(dark_bg, shop_window, 0, 0)
         game.gEngine.console_set_default_foreground(shop_window, r, g, b)
         game.gEngine.console_print_frame(shop_window, 0, 0, width / 2, shop_height, False)
         game.gEngine.console_print(shop_window, s_header_pos, 0, s_header)
@@ -197,8 +236,9 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
         # ========================================================================
         # Print Compare Window
         # ========================================================================
-        if bg:
-            game.gEngine.image_blit_2x(dark_bg, compare_window, 0, 0, sx=0, sy=compare_y * 2)
+        #if bg:
+        #    game.gEngine.image_blit_2x(dark_bg, compare_window, 0, 0, sx=0, sy=compare_y * 2)
+
         game.gEngine.console_set_default_foreground(compare_window, r, g, b)
         game.gEngine.console_print_frame(compare_window, 0, 0, width / 2, compare_height, False)
         game.gEngine.console_print(compare_window, c_header_pos, 0, c_header)
@@ -206,43 +246,11 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
         # ========================================================================
         # handle mouse input
         # ========================================================================
-        # Render check boxes
-        # inventory check boxes
-        i_mc = i_master_check.update(mouse, width)
-        i_master_check.render(inventory_window, game)
-        sell_value = 0
-        if not i_mc:
-            for box in i_check_boxes:
-                box.update(mouse, width)
-                box.render(inventory_window, game)
-                if box.get_checked():
-                    sell_value += player.fighter.inventory[box.y - 1].item.value / 2
-        else:
-            for box in i_check_boxes:
-                box.set_checked(i_master_check.get_checked())
-                box.render(inventory_window, game)
-                if box.get_checked():
-                    sell_value += player.fighter.inventory[box.y - 1].item.value / 2
+
         game.gEngine.console_print(inventory_window, 1, 32, 'Sell Value: ' + color_text(str(sell_value), libtcod.gold))
 
-        # Shop check boxes
-
-        s_mc = s_master_check.update(mouse)
-        s_master_check.render(shop_window, game)
-        buy_value = 0
-        if not s_mc:
-            for box in s_check_boxes:
-                box.update(mouse)
-                box.render(shop_window, game)
-                if box.get_checked():
-                    buy_value += container[box.y - 1].item.value
-        else:
-            for box in s_check_boxes:
-                box.set_checked(s_master_check.get_checked())
-                box.render(shop_window, game)
-                if box.get_checked():
-                    buy_value += container[box.y - 1].item.value
         game.gEngine.console_print(shop_window, 1, 25, 'Buy Value: ' + color_text(str(buy_value), libtcod.gold))
+
 
         # Inventory input
         if width / 2 + 3 <= mouse.cx < width - 2:  # inventory screen dims
@@ -256,8 +264,8 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                     game.gEngine.console_print_ex(compare_window, 1, 3, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Type    : ' + item.item.equipment.type.capitalize())
                     if item.item.equipment.type == 'melee':
-                        damage = '%dd%d+%d' % (item.item.equipment.damage.nb_dices, item.item.equipment.damage.nb_faces,
-                                               item.item.equipment.damage.addsub)
+                        damage = '%dd%d+%d' % (item.item.equipment.damage[0], item.item.equipment.damage[1],
+                                               item.item.equipment.damage[3])
                         game.gEngine.console_print_ex(compare_window, 1, 4, libtcod.BKGND_SET, libtcod.LEFT,
                                                       'Damage  : ' + damage)
                         game.gEngine.console_print_ex(compare_window, 1, 5, libtcod.BKGND_SET, libtcod.LEFT,
@@ -287,6 +295,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                                                   'Radius: ' + str(item.item.spell.radius))
                     game.gEngine.console_print_ex(compare_window, 1, 7, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Value : ' + str(item.item.value))
+
                 if mouse.lbutton_pressed:
                     i_n = color_text(item.name.capitalize(), item.color)
                     price = color_text(item.item.value / 2, libtcod.gold)
@@ -308,6 +317,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                             inventory_items.append(i)
 
         # shop input
+
         if 0 <= mouse.cx < width / 2 - 2:  # shop screen dims
             if (mouse.cy - 1) < len(container) and mouse.cy - 1 >= 0:
                 item = container[mouse.cy - 1]
@@ -395,6 +405,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                                 inventory_items.append(i)
                             s_check_boxes = []
                             s_options = []
+                            s_gold = []
                             if container:
                                 for obj in container:
                                     obj_text = color_text(obj.name.capitalize(), obj.color)
@@ -503,6 +514,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
 
                         s_check_boxes = []
                         s_options = []
+                        s_gold = []
                         if container:
                             for obj in container:
                                 obj_text = color_text(obj.name.capitalize(), obj.color)
@@ -531,6 +543,15 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
         # ========================================================================
         # handle exit button
         # ========================================================================
+
+
+        s_master_check.render(shop_window, game)
+        i_master_check.render(inventory_window, game)
+        for box in i_check_boxes:
+            box.render(inventory_window, game)
+        for box in s_check_boxes:
+            box.render(shop_window, game)
+
         exit_button.display(mouse)
         sell_button.display(mouse)
         buy_button.display(mouse)

@@ -2,6 +2,7 @@ import sys
 import os
 import toml
 from gEngine import gEngine
+import tcod as libtcod
 
 class GameOptions:
     def __init__(self):
@@ -48,10 +49,23 @@ class GameOptions:
 
     def setup_key_config(self, key_options):
         keys = key_options.get(self.key_set)
+
         self.key_north = keys.get('key_north')
+        if self.key_north == "KEY_UP":
+            self.key_north = libtcod.KEY_UP
+
         self.key_east = keys.get('key_east')
+        if self.key_east == "KEY_RIGHT":
+            self.key_east = libtcod.KEY_RIGHT
+
         self.key_south = keys.get('key_south')
+        if self.key_south == "KEY_DOWN":
+            self.key_south = libtcod.KEY_DOWN
+
         self.key_west = keys.get('key_west')
+        if self.key_west == "KEY_LEFT":
+            self.key_west = libtcod.KEY_LEFT
+
         self.key_inventory = keys.get('key_inventory')
         self.key_pickup = keys.get('key_pickups')
         self.key_equip = keys.get('key_equip')
