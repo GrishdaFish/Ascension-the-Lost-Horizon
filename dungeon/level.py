@@ -1,4 +1,4 @@
-
+__author__ = 'Grishnak'
 
 class LevelHandler:
     def __init__(self, gEngine, generator, game):

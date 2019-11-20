@@ -1,32 +1,4 @@
-########################################################################################################################
-#Monster content file. All variables are manditory at the moment
-#More properties will be added later
-#
-#Will add object_type "special" for other special types.
-#These types will make stronger monsters with special stat additions,
-#abilities, weaknesses and strenghts.
-#
-#
-#Special types that are planned:
-#
-#champion
-#undead
-#mage
-#archer
-#rogue
-#swarm_leader
-#swarm_minion
-#
-#
-#UPDATE-> Monsters now have a size stat, sizes are:
-#tiny
-#small
-#normal
-#large
-#huge
-#giant
-#
-########################################################################################################################
+
 
 [[monster]]
     name = 'rat'

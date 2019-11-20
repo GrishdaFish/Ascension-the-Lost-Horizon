@@ -1,6 +1,8 @@
 __author__ = 'Grishnak'
 from copy import deepcopy
 from dungeon import dungeon
+from dungeon import prefab_dungeon
+from dungeon.prefabs import prefabs
 import tcod as libtcod
 import esper
 from game.ecs import systems
@@ -68,7 +70,9 @@ class Game:
         self.basic_dungeon = dungeon.BasicDungeon(self.dungeon_height, self.dungeon_width, min_room_size, max_room_size,
                                                   max_rooms, max_room_monsters, max_room_items,
                                                   self.gEngine)
+        self.prefab_generator = prefab_dungeon.PrefabGenerator(self.dungeon_width, self.dungeon_height, self.gEngine, self)
         self.dungeon_generators.append(self.basic_dungeon)
+        self.dungeon_generators.append(self.prefab_generator)
         self.message = messaging.Message(self.panel, self.message_height, self.message_width,
                                          self.message_x, self.gEngine)
 
@@ -91,6 +95,7 @@ class Game:
             index += 1
         self.player_action = None
         self.bark_manager = bark.BarkManager()
+        self.ambient = 0.15
 
     def activate(self):
         self.active = True
@@ -106,9 +111,7 @@ class Game:
             menus.town_menu(self.dungeon_console, 'Welcome to Town', self, self.inventory_width, self.gEngine.h,
                             self.gEngine.w)
             self.newgame = False
-        r = libtcod.random_get_int(0, 0, len(bark.player_new_level_barks)-1)
-        b = bark.Bark(self.gEngine, self.dungeon_console, self.player, 3.0, bark.player_new_level_barks[r])
-        self.bark_manager.add_bark(b)
+
 
         while not libtcod.console_is_window_closed():
             libtcod.map_compute_fov(self.fov, self.player.x, self.player.y)
@@ -219,9 +222,10 @@ class Game:
         self.setup_player()
         self.light_handler.empty()
         l = lights.LightHandler(self.gEngine)
-        level = self.basic_dungeon.make_map(game=self, light_handler=l)
-        level.depth = self.depth + 1
-        self.depth += 1
+        level = self.prefab_generator.load_level_from_string(prefabs.town, l)
+        # level = self.basic_dungeon.make_map(game=self, light_handler=l)
+        level.depth = 0
+        self.depth = 0
         level.light_handler = l
         for item in self.objects:
             level.objects.append(item)
@@ -232,7 +236,8 @@ class Game:
         self.setup_world()
         self.message.message('Welcome to %s' % self.gEngine.name)
         self.path = libtcod.path_new_using_function(self.dungeon_width, self.dungeon_height, path_callback, self)
-        self.newgame = True
+        #self.newgame = True
+        self.gEngine.lightmask_set_ambient(self.ambient)
         #self.gEngine.mMap = self.level.dungeon
 
     def new_level(self):
@@ -241,6 +246,12 @@ class Game:
         self.panel = self.gEngine.console_new(self.screen_width, self.panel_height)  # for messages and others
         self.toolbar = self.gEngine.console_new(self.screen_width, 5)  # for the hotbar
         self.hotbar.reinit_all(self.toolbar)'''
+        self.ambient -= 0.025
+        self.gEngine.lightmask_set_ambient(self.ambient)
+        if self.depth > 0:
+            r = libtcod.random_get_int(0, 0, len(bark.player_new_level_barks) - 1)
+            b = bark.Bark(self.gEngine, self.dungeon_console, self.player, 3.0, bark.player_new_level_barks[r])
+            self.bark_manager.add_bark(b)
 
         self.ticker.clear_ticker()
         self.level.objects = []

@@ -29,8 +29,7 @@ class Tile:
         tilemask = (self.blocked * 1) | (self.block_sight * 2) | (self.explored * 4) | (self.spawn_node * 8)
         ##Shift the bitmask over, incase new bools are added in front.
         ##Should keep old maps compatable
-        tilemask = tilemask | bit_mask_values[
-            self.tile] << tile_bitshift  ##gets the bit for the tile char, then shifts over
+        tilemask = tilemask | bit_mask_values[self.tile] << tile_bitshift  ##gets the bit for the tile char, then shifts over
         return tilemask
 
     def build_from_bitmask(self, bitmask):

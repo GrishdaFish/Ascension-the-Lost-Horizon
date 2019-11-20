@@ -328,7 +328,7 @@ class gEngine:
     def map_init_level(self, sizeX, sizeY):
         self.FOV = libtcod.map_new(sizeX, sizeY)
         for tile in self.mMap:
-            tile.explored = False
+            #tile.explored = False
             self.map_set_properties(tile.x, tile.y, not tile.blocked, not tile.block_sight)
 
     def map_add_tile(self, x, y, cell, blocked, block_sight, explored, spawn_node, color, opacity):
@@ -495,6 +495,9 @@ class gEngine:
             if tile.x == x and tile.y == y:
                 return tile.explored
 
+    def lightmask_set_ambient(self, ambient):
+        self.lightmask.set_ambient(ambient)
+
     def lightmask_set_size(self, w, h):
         self.lightmask.width = w
         self.lightmask.height = h
@@ -511,6 +514,9 @@ class gEngine:
 
     def lightmask_add_light(self, x, y, br):
         self.lightmask.add_light(x, y, br)
+
+    def lightmask_set_intensity(self, i):
+        self.lightmask.set_intensity(i)
 
     def lightmask_compute(self, map):
         self.lightmask.compute_mask(map)

@@ -1,27 +1,3 @@
-#//Potions, scrolls and money
-#/*
-#Spell Effect types: will add more later, case sensitive
-#none
-#explosion
-#beam
-#
-#Additional Effects:
-#none
-#burn
-#
-#
-#Spells:
-#heal
-#fireball
-#lightning
-#confusion
-#
-#Effect_colors are not implemented yet, or are spell effects,
-#ignore effect_colors for now, set them to 0,0,0.
-#Naming will change in a little bit. Names will exclude item type.
-#Instead of string name="light healing potion", the name will be
-#"light healing", upon item creation type will be added to the name.
-#*/
 
 
 
