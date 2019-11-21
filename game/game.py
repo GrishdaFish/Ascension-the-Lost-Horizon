@@ -238,6 +238,10 @@ class Game:
         self.path = libtcod.path_new_using_function(self.dungeon_width, self.dungeon_height, path_callback, self)
         #self.newgame = True
         self.gEngine.lightmask_set_ambient(self.ambient)
+        for object in self.objects:
+            if object.npc:
+                b = bark.Bark(self.gEngine, self.dungeon_console, object, 30.0, object.npc.shop_name)
+                self.bark_manager.add_bark(b)
         #self.gEngine.mMap = self.level.dungeon
 
     def new_level(self):
@@ -248,10 +252,7 @@ class Game:
         self.hotbar.reinit_all(self.toolbar)'''
         self.ambient -= 0.025
         self.gEngine.lightmask_set_ambient(self.ambient)
-        if self.depth > 0:
-            r = libtcod.random_get_int(0, 0, len(bark.player_new_level_barks) - 1)
-            b = bark.Bark(self.gEngine, self.dungeon_console, self.player, 3.0, bark.player_new_level_barks[r])
-            self.bark_manager.add_bark(b)
+
 
         self.ticker.clear_ticker()
         self.level.objects = []
@@ -263,6 +264,10 @@ class Game:
         level = self.basic_dungeon.make_map(game=self, light_handler=l)
         level.depth = self.depth + 1
         self.depth += 1
+        if self.depth > 0:
+            r = libtcod.random_get_int(0, 0, len(bark.player_new_level_barks) - 1)
+            b = bark.Bark(self.gEngine, self.dungeon_console, self.player, 3.0, bark.player_new_level_barks[r])
+            self.bark_manager.add_bark(b)
         level.light_handler = l
         self.levels.append(level)
         self.level = level
@@ -451,6 +456,8 @@ class Game:
         for object in self.objects:
             if object.fighter and object.x == x and object.y == y:
                 return object
+            if object.npc and object.x == x and object.y == y:
+                return object
         return None
 
     def player_move_or_attack(self, dx, dy, direction=None):
@@ -463,6 +470,9 @@ class Game:
 
         # attack if target found, move otherwise
         if target is not None:
+            if target.npc:
+                target.npc.activate(self.player, self)
+                return 'turn-used'
             self.player.fighter.attack(target, player=True, direction=direction, game=self)
             return 'turn-used'
         else:
@@ -552,11 +562,14 @@ class Game:
 
     def draw_objects(self):
         for object in self.objects:
+            if object.npc:
+                object.draw(self.fov, self.gEngine, force_display=True)
             if object.misc:
                 if object.misc.type == 'up' or object.misc.type == 'down':
                     # Draw stairs if they are already found
                     if self.gEngine.map_is_explored(object.x, object.y):
                         object.draw(self.fov, self.gEngine, force_display=True)
+
                 else:
                     object.draw(self.fov, self.gEngine)
             else:

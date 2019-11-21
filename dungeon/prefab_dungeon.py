@@ -4,15 +4,19 @@ from dungeon import level
 from dungeon import spawn_node
 from dungeon.prefabs import prefabs
 from dungeon.prefabs import color_sets
-
+from game.user_interface import shop
 from game.object import misc
 from game.object import object
+from game.object import npc
 from gEngine import lights
-
+from gEngine import gEngine as _gEngine
+import os
+import sys
 import tcod as libtcod
 
 width = 80
 height = 43
+
 
 
 class PrefabGenerator:
@@ -28,6 +32,12 @@ class PrefabGenerator:
     def load_level_from_string(self, l, light_handler=None, colorset='town'):
         row = l.split('\n')
         h = []
+        if _gEngine.RELEASE:
+            path = getattr(sys, "_MEIPASS", ".")
+        else:
+            path = sys.path[0]
+        path = os.path.join(path, 'content')
+        path = path.replace('core.exe', '')
 
         ground_color = color_sets.colorset_town['ground']
         wall_color = color_sets.colorset_town['wall']
@@ -68,12 +78,41 @@ class PrefabGenerator:
                     down.send_to_back(self.game.objects)
                 # check for NPC locations
                 if h[y][x] == 'W':
+                    img = os.path.join(path, 'img', 'bg-wep.png')
+                    container = []
+                    for i in range(10):  ##Need to init objects and message in object creation
+                        item = self.game.build_objects.build_equipment(self.game, 0, 0, 'melee')
+                        container.append(item)
+                    n = npc.NPC()
+                    n.attach_shop("Johan's Weaporium", img, container, shop.shop)
+                    n = object.Object(self.game.dungeon_console, x, y, '@', 'Johan', libtcod.white, blocks=True, npc=n)
+                    self.game.objects.append(n)
                     self.set_ground(x, y)
                 if h[y][x] == 'M':
+                    img = os.path.join(path, 'img', 'bg-magic.png')
+                    container = []
+                    for i in range(10):  ##Need to init objects and message in object creation
+                        item = self.game.build_objects.build_potion(self.game, 0, 0)
+                        container.append(item)
+                        item = self.game.build_objects.build_scroll(self.game, 0, 0)
+                        container.append(item)
+                    n = npc.NPC()
+                    n.attach_shop("Fizzilip's Magiteria", img, container, shop.shop)
+                    n = object.Object(self.game.dungeon_console, x, y, '@', 'Fizzilip', libtcod.white, blocks=True, npc=n)
+                    self.game.objects.append(n)
                     self.set_ground(x, y)
                 if h[y][x] == 'Q':
                     self.set_ground(x, y)
                 if h[y][x] == 'A':
+                    img = os.path.join(path, 'img', 'bg-arm.png')
+                    container = []
+                    for i in range(10):  ##Need to init objects and message in object creation
+                        item = self.game.build_objects.build_equipment(self.game, 0, 0, 'armor')
+                        container.append(item)
+                    n = npc.NPC()
+                    n.attach_shop("The Helm and Buckler", img, container, shop.shop)
+                    n = object.Object(self.game.dungeon_console, x, y, '@', 'Garrius', libtcod.white, blocks=True, npc=n)
+                    self.game.objects.append(n)
                     self.set_ground(x, y)
                 # check for light locations
                 if h[y][x] == "L":

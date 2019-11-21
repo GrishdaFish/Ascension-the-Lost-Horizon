@@ -16,7 +16,7 @@ class Object:
     it's always represented by a character on screen.'''
 
     def __init__(self, con=None, x=None, y=None, char=None, name=None, color=None,
-                 blocks=False, fighter=None, ai=None, item=None, misc=None, projectile=None):
+                 blocks=False, fighter=None, ai=None, item=None, misc=None, projectile=None, npc=None):
 
         self.con = con
         self.x = x
@@ -51,6 +51,10 @@ class Object:
         self.projectile = projectile
         if self.projectile:
             self.projectile.owner = self
+
+        self.npc = npc
+        if self.npc:
+            self.npc.owner = self
 
     def move(self, dx, dy, map, objects):
         # move by the given amount, if the destination is not blocked

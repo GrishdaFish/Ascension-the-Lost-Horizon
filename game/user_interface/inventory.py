@@ -100,11 +100,12 @@ def inventory(con, player, game, width=80, height=43):
     current_selection = 0
     master_check = CheckBox(1, 30, "Check/Uncheck All")
     while key.vk != libtcod.KEY_ESCAPE:
-        game.gEngine.console_flush()
+
         # get input just after flush
         key = libtcod.Key()
         mouse = libtcod.Mouse()
         libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+        game.gEngine.console_flush()
         exit_input = exit_button.display()
         drop_input = drop_button.display()
 
@@ -305,8 +306,8 @@ def inventory(con, player, game, width=80, height=43):
                                                    'Name    : ' + color_text(item.name.capitalize(), item.color))
                         game.gEngine.console_print(compare_window, 1, 3,
                                                    'Type    : ' + item.item.equipment.type.capitalize())
-                        damage = '%dd%d+%d' % (item.item.equipment.damage.nb_dices, item.item.equipment.damage.nb_faces,
-                                               item.item.equipment.damage.addsub)
+                        damage = '%dd%d+%d' % (item.item.equipment.damage[0], item.item.equipment.damage[1],
+                                               item.item.equipment.damage[3])
                         game.gEngine.console_print(compare_window, 1, 4, 'Damage  : ' + damage)
                         game.gEngine.console_print(compare_window, 1, 5,
                                                    'Accuracy: ' + str(item.item.equipment.accuracy))
@@ -413,7 +414,9 @@ def inventory(con, player, game, width=80, height=43):
         # ========================================================================
         # handle exit button
         # ========================================================================
-
+        key = libtcod.Key()
+        mouse = libtcod.Mouse()
+        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
         for i in exit_input:
             if i != -1:
                 key.vk = libtcod.KEY_ESCAPE
