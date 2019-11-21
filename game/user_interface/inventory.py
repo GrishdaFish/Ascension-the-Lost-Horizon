@@ -101,11 +101,9 @@ def inventory(con, player, game, width=80, height=43):
     master_check = CheckBox(1, 30, "Check/Uncheck All")
     while key.vk != libtcod.KEY_ESCAPE:
 
-        # get input just after flush
-        key = libtcod.Key()
-        mouse = libtcod.Mouse()
-        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
         game.gEngine.console_flush()
+        # get input just after flush
+
         exit_input = exit_button.display()
         drop_input = drop_button.display()
 
@@ -114,10 +112,15 @@ def inventory(con, player, game, width=80, height=43):
         game.gEngine.console_blit(equipment_window, 0, 0, width / 2, height, 0, 0, equip_y, 1.0, 1.0)
         game.gEngine.console_blit(compare_window, 0, 0, width / 2, height, 0, 0, compare_y, 1.0, 1.0)
 
-        game.gEngine.console_clear(inventory_window)
-        game.gEngine.console_clear(wielded_window)
-        game.gEngine.console_clear(equipment_window)
-        game.gEngine.console_clear(compare_window)
+        game.gEngine.console_clear_all()
+        game.gEngine.console_clear(0)
+        # game.gEngine.console_clear(inventory_window)
+        # game.gEngine.console_clear(wielded_window)
+        # game.gEngine.console_clear(equipment_window)
+        # game.gEngine.console_clear(compare_window)
+        key = libtcod.Key()
+        mouse = libtcod.Mouse()
+        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
 
         # set up draw screen
         r, g, b = libtcod.white
@@ -215,6 +218,7 @@ def inventory(con, player, game, width=80, height=43):
         # ========================================================================
         # handle mouse input
         # ========================================================================
+
         mc = master_check.update(mouse, width)
         master_check.render(inventory_window, game)
         if not mc:
@@ -262,7 +266,7 @@ def inventory(con, player, game, width=80, height=43):
                     game.gEngine.console_print(compare_window, 1, 5, 'Range : ' + str(item.item.spell.range))
                     game.gEngine.console_print(compare_window, 1, 6, 'Radius: ' + str(item.item.spell.radius))
                     game.gEngine.console_print(compare_window, 1, 7, 'Value : ' + str(item.item.value))
-                if mouse.lbutton_pressed and item.item.spell:
+                if mouse.lbutton and item.item.spell:
                     i_n = color_text(item.name.capitalize(), item.color)
                     message = 'Do you want to use %s?' % i_n
                     w = len(message) + 2
@@ -275,7 +279,7 @@ def inventory(con, player, game, width=80, height=43):
                         break
                     else:
                         d_box.destroy_box()
-                if mouse.lbutton_pressed and item.item.equipment:
+                if mouse.lbutton and item.item.equipment:
                     i_n = color_text(item.name.capitalize(), item.color)
                     message = 'Do you want to put %s on?' % i_n
                     w = len(message) + 2
@@ -326,7 +330,7 @@ def inventory(con, player, game, width=80, height=43):
                         game.gEngine.console_print(compare_window, 1, 5,
                                                    'Penalty : ' + str(item.item.equipment.penalty))
                         game.gEngine.console_print(compare_window, 1, 6, 'Value   : ' + str(item.item.value))
-            if mouse.lbutton_pressed and item is not None:
+            if mouse.lbutton and item is not None:
                 i_n = color_text(item.name.capitalize(), item.color)
                 message = 'Do you want to take %s off?' % i_n
                 w = len(message) + 2
@@ -414,9 +418,7 @@ def inventory(con, player, game, width=80, height=43):
         # ========================================================================
         # handle exit button
         # ========================================================================
-        key = libtcod.Key()
-        mouse = libtcod.Mouse()
-        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+
         for i in exit_input:
             if i != -1:
                 key.vk = libtcod.KEY_ESCAPE

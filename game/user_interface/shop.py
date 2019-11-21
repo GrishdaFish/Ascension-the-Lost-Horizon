@@ -296,7 +296,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                     game.gEngine.console_print_ex(compare_window, 1, 7, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Value : ' + str(item.item.value))
 
-                if mouse.lbutton_pressed:
+                if mouse.lbutton:
                     i_n = color_text(item.name.capitalize(), item.color)
                     price = color_text(item.item.value / 2, libtcod.gold)
                     message = 'Sell %s for %s?' % (i_n, price)
@@ -362,7 +362,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                     game.gEngine.console_print_ex(compare_window, 1, 7, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Value : ' + str(item.item.value))
 
-                if mouse.lbutton_pressed and mouse.cx >= 3:
+                if mouse.lbutton and mouse.cx >= 3:
                     if len(player.fighter.inventory) >= 26:
                         if not item.item.check_stackable():
                             message = 'Not enough inventory space!'
