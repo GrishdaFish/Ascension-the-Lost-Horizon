@@ -21,6 +21,17 @@ hit_barks = [
     "Ahh!",
     "Oof",
     "Help!",
+    "Is that all you've got?",
+    "Have at you!",
+    "Want another?!",
+    "I've got you now!",
+    "Ahh! %$#@!",
+]
+
+silly_hit_barks = [
+    "Pew!...PewPew!",
+    "He was licking me!",
+    "It's just a flesh wound!"
 ]
 
 
@@ -60,11 +71,15 @@ class BarkManager:
 
 
 class Bark:
-    def __init__(self, gEngine, console, owner, duration, message):
+    def __init__(self, gEngine, console, owner, duration, message, extend_bark=False):
         self.dead = False
         self.gEngine = gEngine
         self.owner = owner
-        self.duration = duration
+        d = 0.0
+        if extend_bark:
+            for i in range(len(message)):
+                d += 0.05
+        self.duration = duration + d
         self.message = message
         self.width = len(message)
         self.height = 1
