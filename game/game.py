@@ -217,9 +217,9 @@ class Game:
         self.world.add_processor(systems.MovementProcessor())
 
         # self.ticker.get_next_tick()
-
-    def new_game(self):
-        self.setup_player()
+    def go_to_town(self, first_visit=False):
+        self.bark_manager.empty(self.gEngine)
+        self.objects = []
         self.light_handler.empty()
         l = lights.LightHandler(self.gEngine)
         level = self.prefab_generator.load_level_from_string(prefabs.town, l)
@@ -232,16 +232,30 @@ class Game:
         self.levels.append(level)
         self.level = level
         self.fov = self.level.fov_map
+        for object in self.objects:
+            if object.npc:
+                b = bark.Bark(self.gEngine, self.dungeon_console, object, 30.0, object.npc.shop_name)
+                self.bark_manager.add_bark(b)
+        if not first_visit:
+            self.ticker.clear_ticker()
+            self.level.objects = []
+            self.ticker.schedule_turn(10, self.player)
+            for object in self.objects:
+                if object.misc:
+                    if object.misc.type == 'down':  # place the player at the down stairs on the previous level
+                        self.player.x = object.x
+                        self.player.y = object.y
+
+    def new_game(self):
+        self.setup_player()
+        self.go_to_town(True)
         self.gEngine.log_message('Map made')
         self.setup_world()
         self.message.message('Welcome to %s' % self.gEngine.name)
         self.path = libtcod.path_new_using_function(self.dungeon_width, self.dungeon_height, path_callback, self)
         #self.newgame = True
         self.gEngine.lightmask_set_ambient(self.ambient)
-        for object in self.objects:
-            if object.npc:
-                b = bark.Bark(self.gEngine, self.dungeon_console, object, 30.0, object.npc.shop_name)
-                self.bark_manager.add_bark(b)
+
         #self.gEngine.mMap = self.level.dungeon
 
     def new_level(self):
@@ -252,7 +266,7 @@ class Game:
         self.hotbar.reinit_all(self.toolbar)'''
         self.ambient -= 0.025
         self.gEngine.lightmask_set_ambient(self.ambient)
-
+        self.bark_manager.empty(self.gEngine)
 
         self.ticker.clear_ticker()
         self.level.objects = []
@@ -435,9 +449,8 @@ class Game:
                 if object.x == self.player.x and object.y == self.player.y and object.misc:
                     if object.misc.type == 'up':
                         if self.level.depth == 1:
-                            menus.town_menu(self.dungeon_console, 'Welcome to Town', self, self.inventory_width,
-                                            self.gEngine.h,
-                                            self.gEngine.w)
+                            self.go_to_town()
+
                             turn = 'turn-used'
                         else:
                             self.prev_level()

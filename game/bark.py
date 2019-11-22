@@ -53,7 +53,9 @@ class BarkManager:
             if obark == bark:
                 self.barks.remove(obark)
 
-    def empty(self):
+    def empty(self, gEngine):
+        for x in range(len(self.barks) - 1, 0, -1):
+            gEngine.console_remove_console(self.barks[x].console)
         self.barks = []
 
 
