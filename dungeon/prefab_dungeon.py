@@ -83,6 +83,7 @@ class PrefabGenerator:
                     for i in range(10):  ##Need to init objects and message in object creation
                         item = self.game.build_objects.build_equipment(self.game, 0, 0, 'melee')
                         container.append(item)
+                    container.sort(key=lambda cons: cons.name)
                     n = npc.NPC()
                     n.attach_shop("Johan's Weaporium", img, container, shop.shop)
                     n = object.Object(self.game.dungeon_console, x, y, '@', 'Johan', libtcod.white, blocks=True, npc=n)
@@ -96,6 +97,7 @@ class PrefabGenerator:
                         container.append(item)
                         item = self.game.build_objects.build_scroll(self.game, 0, 0)
                         container.append(item)
+                    container.sort(key=lambda cons: cons.name)
                     n = npc.NPC()
                     n.attach_shop("Fizzilip's Magiteria", img, container, shop.shop)
                     n = object.Object(self.game.dungeon_console, x, y, '@', 'Fizzilip', libtcod.white, blocks=True, npc=n)
@@ -109,6 +111,7 @@ class PrefabGenerator:
                     for i in range(10):  ##Need to init objects and message in object creation
                         item = self.game.build_objects.build_equipment(self.game, 0, 0, 'armor')
                         container.append(item)
+                    container.sort(key=lambda cons: cons.name)
                     n = npc.NPC()
                     n.attach_shop("The Helm and Buckler", img, container, shop.shop)
                     n = object.Object(self.game.dungeon_console, x, y, '@', 'Garrius', libtcod.white, blocks=True, npc=n)
