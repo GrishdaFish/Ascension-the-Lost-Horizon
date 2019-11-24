@@ -165,6 +165,7 @@ class Game:
                     if self.player_action == 'player-moved':
                         self.player_moved = True
 
+
                     if libtcod.console_is_window_closed():
                         self.player_action = 'exit'
 
@@ -176,7 +177,7 @@ class Game:
 
                     if self.player_action == 'turn-used' or self.player_action == 'player-moved':
                         self.ticker.schedule_turn(self.player.fighter.speed, self.player)
-
+                        self.player.torch.update(self)
 
 
                     self.render_all()
@@ -202,13 +203,19 @@ class Game:
                                     libtcod.white, blocks=True, fighter=fighter_component)
 
         self.player_hp_bar = status_bar.StatusBar(self.player.fighter, self.bar_width, libtcod.light_red,
-                                                  libtcod.darker_red,
-                                                  self.panel, type='hp', gEngine=self.gEngine)
+                                                  libtcod.darker_red, self.panel, type='hp', gEngine=self.gEngine)
+
+        self.player_torch_bar = status_bar.StatusBar(self.player.fighter, self.bar_width, libtcod.light_flame,
+                                                     libtcod.darker_flame, self.panel, type='torch', gEngine=self.gEngine)
+
         self.player_xp_bar = status_bar.StatusBar(self.player.fighter, self.bar_width, libtcod.light_grey,
-                                                  libtcod.dark_grey,
-                                                  self.panel, type='xp', gEngine=self.gEngine)
+                                                  libtcod.dark_grey, self.panel, type='xp', gEngine=self.gEngine)
 
         self.ticker.schedule_turn(10, self.player)
+
+        torch = object.Torch(self.player)
+        self.player.torch = torch
+
         #self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
         self.game_state = 'playing'
 
@@ -563,8 +570,9 @@ class Game:
         self.gEngine.lightmask_reset()
         self.level.light_handler.update()
         self.level.light_handler.render()
-        r = libtcod.random_get_float(0, -0.025, 0.025)
-        self.gEngine.lightmask_add_light(self.player.x, self.player.y, (0.65 + r))
+        # r = libtcod.random_get_float(0, -0.025, 0.025)
+        # self.gEngine.lightmask_add_light(self.player.x, self.player.y, (0.65 + r))
+        self.player.torch.render(self, self.gEngine)
         for object in self.objects:
             if object.fighter:
                 r = libtcod.random_get_float(0, -0.025, 0.025)
@@ -595,6 +603,7 @@ class Game:
         self.gEngine.console_clear(self.panel)
 
         self.player_hp_bar.render(1, 1, self.gEngine)
+        self.player_torch_bar.render(1, 2, self.gEngine)
         self.player_xp_bar.render(1, 3, self.gEngine)
 
         r, g, b = libtcod.light_gray

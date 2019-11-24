@@ -10,6 +10,7 @@ from game.object import object
 from game.object import npc
 from gEngine import lights
 from gEngine import gEngine as _gEngine
+from gEngine.utilities import xp_loader
 import os
 import sys
 import tcod as libtcod
@@ -17,7 +18,12 @@ import tcod as libtcod
 width = 80
 height = 43
 
-
+if _gEngine.RELEASE:
+    path = getattr(sys, "_MEIPASS", ".")
+else:
+    path = sys.path[0]
+path = os.path.join(path, 'content')
+path = path.replace('core.exe', '')
 
 class PrefabGenerator:
     def __init__(self, w,  h, gEngine=None, game=None):
@@ -32,13 +38,6 @@ class PrefabGenerator:
     def load_level_from_string(self, l, light_handler=None, colorset='town'):
         row = l.split('\n')
         h = []
-        if _gEngine.RELEASE:
-            path = getattr(sys, "_MEIPASS", ".")
-        else:
-            path = sys.path[0]
-        path = os.path.join(path, 'content')
-        path = path.replace('core.exe', '')
-
         ground_color = color_sets.colorset_town['ground']
         wall_color = color_sets.colorset_town['wall']
         floor_color = color_sets.colorset_town['floor']
@@ -97,6 +96,10 @@ class PrefabGenerator:
                         container.append(item)
                         item = self.game.build_objects.build_scroll(self.game, 0, 0)
                         container.append(item)
+                    for i in range(3):
+                        item = self.game.build_objects.build_light_source(self.game, 0, 0)
+                        container.append(item)
+
                     container.sort(key=lambda cons: cons.name)
                     n = npc.NPC()
                     n.attach_shop("Fizzilip's Magiteria", img, container, shop.shop)
@@ -137,6 +140,10 @@ class PrefabGenerator:
             if self.game:
                 return level.Level(self.width, self.height, self.gEngine, self.dungeon, self.game.objects,
                                    fov_map=fov_map, draw_map=mmap)
+
+    def load_room_from_xp(self, xp):
+        pass
+
     def set_draw_map(self, map):
         for y in range(self.height):
             for x in range(self.width):

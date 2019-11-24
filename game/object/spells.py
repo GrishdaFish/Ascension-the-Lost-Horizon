@@ -1,7 +1,7 @@
 import tcod as libtcod
 from gEngine import lights
 from game.object import object
-
+from game.object import item
 
 #sys.path.append(os.path.join(sys.path[0], 'utils'))
 #import utils.spell_effects as spell_effects
@@ -24,10 +24,10 @@ class Spell:
 
     def cast(self, target, player, game=None):
         if self.effect_type:
-            return self.effect_type(self.min, self.max, self.range, self.radius, self.targets, target, player, game)
+            return self.effect_type(self.min, self.max, self.range, self.radius, self.targets, target, player, game, self.effect_color)
 
 
-def heal(min, max, range, radius, targets, target, player, game):
+def heal(min, max, range, radius, targets, target, player, game, effect_color):
     # heal the player
     if target == game.player:
         if target.fighter.hp == target.fighter.max_hp:
@@ -40,7 +40,7 @@ def heal(min, max, range, radius, targets, target, player, game):
     target.fighter.heal(HEAL_AMOUNT)
 
 
-def fireball(min, max, range, radius, targets, target, player, game):
+def fireball(min, max, range, radius, targets, target, player, game, effect_color):
     # ask the player for a target tile to throw a fireball at
     game.message.message('Left-click a target tile for the fireball, or right-click to cancel.', libtcod.light_azure)
     (x, y) = target_tile(game, range, radius)
@@ -62,7 +62,7 @@ def fireball(min, max, range, radius, targets, target, player, game):
                 obj.fighter.take_damage(FIREBALL_DAMAGE, player, game)
 
 
-def lightning(min, max, range, radius, targets, target, player, game):
+def lightning(min, max, range, radius, targets, target, player, game, effect_color):
     # find closest enemy (inside a maximum range) and damage it
     monster = closest_monster(game, range)
     if monster is None:  # no enemy found within maximum range
@@ -84,7 +84,7 @@ def lightning(min, max, range, radius, targets, target, player, game):
 
 
 
-def confuse(min, max, range, radius, targets, target, player, game):
+def confuse(min, max, range, radius, targets, target, player, game, effect_color):
     # ask the player for a target to confuse
     game.message.message('Left-click an enemy to confuse it, or right-click to cancel.', libtcod.light_cyan)
     monster = target_monster(game, range)
@@ -103,9 +103,29 @@ def confuse(min, max, range, radius, targets, target, player, game):
                          libtcod.light_pink)
 
 
+def light(min, max, range, radius, targets, target, player, game, effect_color):
+    i = libtcod.random_get_float(0, min, max)
+    equip_component = item.Equipment(type='light_source', fuel=range+1, color=effect_color, intensity=i)
+    item_component = item.Item(equipment=equip_component)
+    item_component.stackable = False
+    item_component.value = int(0)
+    equip = object.Object(game.dungeon_console, 0, 0, ' ', 'magical light', effect_color, item=item_component)
+    equip.message = game.message
+    equip.objects = game.objects
+    if target == game.player:
+        game.message.message("You are surrounded by a glowing magical light!", libtcod.light_cyan)
+        if target.fighter.light_source:
+            if target.fighter.light_source.name == "magical light":
+                game.message.message("You cannot cast magical light while under the effects of another magical light!", libtcod.flame)
+                return "cancelled"
+            else:
+                target.fighter.inventory.append(target.fighter.light_source)
+        target.fighter.light_source = equip
+
 spells = {
     'heal': heal,
     'fireball': fireball,
+    'light': light,
     'lightning': lightning,
     'confusion': confuse,
     'confuse': confuse,

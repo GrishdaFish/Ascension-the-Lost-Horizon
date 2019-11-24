@@ -24,10 +24,21 @@ class StatusBar:
         if self.type == 'status':  # for status ailments or buffs like poison, stun or regen
             pass
 
+        if self.type == 'torch':
+            if self.owner.light_source:
+                self.full = self.owner.light_source.item.equipment.torch_color
+                value = int(self.owner.light_source.item.equipment.fuel)
+                maximum = int(self.owner.light_source.item.equipment.max_fuel)
+            else:
+                self.full = self.empty
+                value = 0
+                maximum = 0
+
+
         if maximum <= 0:
             maximum = 0.1
 
-        msg = self.type.capitalize() + ': ' + str(value) + '/' + str(maximum)
+        msg = self.type.capitalize() + ': ' + str(value) + '/' + str(int(maximum))
 
         if value <= 0:
             bar = int(float(self.size) / (maximum / 0.1))

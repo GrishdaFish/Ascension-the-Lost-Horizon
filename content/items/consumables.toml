@@ -95,3 +95,56 @@
     value= 75
     stackable = true
 
+[["consumable"]]
+    name="minor light"
+    cell='#'
+    type="scroll"
+    min_effect=0.5 # light value
+    max_effect=0.75
+    max_stack=3
+    effect_type="light"
+    additional_effects="None"
+    spell_effect="None"
+    effect_color=[255, 255, 255]
+    range=5 # turns of light
+    radius=0
+    max_targets=1
+    col=[155, 155, 155]
+    value= 25
+    stackable = true
+
+[["consumable"]]
+    name="light"
+    cell='#'
+    type="scroll"
+    min_effect=0.75
+    max_effect=1.0
+    max_stack=3
+    effect_type="light"
+    additional_effects="None"
+    spell_effect="None"
+    effect_color=[255, 255, 255]
+    range=10
+    radius=0
+    max_targets=1
+    col=[200, 200, 200]
+    value= 100
+    stackable = true
+
+[["consumable"]]
+    name="major light"
+    cell='#'
+    type="scroll"
+    min_effect=1.0
+    max_effect=1.25
+    max_stack=3
+    effect_type="light"
+    additional_effects="None"
+    spell_effect="None"
+    effect_color=[255, 255, 255]
+    range=20
+    radius=0
+    max_targets=1
+    col=[255, 255, 255]
+    value= 225
+    stackable = true

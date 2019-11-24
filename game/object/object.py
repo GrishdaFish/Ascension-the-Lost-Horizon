@@ -8,6 +8,7 @@ sys.path.append(sys.path[0])
 import tcod as libtcod
 from game import combat
 from game import bark
+from gEngine import lights
 
 # I might rewrite this system, the bigger the game gets, the more cumbersome this
 # system gets. :(
@@ -16,7 +17,8 @@ class Object:
     it's always represented by a character on screen.'''
 
     def __init__(self, con=None, x=None, y=None, char=None, name=None, color=None,
-                 blocks=False, fighter=None, ai=None, item=None, misc=None, projectile=None, npc=None):
+                 blocks=False, fighter=None, ai=None, item=None, misc=None, projectile=None,
+                 npc=None, torch=None):
 
         self.con = con
         self.x = x
@@ -32,6 +34,7 @@ class Object:
         self.type = None
         self.flashing = False
         self.flash_duration = 0
+
         self.fighter = fighter
         if self.fighter:
             self.fighter.owner = self
@@ -40,6 +43,7 @@ class Object:
         if self.ai:
             self.ai.owner = self
             self.ai.node = None
+
         self.item = item
         if self.item:
             self.item.owner = self
@@ -55,6 +59,10 @@ class Object:
         self.npc = npc
         if self.npc:
             self.npc.owner = self
+
+        self.torch = torch
+        if self.torch:
+            self.torch.owner = self
 
     def move(self, dx, dy, map, objects):
         # move by the given amount, if the destination is not blocked
@@ -94,6 +102,10 @@ class Object:
         else:
             objects.remove(self)
             objects.insert(0, self)
+
+    def attack_torch(self, torch):
+        self.torch = torch
+        self.torch.owner = self
 
     def draw(self, fov_map, gEngine, is_player=False, force_display=False):
         # only show if it's visible to the player
@@ -190,12 +202,14 @@ class Fighter:
         self.armor_bonus = 0
         self.armor_penalty = 0
 
+
         '''self.max_mp = 1 + (2*self.stats[2])
         mp = self.max_mp
         self.mp = mp'''
 
         self.equipment = [None, None, None, None, None, None, None, None]
 
+        self.light_source = None
         # accessories
         self.accessories = [None, None, None]
 
@@ -350,6 +364,37 @@ class Fighter:
         self.hp += amount
         if self.hp > self.max_hp:
             self.hp = self.max_hp
+
+
+class Torch:
+    def __init__(self, owner):
+        self.owner = owner
+        #self.light_source = self.owner.fighter.light_source
+
+    def render(self, game, gEngine):
+        if self.owner.fighter.light_source:
+            if self.owner.fighter.light_source.item.equipment.fuel > 0:
+                r = libtcod.random_get_float(0, -0.025, 0.025)
+                v = self.owner.fighter.light_source.item.equipment.torch_intensity + r
+                c = self.owner.fighter.light_source.item.equipment.torch_color
+                r = c[0] / 255 * v
+                g = c[1] / 255 * v
+                b = c[2] / 255 * v
+
+                gEngine.lightmask_add_light(self.owner.x, self.owner.y, (r, g, b))
+
+    def update(self, game):
+
+        if self.owner.fighter.light_source:
+            if self.owner.fighter.light_source.item.equipment.fuel > 1:
+                self.owner.fighter.light_source.item.equipment.fuel -= 1
+            else:
+                m = "%s has burned out and is discarded!"%(self.owner.fighter.light_source.name.capitalize())
+                game.message.message(m)
+                self.owner.fighter.light_source = None
+
+
+
 
 
 # x,y offsets for co-ords next to the player

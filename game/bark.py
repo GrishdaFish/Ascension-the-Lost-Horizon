@@ -47,13 +47,13 @@ class BarkManager:
             bark.draw()
 
     def update_barks(self):
-        if len(self.barks) == 1:
-            if self.barks[0].dead:
-                self.barks.pop(0)
-        else:
-            for bark in range(len(self.barks) - 1, 0, -1):
-                if self.barks[bark].dead:
-                    self.barks.pop(bark)
+        # if len(self.barks) == 1:
+        #     if self.barks[0].dead:
+        #         self.barks.pop(0)
+        # else:
+        #     for bark in range(len(self.barks) - 1, 0, -1):
+        #         if self.barks[bark].dead:
+        #             self.barks.pop(bark)
 
         for bark in self.barks:
             if not bark.dead:

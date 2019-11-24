@@ -94,7 +94,8 @@ class Equipment:
     def __init__(self, min_power=0, max_power=0, crit_bonus=0, defense=0,
                  type='', location='', best_defense_type='', worst_defense_type='',
                  handed=0, dual_wield=None, damage_type='', threat_level=0,
-                 allowed_materials=0, bonus=0, penalty=0, description='', accuracy=0, damage=None):
+                 allowed_materials=0, bonus=0, penalty=0, description='', accuracy=0, damage=None,
+                 fuel=0, color=None, intensity=0.0):
         self.min_power = min_power
         self.max_power = max_power
         self.crit_bonus = crit_bonus
@@ -113,6 +114,11 @@ class Equipment:
         self.description = description
         self.accuracy = accuracy
         self.damage = damage
+        self.torch = None
+        self.fuel = fuel
+        self.max_fuel = fuel
+        self.torch_color = color
+        self.torch_intensity = intensity
 
     def calc_damage(self):
         total_damage = 0
@@ -137,7 +143,7 @@ class Equipment:
             'shoulders': 6,
             'back': 7
         }
-
+        torch = None
         if self.type == 'armor':
             if target.fighter.equipment[locations[self.location]] is None:
                 target.fighter.equipment[locations[self.location]] = owner
@@ -205,6 +211,19 @@ class Equipment:
                         self.un_equip(target, target.fighter.wielded[1])
                     target.fighter.wielded[1] = owner
                     # self.put_on(target, 1, owner, game)
+
+        if self.type == 'light_source':
+            if target.fighter.light_source is None:
+                target.fighter.light_source = owner
+                target.fighter.inventory.remove(owner)
+                if game:
+                    game.message.message(owner.name + " equipped.", 1)
+                    return
+            else:
+                remove = target.fighter.light_source
+                self.un_equip(target, remove)
+                target.fighter.inventory.remove(owner)
+                target.fighter.light_source = owner
 
     def put_on(self, target, slot, owner, game, type='wep'):
         if type == 'wep':

@@ -27,6 +27,7 @@ class GameObjects:
         self.armor = []
         self.weapons = []
         self.monster_weapons = []
+        self.light_sources = []
         self.load_content()
         # Need to sort all of the different content
         # for the object builders
@@ -48,6 +49,7 @@ class GameObjects:
             os.path.join(path, 'content', 'items', 'monster_weapons.toml'))
         self.armor = content_parser.load_content(os.path.join(path, 'content', 'items', 'armor.toml'))
         self.weapons = content_parser.load_content(os.path.join(path, 'content', 'items', 'weapons.toml'))
+        self.light_sources = content_parser.load_content(os.path.join(path, 'content', 'items', 'light_source.toml'))
         for item in self.armor:
             self.equipment.append(item)
         for item in self.weapons:
@@ -130,6 +132,27 @@ class GameObjects:
         name = "scroll of %s" % scroll.name
         item = Object(game.dungeon_console, x, y, scroll.cell, name, scroll.color, item=item_component)
         return item
+
+    def build_light_source(self, game, x, y, name=None):
+        light = None
+        if name:
+            light = self.get_light_from_name(name)
+        else:
+            light = self.light_sources[libtcod.random_get_int(0, 0, len(self.light_sources)-1)]
+        equip_component = Equipment(type=light.type, fuel=light.max_fuel, color=light.effect_color, intensity=light.intensity)
+        item_component = Item(equipment=equip_component)
+        item_component.stackable = False
+        item_component.value = int(light.value)
+        equip = Object(game.dungeon_console, x, y, light.cell, light.name, light.color, item=item_component)
+        equip.message = game.message
+        equip.objects = game.objects
+        return equip
+
+    def get_light_from_name(self, name):
+        for light in self.light_sources:
+            if light.name == name:
+                return light
+        return None
 
     def get_pot_from_name(self, name):
         for pot in self.potions:

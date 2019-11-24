@@ -1,7 +1,18 @@
-__author__ = 'Grishnak'
-import libtcodpy as libtcod
+import base64
+from tdl import *
 
-# #################################
+##################################
+# XpLoaderPy3
+
+# This is a version of Sean 'RCIX' Hagar's XPLoader modificated by Erwan 'MalanTai' Castioni and Gawein 'Edern' Le Goff in order to run on Python 3 with TDL (though it should work with libtcodpy too if you modify the "from tdl import *" statement and the console.draw_char one), along with a few minor changes that we needed for our personal project (the ability to ignore transparent characters and to print from a certain point on the target console, rather than from (0,0))
+# XPLoader allows you to process images made with REXPaint and to display them in a libtcod/TDL console. These images must be in the .xp format.
+# This version of XPLoader is licensed under the same license as the original : the MIT license. See the LICENSE file for more information.
+
+# Also, thanks a lot to RCIX for making this very useful tool (which saved us a lot of time), and to Kyzrati (GridSageGames) for making REXPaint !"
+##################################
+
+
+##################################
 # In-memory XP format is as follows:
 # Returned structure is a dictionary with the keys version, layers, width, height, and layer_data
 ## Version is stored in case it's useful for someone, but as mentioned in the format description it probably won't be unless format changes happen
@@ -28,10 +39,8 @@ layer_fore_rgb_bytes = 3
 layer_back_rgb_bytes = 3
 layer_cell_bytes = layer_keycode_bytes + layer_fore_rgb_bytes + layer_back_rgb_bytes
 
-
-
 ##################################
-# REXPaint color key for transparent background colors. Not directly used here, but you should reference this when calling libtcod's console_set_key_color on offscreen consoles.
+# REXPaint color key for transparent background colors.
 ##################################
 
 transparent_cell_back_r = 255
@@ -39,38 +48,38 @@ transparent_cell_back_g = 0
 transparent_cell_back_b = 255
 
 ####################################################################
-# START LIBTCOD SPECIFIC CODE
+# START LIBTCOD/TDL SPECIFIC CODE
 
 ##################################
 # Used primarily internally to parse the data, feel free to reference them externally if it's useful.
 # Changing these programattically will, of course, screw up the parsing (unless the format changes and you're using an old copy of this file)
 ##################################
 
-#the solid square character
+# the solid square character
 poskey_tile_character = 219
 
-#some or all of the below may appear in libtcod's color definitions; and in fact, you can use libtcod colors as you please for position keys.
-#These are merely the colors provided in the accompanying palette.
+# some or all of the below may appear in libtcod's color definitions; and in fact, you can use libtcod colors as you please for position keys.
+# These are merely the colors provided in the accompanying palette.
 
-poskey_color_red = libtcod.Color(255, 0, 0)
-poskey_color_lightpurple = libtcod.Color(254, 0,
-                                         255)  # specifically 254 as 255, 0, 255 is considered a transparent key color in REXPaint
-poskey_color_orange = libtcod.Color(255, 128, 0)
-poskey_color_pink = libtcod.Color(255, 0, 128)
-poskey_color_green = libtcod.Color(0, 255, 0)
-poskey_color_teal = libtcod.Color(0, 255, 255)
-poskey_color_yellow = libtcod.Color(255, 255, 0)
-poskey_color_blue = libtcod.Color(0, 0, 255)
-poskey_color_lightblue = libtcod.Color(0, 128, 255)
-poskey_color_purple = libtcod.Color(128, 0, 255)
-poskey_color_white = libtcod.Color(255, 255, 255)
+poskey_color_red = (255, 0, 0)
+poskey_color_lightpurple = (
+254, 0, 255)  # specifically 254 as 255, 0, 255 is considered a transparent key color in REXPaint
+poskey_color_orange = (255, 128, 0)
+poskey_color_pink = (255, 0, 128)
+poskey_color_green = (0, 255, 0)
+poskey_color_teal = (0, 255, 255)
+poskey_color_yellow = (255, 255, 0)
+poskey_color_blue = (0, 0, 255)
+poskey_color_lightblue = (0, 128, 255)
+poskey_color_purple = (128, 0, 255)
+poskey_color_white = (255, 255, 255)
 
-##################################
-# please note - this function writes the contents of transparent cells to the provided console.
-# If you're building an offscreen console and want to use the default (or some other) color for transparency, please call libtcod's console.set_key_color(color)
-##################################
 
-def load_layer_to_console(console, xp_file_layer):
+def load_layer_to_console(console, xp_file_layer, offsetX=0, offsetY=0, drawTransparent=False):
+    # Displays a single layer on the console, therefore xp_file_layer mustn't be your .xp file's path, but instead a dictionnary corresponding to a layer's data.
+    # In order to extract the layer from a .xp file, just call load_xp_string on your unzipped (use gzip) .xp file. All of this file's layers' data will be in the returned dictionnary, under the 'layer_data' key.
+    # If you want to display mutliple layers, just call this function for each layer in 'layer_data'.
+
     if not xp_file_layer['width'] or not xp_file_layer['height']:
         raise AttributeError(
             'Attempted to call load_layer_to_console on data that didn\'t have a width or height key, check your data')
@@ -78,9 +87,12 @@ def load_layer_to_console(console, xp_file_layer):
     for x in range(xp_file_layer['width']):
         for y in range(xp_file_layer['height']):
             cell_data = xp_file_layer['cells'][x][y]
-            fore_color = libtcod.Color(cell_data['fore_r'], cell_data['fore_g'], cell_data['fore_b'])
-            back_color = libtcod.Color(cell_data['back_r'], cell_data['back_g'], cell_data['back_b'])
-            libtcod.console_put_char_ex(console, x, y, cell_data['keycode'], fore_color, back_color)
+            fore_color = (cell_data['fore_r'], cell_data['fore_g'], cell_data['fore_b'])
+            back_color = (cell_data['back_r'], cell_data['back_g'], cell_data['back_b'])
+            if back_color != (transparent_cell_back_r, transparent_cell_back_g,
+                              transparent_cell_back_b) or drawTransparent:  # If we don't perform that check we get a fully pink rectangle, that we cannot fix otherwise since TDL doesn't support set_key_color
+                console.draw_char(offsetX + x, offsetY + y, cell_data['keycode'], fore_color,
+                                  back_color)  # Replace with 'console_put_char_ex(console, offsetX + x, offsetY + y, cell_data['keycode'], fore_color, back_color)' without quotation marks if using libtcod.
 
 
 def get_position_key_xy(xp_file_layer, poskey_color):
@@ -100,8 +112,6 @@ def get_position_key_xy(xp_file_layer, poskey_color):
 
 # END LIBTCOD SPECIFIC CODE
 ####################################################################
-
-
 
 
 ##################################
@@ -124,8 +134,11 @@ def load_xp_string(file_string, reverse_endian=True):
         layer_count = layer_count[::-1]
 
     # hex-encodes the numbers then converts them to an int
-    version = int(version.encode('hex'), 16)
-    layer_count = int(layer_count.encode('hex'), 16)
+    # version = int(version.encode('hex'), 16)
+    # layer_count = int(layer_count.encode('hex'), 16)
+
+    version = int(base64.b16encode(version), 16)
+    layer_count = int(base64.b16encode(layer_count), 16)
 
     layers = []
 
@@ -133,7 +146,7 @@ def load_xp_string(file_string, reverse_endian=True):
     current_largest_height = 0
 
     for layer in range(layer_count):
-        #slight lookahead to figure out how much data to feed load_layer
+        # slight lookahead to figure out how much data to feed load_layer
 
         this_layer_width = file_string[offset:offset + layer_width_bytes]
         this_layer_height = file_string[offset + layer_width_bytes:offset + layer_width_bytes + layer_height_bytes]
@@ -142,14 +155,17 @@ def load_xp_string(file_string, reverse_endian=True):
             this_layer_width = this_layer_width[::-1]
             this_layer_height = this_layer_height[::-1]
 
-        this_layer_width = int(this_layer_width.encode('hex'), 16)
-        this_layer_height = int(this_layer_height.encode('hex'), 16)
+        # this_layer_width = int(this_layer_width.encode('hex'), 16)
+        # this_layer_height = int(this_layer_height.encode('hex'), 16)
+
+        this_layer_width = int(base64.b16encode(this_layer_width), 16)
+        this_layer_height = int(base64.b16encode(this_layer_height), 16)
 
         current_largest_width = max(current_largest_width, this_layer_width)
         current_largest_height = max(current_largest_height, this_layer_height)
 
         layer_data_size = layer_width_bytes + layer_height_bytes + (
-        layer_cell_bytes * this_layer_width * this_layer_height)
+                    layer_cell_bytes * this_layer_width * this_layer_height)
 
         layer_data_raw = file_string[offset:offset + layer_data_size]
         layer_data = parse_layer(file_string[offset:offset + layer_data_size], reverse_endian)
@@ -158,11 +174,11 @@ def load_xp_string(file_string, reverse_endian=True):
         offset += layer_data_size
 
     return {
-    'version': version,
-    'layer_count': layer_count,
-    'width': current_largest_width,
-    'height': current_largest_height,
-    'layer_data': layers
+        'version': version,
+        'layer_count': layer_count,
+        'width': current_largest_width,
+        'height': current_largest_height,
+        'layer_data': layers
     }
 
 
@@ -182,8 +198,8 @@ def parse_layer(layer_string, reverse_endian=True):
         width = width[::-1]
         height = height[::-1]
 
-    width = int(width.encode('hex'), 16)
-    height = int(height.encode('hex'), 16)
+    width = int(base64.b16encode(width), 16)
+    height = int(base64.b16encode(height), 16)
 
     cells = []
     for x in range(width):
@@ -198,9 +214,9 @@ def parse_layer(layer_string, reverse_endian=True):
         cells.append(row)
 
     return {
-    'width': width,
-    'height': height,
-    'cells': cells
+        'width': width,
+        'height': height,
+        'cells': cells
     }
 
 
@@ -214,29 +230,29 @@ def parse_individual_cell(cell_string, reverse_endian=True):
     keycode = cell_string[offset:offset + layer_keycode_bytes]
     if reverse_endian:
         keycode = keycode[::-1]
-    keycode = int(keycode.encode('hex'), 16)
+    keycode = int(base64.b16encode(keycode), 16)
     offset += layer_keycode_bytes
 
-    fore_r = int(cell_string[offset:offset + 1].encode('hex'), 16)
+    fore_r = int(base64.b16encode(cell_string[offset:offset + 1]), 16)
     offset += 1
-    fore_g = int(cell_string[offset:offset + 1].encode('hex'), 16)
+    fore_g = int(base64.b16encode(cell_string[offset:offset + 1]), 16)
     offset += 1
-    fore_b = int(cell_string[offset:offset + 1].encode('hex'), 16)
+    fore_b = int(base64.b16encode(cell_string[offset:offset + 1]), 16)
     offset += 1
 
-    back_r = int(cell_string[offset:offset + 1].encode('hex'), 16)
+    back_r = int(base64.b16encode(cell_string[offset:offset + 1]), 16)
     offset += 1
-    back_g = int(cell_string[offset:offset + 1].encode('hex'), 16)
+    back_g = int(base64.b16encode(cell_string[offset:offset + 1]), 16)
     offset += 1
-    back_b = int(cell_string[offset:offset + 1].encode('hex'), 16)
+    back_b = int(base64.b16encode(cell_string[offset:offset + 1]), 16)
     offset += 1
 
     return {
-    'keycode': keycode,
-    'fore_r': fore_r,
-    'fore_g': fore_g,
-    'fore_b': fore_b,
-    'back_r': back_r,
-    'back_g': back_g,
-    'back_b': back_b,
+        'keycode': keycode,
+        'fore_r': fore_r,
+        'fore_g': fore_g,
+        'fore_b': fore_b,
+        'back_r': back_r,
+        'back_g': back_g,
+        'back_b': back_b,
     }

@@ -20,7 +20,8 @@ def load_content(path):
         return load_weapon(content.get('weapon'))
     if content.get('material'):
         return load_material(content.get('material'))
-
+    if content.get('light_source'):
+        return load_light_sources(content.get('light_source'))
 
 def load_monsters(content):
     monster_array = []
@@ -164,6 +165,34 @@ def load_material(content):
         mat.append(m)
     return mat
 
+
+def load_light_sources(content):
+    lights = []
+    for light in content:
+        l = LightSource()
+        l.name = light.get('name')
+        l.cell = light.get('cell')
+        l.max_fuel = light.get('max_fuel')
+        c = light.get('color')
+        l.color = libtcod.Color(c[0], c[1], c[2])
+        c = light.get('effect_color')
+        l.effect_color = libtcod.Color(c[0], c[1], c[2])
+        l.value = light.get('value')
+        l.intensity = light.get('intensity')
+        lights.append(l)
+    return lights
+
+
+class LightSource:
+    def __init__(self):
+        self.name = ""
+        self.cell = ''
+        self.max_fuel = 0
+        self.color = None
+        self.effect_color = None
+        self.value = None
+        self.intensity = 0.0
+        self.type = "light_source"
 
 class Consumable:
     def __init__(self):
