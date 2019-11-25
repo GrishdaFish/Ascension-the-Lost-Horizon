@@ -46,7 +46,7 @@ class MainMenu:
             self.gEngine.console_set_default_foreground(0, r, g, b)
             self.gEngine.console_print(0, int(self.gEngine.SCREEN_WIDTH / 2 - 13),
                                        int(self.gEngine.SCREEN_HEIGHT / 2 - 10),
-                                       'By GrishdaFish and SentientDeth')
+                                       'By Critical Miss Studios')
 
             libtcod.console_credits_render(2, self.gEngine.SCREEN_HEIGHT - 2, True)
             self.gEngine.console_set_default_background(0, 0, 0, 0)

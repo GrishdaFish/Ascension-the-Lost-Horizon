@@ -20,6 +20,8 @@ from game.user_interface import inventory
 from game.user_interface import character
 from game.user_interface import menus
 from game import ranged_combat
+from game import input_handler
+from game import render
 # todo externalize this data
 dungeon_height = 55
 dungeon_width = 80
@@ -149,7 +151,7 @@ class Game:
                     mouse = libtcod.Mouse()
                     libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
 
-                    self.player_action = self.handle_keys(key)
+                    self.player_action = input_handler.handle_keys(key, self)#self.handle_keys(key)
                     if mouse.lbutton_pressed:
                         #intensity = 1.0 # libtcod.random_get_float(0, 1.0, 1.5)
                         #l = lights.Light(mouse.cx, mouse.cy, self.light_handler, flicker=True, decay=0.005)
@@ -180,7 +182,7 @@ class Game:
                         self.player.torch.update(self)
 
 
-                    self.render_all()
+                    render.render_all(self)# self.render_all()
                     self.gEngine.console_flush()
                 #if self.player_action == 'turn-used' or self.player_action == 'player-moved':
                 #    self.ticker.schedule_turn(self.player.fighter.speed, self.player)
@@ -324,154 +326,6 @@ class Game:
         # self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
         self.game_state = 'playing'
 
-    def handle_keys(self, key):
-        turn = self.handle_misc(key)
-        if turn == 'exit':
-            return turn
-        turn = 'didnt-take-turn'
-
-        if self.game_state == 'playing':
-            turn = self.handle_movement(key)
-            turn = self.handle_pickup(key, turn)
-            turn = self.handle_character(key, turn)
-            turn = self.handle_inventory(key, turn)
-            turn = self.handle_drop(key, turn)
-            turn = self.handle_stairs(key, turn)
-            return turn
-        return turn
-
-    def get_move_direction(self, key):
-        move_keys = {self.keys.key_north: (0, -1),
-                     self.keys.key_south: (0, 1),
-                     self.keys.key_east: (1, 0),
-                     self.keys.key_west: (-1, 0),
-                     }
-        px, py = move_keys[key]
-        direction = ""
-        if key == self.keys.key_north:
-            direction = "north"
-        if key == self.keys.key_south:
-            direction = "south"
-        if key == self.keys.key_east:
-            direction = "east"
-        if key == self.keys.key_west:
-            direction = "west"
-        return px, py, direction
-
-    def handle_movement(self, key):
-        move_keys = {self.keys.key_north: (0, -1),
-                     self.keys.key_south: (0, 1),
-                     self.keys.key_east: (1, 0),
-                     self.keys.key_west: (-1, 0),
-                     }
-        if key.vk in move_keys:
-            px, py, d = self.get_move_direction(key.vk)
-            return self.player_move_or_attack(px, py, d)
-
-        # for char based keys, 'w','a','s','d', etc..
-        elif chr(key.c) in move_keys:
-            px, py, d = self.get_move_direction(chr(key.c))
-            return self.player_move_or_attack(px, py, d)
-
-        return 'didnt-take-turn'
-
-    def handle_pickup(self, key, turn):
-        if key.c is ord(self.keys.key_pickup):
-            for object in self.objects:
-                if object.x == self.player.x and object.y == self.player.y and object.item:
-                    object.item.pick_up(self.player.fighter.inventory, self)
-                    turn = 'turn-used'
-        return turn
-
-    def handle_character(self, key, turn):
-        if key.c is ord(self.keys.key_character):
-            character.character_info(0, self.screen_width, self.screen_height, self)
-        return turn
-
-    def handle_inventory(self, key, turn):
-        if key.c is ord(self.keys.key_inventory):
-            # show the inventory; if an item is selected, use it
-            chosen_item = inventory.inventory(self.dungeon_console, self.player, self)
-
-            if chosen_item is not None:
-                chosen_item.item.use(self.player.fighter.inventory, self.player, self)
-                turn = 'turn-used'
-        return turn
-
-    def handle_drop(self, key, turn):
-        if key.c is ord(self.keys.key_drop):
-            chosen_item = inventory.inventory(self.dungeon_console, self.player, self)
-            if chosen_item is not None:
-                if chosen_item in self.player.fighter.inventory:
-                    chosen_item.objects = self.objects
-                    chosen_item.item.drop(self.player.fighter.inventory, self.player)
-                    chosen_item.send_to_back()
-                turn = 'turn-used'
-        return turn
-
-    def handle_misc(self, key):
-        turn = None
-        if key.vk == libtcod.KEY_ENTER and key.lalt:
-            # Alt+Enter: toggle fullscreen
-            libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
-            turn = None
-
-        if key.c is ord('`') or key.c is ord('~'):
-            # self.console.run_console()
-            turn = None
-
-        if key.vk == libtcod.KEY_ESCAPE:
-            turn = self.handle_quit()
-
-        # if key.vk == libtcod.KEY_SPACE:
-        #     for item in self.objects:
-        #         if item.misc:
-        #             if item.misc.type == 'down':
-        #                 self.player.x = item.x
-        #                 self.player.y = item.y
-        return turn
-
-    def handle_quit(self, key):
-        #return 'quit'
-        if key.vk == libtcod.KEY_ESCAPE:
-           message = 'Return to main menu?'
-           w = len(message) * 2
-           d_box = dialog_box.DialogBox(self, w, 10, 20, 20, message, type='option', con=self.dungeon_console)
-           first = True
-           while 1:
-               confirm = d_box.display_box()
-               if confirm == 1:
-                   d_box.destroy_box()
-                   return 'quit'  # exit game
-               elif confirm == 0:
-                   if first:
-                       first = False
-                   else:
-                       d_box.destroy_box()
-                       return 'didnt-take-turn'
-
-    def handle_stairs(self, key, turn):
-        if key.text == '<':
-            for object in self.objects:
-                if object.x == self.player.x and object.y == self.player.y and object.misc:
-                    if object.misc.type == 'up':
-                        if self.level.depth == 1:
-                            self.go_to_town()
-
-                            turn = 'turn-used'
-                        else:
-                            self.prev_level()
-
-                            turn = 'turn-used'
-
-        if key.text == '>':
-            for object in self.objects:
-                if object.x == self.player.x and object.y == self.player.y and object.misc:
-                    if object.misc.type == 'down':
-                        self.new_level()
-                        turn = 'turn-used'
-        return turn
-
     def check_for_target(self, x, y):
         for object in self.objects:
             if object.fighter and object.x == x and object.y == y:
@@ -479,26 +333,6 @@ class Game:
             if object.npc and object.x == x and object.y == y:
                 return object
         return None
-
-    def player_move_or_attack(self, dx, dy, direction=None):
-        # the coordinates the player is moving to/attacking
-        x = self.player.x + dx
-        y = self.player.y + dy
-
-        # try to find an attackable object there
-        target = self.check_for_target(x, y)
-
-        # attack if target found, move otherwise
-        if target is not None:
-            if target.npc:
-                target.npc.activate(self.player, self)
-                return 'turn-used'
-            self.player.fighter.attack(target, player=True, direction=direction, game=self)
-            return 'turn-used'
-        else:
-            self.player.move(dx, dy, self.level.dungeon, self.objects)
-            self.fov_recompute = True
-            return 'player-moved'
 
     def player_death(self, player):
         # the game ended!
@@ -541,84 +375,6 @@ class Game:
                     msg += names
                     msg += menu.color_text(' here.', libtcod.white)
                 self.message.message(msg, 0)
-
-    def render_all(self):  # break this up to render ui and other elements separately
-        self.gEngine.console_clear(self.dungeon_console)
-        if self.fov_recompute:
-            self.fov_recompute = False
-            libtcod.map_compute_fov(self.fov, self.player.x, self.player.y)
-        self.update_lighting()
-
-        #self.gEngine.map_draw_fast(self.dungeon_console, self.player.x, self.player.y)
-        self.gEngine.map_draw(self.dungeon_console, self.player.x, self.player.y)
-
-        self.draw_objects()
-
-        # self.world.process()
-
-        self.draw_user_interface()
-
-        self.get_names_under_player()
-
-        self.message.flush_messages()
-
-        self.bark_manager.render_barks()
-
-        self.render_consoles()
-
-    def update_lighting(self):
-        self.gEngine.lightmask_reset()
-        self.level.light_handler.update()
-        self.level.light_handler.render()
-        # r = libtcod.random_get_float(0, -0.025, 0.025)
-        # self.gEngine.lightmask_add_light(self.player.x, self.player.y, (0.65 + r))
-        self.player.torch.render(self, self.gEngine)
-        for object in self.objects:
-            if object.fighter:
-                r = libtcod.random_get_float(0, -0.025, 0.025)
-                self.gEngine.lightmask_add_light(object.x, object.y, (0.4 + r))
-
-        self.gEngine.particle_update(self.level.dungeon)
-        self.gEngine.lightmask_compute(self.level.dungeon)
-
-    def draw_objects(self):
-        for object in self.objects:
-            if object.npc:
-                object.draw(self.fov, self.gEngine, force_display=True)
-            if object.misc:
-                if object.misc.type == 'up' or object.misc.type == 'down':
-                    # Draw stairs if they are already found
-                    if self.gEngine.map_is_explored(object.x, object.y):
-                        object.draw(self.fov, self.gEngine, force_display=True)
-
-                else:
-                    object.draw(self.fov, self.gEngine)
-            else:
-                object.draw(self.fov, self.gEngine)
-        self.player.draw(self.fov, self.gEngine)
-
-    def draw_user_interface(self):
-        r, g, b = libtcod.black
-        self.gEngine.console_set_default_background(self.panel, r, g, b)
-        self.gEngine.console_clear(self.panel)
-
-        self.player_hp_bar.render(1, 1, self.gEngine)
-        self.player_torch_bar.render(1, 2, self.gEngine)
-        self.player_xp_bar.render(1, 3, self.gEngine)
-
-        r, g, b = libtcod.light_gray
-        self.gEngine.console_set_default_foreground(self.panel, r, g, b)
-        self.gEngine.console_set_alignment(self.panel, libtcod.LEFT)
-        self.gEngine.console_set_default_background(0, r, g, b)
-        self.gEngine.console_print(self.panel, 1, 5, "(%dfps) Depth: %d" % (libtcod.sys_get_fps(), self.level.depth))
-        self.gEngine.console_print(self.panel, 1, 0, self.get_names_under_mouse())
-
-    def render_consoles(self):
-        self.hotbar.render()
-
-        self.gEngine.console_blit(self.dungeon_console, 0, 0, 0, 0, 0, 0, 0, 1.0, 1.0)
-        self.gEngine.console_blit(self.toolbar, 0, 0, self.gEngine.w, 5, 0, 0, self.panel_y - 5, 1.0, 1.0)
-        self.gEngine.console_blit(self.panel, 0, 0, self.screen_width, self.panel_height, 0, 0, self.panel_y, 1.0, 1.0)
 
 
 def path_callback(xFrom, yFrom, xTo, yTo, userData):
