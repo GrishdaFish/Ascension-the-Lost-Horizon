@@ -3,6 +3,7 @@ from gEngine.utilities.user_interface.button import *
 from gEngine.utilities.user_interface.check_box import *
 from gEngine.utilities.user_interface.menu import *
 from gEngine.utilities.user_interface.dialog_box import *
+from gEngine.utilities.user_interface.tab import *
 import tcod as libtcod
 
 
@@ -102,6 +103,9 @@ def inventory(con, player, game, width=80, height=43):
     libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
     current_selection = 0
     master_check = CheckBox(1, 30, "Check/Uncheck All")
+
+    #inventory_tab = Tab(parent=inventory, label="Inv.", x_pos=1, y_pos=1, game=game)
+
     while key.vk != libtcod.KEY_ESCAPE:
 
         game.gEngine.console_flush()
@@ -109,7 +113,7 @@ def inventory(con, player, game, width=80, height=43):
 
         exit_input = exit_button.display()
         drop_input = drop_button.display()
-
+        inventory_tab.display()
         game.gEngine.console_blit(inventory_window, 0, 0, width / 2, height, 0, (width / 2), 0, 1.0, 1.0)
         game.gEngine.console_blit(wielded_window, 0, 0, width / 2, height, 0, 0, 0, 1.0, 1.0)
         game.gEngine.console_blit(equipment_window, 0, 0, width / 2, height, 0, 0, equip_y, 1.0, 1.0)

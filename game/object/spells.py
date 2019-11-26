@@ -2,7 +2,7 @@ import tcod as libtcod
 from gEngine import lights
 from game.object import object
 from game.object import item
-
+from game import render
 #sys.path.append(os.path.join(sys.path[0], 'utils'))
 #import utils.spell_effects as spell_effects
 
@@ -166,7 +166,7 @@ def target_tile(game, max_range=None, radius=None):
     # return the position of a tile left-clicked in player's FOV (optionally in a range), or (None,None) if right-clicked.
     while True:
         # render the screen. this erases the inventory and shows the names of objects under the mouse.
-        game.render_all()
+        render.render_all(game)
         libtcod.console_flush()
 
         key = libtcod.Key()

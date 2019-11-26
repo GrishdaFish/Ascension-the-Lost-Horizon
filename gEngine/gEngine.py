@@ -6,7 +6,6 @@
 # TODO: remove r, g, b from method calls and accept  tcod color, then grab r, g, b in the engine to simply calls
 
 
-
 import imp
 import tcod as libtcod
 import logging
@@ -53,7 +52,6 @@ class Tile:
         self.opacity = opacity
 
 
-
 class gEngine:
     def __init__(self):
         self.engine_options = config.EngineConfig()
@@ -86,21 +84,12 @@ class gEngine:
         self.color_tile_wall = libtcod.Color(177, 177, 177)
         self.color_tile_ground = libtcod.Color(190, 190, 190)
 
-        self.map_image = self.image_new(self.w, self.h)
-        self.subcell_map_image = self.image_new(self.w * 2, self.h * 2)
-
-        self.light_map = self.image_new(self.w, self.h)
-        self.subcell_light_map = self.image_new(self.w * 2, self.h * 2)
-
         self.light_sources = []
         self.noise = libtcod.noise_new(1, libtcod.NOISE_SIMPLEX)
 
         self.lightmask = light_mask.LightMask(self.w, 48)
 
         self.particles = []
-
-        #self.state = input.State()
-        #self.init_root()
         self.modules = []
 
         self.key = libtcod.Key()
@@ -108,16 +97,25 @@ class gEngine:
         self.root = None
         self.logger = logging.log_manager()
 
+        self.console_id_counter = 0
+        self.image_id_counter = 0
+        self.image_dict = {}
+        self.console_dict = {}
+        self.map_image = self.image_new(self.w, self.h)
+        self.subcell_map_image = self.image_new(self.w * 2, self.h * 2)
+        self.light_map = self.image_new(self.w, self.h)
+        self.subcell_light_map = self.image_new(self.w * 2, self.h * 2)
+
     def run(self):
         is_closed = None
         while not is_closed:
             is_closed = libtcod.console_is_window_closed()
-            #self.console_clear_all()
+            # self.console_clear_all()
             libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, k=self.key, m=self.mouse)
             for module in self.modules:
                 if module.active is True:
                     is_closed = module.run(self.key, self.mouse)
-            #self.render_all()
+            # self.render_all()
 
     def render_all(self):
         self.console_flush()
@@ -141,145 +139,104 @@ class gEngine:
     def logger_set_level(self, level='debug'):
         pass
 
-    def init_root(self):
+    def init_root(self):  # Root's id will ALWAYS be 0.
         self.root = libtcod.console_init_root(self.w, self.h, self.name, self.fs, renderer=libtcod.RENDERER_OPENGL2)
         libtcod.sys_set_fps(self.fps)
+        self.console_dict[self.console_id_counter] = self.root
+        self.console_id_counter += 1
 
     def console_set_key_color(self, con, r, g, b):
         col = libtcod.Color(r, g, b)
-        if con == 0:
-            libtcod.console_set_key_color(con, col)
-        else:
-            libtcod.console_set_key_color(self.mConsole[con - 1], col)
+        libtcod.console_set_key_color(self.console_dict[con], col)
 
-    #@staticmethod
+    # @staticmethod
     def console_set_custom_font(self, font_file, flags=libtcod.FONT_LAYOUT_ASCII_INCOL, h=0, v=0):
         font_file = font_file.replace('core.exe', '')
         libtcod.console_set_custom_font(font_file, flags, h, v)
 
     def console_new(self, width, height):
-        self.mConsole.append(libtcod.console.Console(int(width), int(height)))
-        return len(self.mConsole)  # return the index instead of the object to allow lower level implementation
+        self.console_dict[self.console_id_counter] = libtcod.console.Console(int(width), int(height))
+        c = self.console_id_counter
+        self.console_id_counter += 1
+        return c
 
     def console_flush(self):
         libtcod.console_flush()
 
     def console_clear_all(self):
-        self.root.clear()
-        for con in self.mConsole:
+        for con in self.console_dict:
             con.clear()
 
     def console_clear(self, con):
-        if con == 0:
-            self.root.clear(con)
-        else:
-            #libtcod.console.clear(self.mConsole[con - 1])
-            self.mConsole[con - 1].clear()
+        self.console_dict[con].clear()
 
     def console_remove_console(self, con):
-        if con > 1:  # so we dont try to delete root, or index oob error
-            self.console_clear(con - 1)
-            c = self.mConsole.pop(con - 1)
+        if con > 1:  # so we dont try to delete root
+            c = self.console_dict.pop(con)
             libtcod.console_delete(c)
 
     def console_remove_all(self):
         self.mConsole = []
+        self.console_dict = {}
+        self.console_id_counter = 0
+        self.console_dict[self.console_id_counter] = self.root
+        self.console_id_counter += 1
 
     def console_get_height_rect(self, con, x, y, width, height, fmt):
-        if con == 0:
-            return libtcod.console_get_height_rect(con, x, y, width, height, fmt)
-        else:
-            return libtcod.console_get_height_rect(self.mConsole[con - 1], x, y, width, height, fmt)
+        return libtcod.console_get_height_rect(self.console_dict[con], x, y, width, height, fmt)
 
     def console_set_default_foreground(self, con, r, g, b):
         col = libtcod.Color(r, g, b)
-        if con == 0:
-            libtcod.console_set_default_foreground(self.root, col)
-        else:
-            libtcod.console_set_default_foreground(self.mConsole[con - 1], col)
+        libtcod.console_set_default_foreground(self.console_dict[con], col)
 
     def console_set_default_background(self, con, r, g, b):
         col = libtcod.Color(r, g, b)
-        if con == 0:
-            libtcod.console_set_default_background(con, col)
-        else:
-            libtcod.console_set_default_background(self.mConsole[con - 1], col)
+        libtcod.console_set_default_background(self.console_dict[con], col)
 
     def console_print_frame(self, con, x, y, width, height, clear):
-        if con == 0:
-            libtcod.console_print_frame(self.root, int(x), int(y), int(width), int(height), clear)
-        else:
-            libtcod.console_print_frame(self.mConsole[con - 1], int(x), int(y), int(width), int(height), clear)
+        libtcod.console_print_frame(self.console_dict[con], int(x), int(y), int(width), int(height), clear)
 
     def console_print_rect(self, con, x, y, width, height, fmt):
-        if con == 0:
-            libtcod.console_print_rect(con, int(x), int(y), int(width), int(height), fmt)
-        else:
-            libtcod.console_print_rect(self.mConsole[con - 1], int(x), int(y), int(width), int(height), fmt)
+        libtcod.console_print_rect(self.console_dict[con], int(x), int(y), int(width), int(height), fmt)
 
     def console_blit(self, conSrc, xSrc, ySrc, wSrc, hSrc, conDest, xDest, yDest, foreAlph=1.0, backAlph=1.0):
-        dest = None
-
-        src = self.mConsole[conSrc - 1]
+        src = self.console_dict[conSrc]
         if conDest == 0:
             dest = self.root
         else:
-            dest = self.mConsole[conDest - 1]
-        #libtcod.console_blit(src, xSrc, ySrc, wSrc, hSrc, dest, xDest, yDest, foreAlph, backAlph)
+            dest = self.console_dict[conDest]
         src.blit(dest, int(xDest), int(yDest), int(xSrc), int(ySrc), int(wSrc), int(hSrc), foreAlph, backAlph)
 
     def console_put_char_ex(self, con, x, y, c, cr, cg, cb, br, bg, bb):
         fore = libtcod.Color(cr, cg, cb)
         back = libtcod.Color(br, bg, bb)
-        if con == 0:
-            libtcod.console_put_char_ex(con, x, y, c, fore, back)
-        else:
-            libtcod.console_put_char_ex(self.mConsole[con - 1], x, y, c, fore, back)
+        libtcod.console_put_char_ex(self.console_dict[con], x, y, c, fore, back)
 
     def console_set_char(self, con, x, y, c):
-        if con == 0:
-            libtcod.console_set_char(con, x, y, c)
-        else:
-            libtcod.console_set_char(self.mConsole[con - 1], x, y, c)
+        libtcod.console_set_char(self.console_dict[con], x, y, c)
 
-    def console_set_alignment(self, con, align): # Depreciated. Requires refactor then removal
-        if con == 0:
-            libtcod.console_set_alignment(con, align)
-        else:
-            libtcod.console_set_alignment(self.mConsole[con - 1], align)
+    def console_set_alignment(self, con, align):  # Depreciated. Requires refactor then removal
+        libtcod.console_set_alignment(self.console_dict[con], align)
 
     def console_print(self, con, x, y, fmt):
-        if con == 0:
-            libtcod.console_print(con, x, y, fmt)
-        else:
-            libtcod.console_print(self.mConsole[con - 1], int(x), int(y), fmt)
+        libtcod.console_print(self.console_dict[con], int(x), int(y), fmt)
 
     def console_print_ex(self, con, x, y, flag, alignment, fmt):
-        if con == 0:
-            libtcod.console_print_ex(con, x, y, flag, alignment, fmt)
-        else:
-            libtcod.console_print_ex(self.mConsole[con - 1], x, y, flag, alignment, fmt)
+        libtcod.console_print_ex(self.console_dict[con], x, y, flag, alignment, fmt)
 
     def console_get_char_background(self, con, x, y):
-        if con == 0:
-            col = libtcod.console_get_char_background(0, x, y)
-            return libtcod.color_get_hsv(col)
-        else:
-            col = libtcod.console_get_char_background(self.mConsole[con - 1], x, y)
-            return libtcod.color_get_hsv(col)
+        col = libtcod.console_get_char_background(self.console_dict[con], x, y)
+        return libtcod.color_get_hsv(col)
 
     def console_get_char_foreground(self, con, x, y):
-        if con == 0:
-            col = libtcod.console_get_char_foreground(0, x, y)
-            return col
-        else:
-            col = libtcod.console_get_char_foreground(self.mConsole[con - 1], x, y)
-            return col
+        col = libtcod.console_get_char_foreground(self.console_dict[con], x, y)
+        return col
 
     def image_new(self, x, y):
-        img = libtcod.image.Image(x, y)
-        self.mImages.append(img)
-        return len(self.mImages)
+        self.image_dict[self.image_id_counter] = libtcod.image.Image(x, y)
+        c = self.image_id_counter
+        self.image_id_counter += 1
+        return c
 
     def image_load(self, path):
         img = libtcod.image_load(path)
@@ -288,47 +245,43 @@ class gEngine:
         for xx in range(x):
             for yy in range(y):
                 img2.put_pixel(xx, yy, img.get_pixel(xx, yy))
-        self.mImages.append(img2)
-        return len(self.mImages)
+        self.image_dict[self.image_id_counter] = img2
+        c = self.image_id_counter
+        self.image_id_counter += 1
+        return c
 
     def image_delete(self, img):
-        i = self.mImages.pop(img - 1)
+        self.image_dict.pop(img)
 
     def image_clear(self, i, r, g, b):
         col = libtcod.Color(r, g, b)
-        self.mImages[i - 1].clear(col)
+        self.image_dict[i].clear(col)
 
     def image_put_pixel(self, i, x, y, r, g, b):
         col = libtcod.Color(r, g, b)
-        self.mImages[i - 1].put_pixel( x, y, col)
+        self.image_dict[i].put_pixel(x, y, col)
 
     def image_get_size(self, i):
-        w = self.mImages[i - 1].width
-        h = self.mImages[i - 1].height
+        w = self.image_dict[i].width
+        h = self.image_dict[i].height
         return w, h
 
     def image_get_pixel(self, i, x, y):
-        return self.mImages[i - 1].get_pixel(x, y)
+        return self.image_dict[i].get_pixel(x, y)
 
     def image_blit(self, i, c, x, y, w=-1, h=-1):
-        if c == 0 or c == self.root:
-            self.mImages[i - 1].blit(self.root, float(x), float(y), libtcod.BKGND_SET, 1.0, 1.0, 0)
-        else:
-            self.mImages[i - 1].blit(self.mConsole[c - 1], float(x), float(y), libtcod.BKGND_SET, 1.0, 1.0, 0)
+        self.image_dict[i].blit(self.console_dict[c], float(x), float(y), libtcod.BKGND_SET, 1.0, 1.0, 0)
 
     def image_blit_2x(self, i, c, x, y, sx=0, sy=0, w=-1, h=-1):
-        if c == 0:
-            self.mImages[i - 1].blit_2x(self.root, x, y, sx, sy, w, h)
-        else:
-            self.mImages[i - 1].blit_2x(self.mConsole[c - 1], x, y, sx, sy, w, h)
+        self.image_dict[i].blit_2x(self.console_dict[c], x, y, sx, sy, w, h)
 
     def image_replace(self, image, replacement):
-        self.mImages[image - 1] = replacement
+        self.image_dict[image] = replacement
 
     def map_init_level(self, sizeX, sizeY):
         self.FOV = libtcod.map_new(sizeX, sizeY)
         for tile in self.mMap:
-            #tile.explored = False
+            # tile.explored = False
             self.map_set_properties(tile.x, tile.y, not tile.blocked, not tile.block_sight)
 
     def map_add_tile(self, x, y, cell, blocked, block_sight, explored, spawn_node, color, opacity):
@@ -353,8 +306,8 @@ class gEngine:
     def get_map(self):
         return self.mMap
 
-    def get_map_tile(self,x, y):
-        return self.mMap[x+y*self.w]
+    def get_map_tile(self, x, y):
+        return self.mMap[x + y * self.w]
 
     def set_map(self, mMap):
         self.mMap = mMap
@@ -385,7 +338,7 @@ class gEngine:
             self.console_clear(con)
             self.image_blit_2x(self.subcell_map_image, con, 0, 0)
 
-    def clamp_float(self, f, l=1 ):
+    def clamp_float(self, f, l=1):
         return f - f % 1e-2
 
     def map_get_final_color(self, x, y):
@@ -413,7 +366,7 @@ class gEngine:
         return int(r), int(g), int(b)
 
     def map_draw_fast(self, con, xx, yy):
-        #self.image_clear(self.map_image, 0, 0, 0)
+        # self.image_clear(self.map_image, 0, 0, 0)
 
         if con == 0:
             con = self.root
@@ -422,9 +375,6 @@ class gEngine:
         arr = new_img_array.transpose(1, 0, 2)
         self.image_replace(self.map_image, libtcod.image.Image.from_array(arr))
         self.image_blit(self.map_image, con, self.w / 2, self.h / 2 - 4)
-
-
-
 
     def map_draw(self, con, x=0, y=0, run_fov=True):
         self.image_clear(self.map_image, 0, 0, 0)
@@ -461,7 +411,7 @@ class gEngine:
         if con == 0:
             pass
         else:
-            #libtcod.map_compute_fov(self.FOV, x, y, 5, True, libtcod.FOV_SHADOW)
+            # libtcod.map_compute_fov(self.FOV, x, y, 5, True, libtcod.FOV_SHADOW)
             cx = game.player.x - (game.Map.MAP_WIDTH / 2)
             cy = game.player.y - (game.Map.MAP_HEIGHT / 2)
             minx, miny = game.Map.MAP_WIDTH, game.Map.MAP_HEIGHT
@@ -544,11 +494,10 @@ class gEngine:
             self.particles[p].update(self.lightmask, map)
             if self.particles[p].dead:
                 self.particles.pop(p)
+
     def particle_draw(self, con, c='*'):
         for p in self.particles:
             self.console_put_char_ex(con, int(p.x), int(p.y), c, 255, 255, 255, 0, 0, 0)
 
-
-
-    #def msgbox(text, width=50, con=None, SCREEN_HEIGHT=50, SCREEN_WIDTH=80):
+    # def msgbox(text, width=50, con=None, SCREEN_HEIGHT=50, SCREEN_WIDTH=80):
     #    menu(con, text, [], width, SCREEN_HEIGHT, SCREEN_WIDTH)  # use menu() as a sort of "message box"
