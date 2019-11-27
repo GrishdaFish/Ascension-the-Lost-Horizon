@@ -25,6 +25,7 @@ else:
 path = os.path.join(path, 'content')
 path = path.replace('core.exe', '')
 
+
 class PrefabGenerator:
     def __init__(self, w,  h, gEngine=None, game=None):
         self.game = game
@@ -34,6 +35,40 @@ class PrefabGenerator:
         self.dungeon = [[tile.Tile(True)
                          for y in range(self.height)]
                         for x in range(self.width)]
+        self.room_holder = []
+
+        self.load_prefab_rooms()
+
+    def load_prefab_rooms(self):
+        p = os.path.join(path, 'prefabs', 'prefab_rooms.txt')
+        f = open(p)
+        m = f.readlines()
+        f.close()
+        num_rooms = int(m.pop(0))  # pull the number of rooms out of the array and keep it
+        room_size = 0
+        offset = 0  # loop offset to find the length of the next room
+        room_offset = 0  # offset for the start of the next room
+        for i in range(num_rooms):
+            room = []
+            new_offset = int(m[i + offset])  # first, find the room size
+            room_offset += 1  # offset past the number of room sizes, acts a sort of shift in the file
+            for ii in range(room_offset, new_offset + room_offset):
+                room.append(m[ii + offset].strip('\n'))
+            offset = int(m[i + offset])  # change our offset to the next room's height value
+
+            #convert array of strings, to 2d array to match layout
+            h = []  # height array
+            room_width = 0
+            for r in room:
+                w = []  # width array
+                for c in r:
+                    w.append(c)
+                if len(w) > room_width:
+                    room_width = len(w)  # find our widest room dimension
+                h.append(w)
+            room_height = len(h) # and get the height of our entire room
+            self.room_holder.append((h, room_width, room_height))  # add a tuple with the room, plus it dimensions
+
 
     def load_level_from_string(self, l, light_handler=None, colorset='town'):
         row = l.split('\n')

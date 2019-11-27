@@ -133,7 +133,7 @@ def handle_quit(key, game, turn):
             confirm = d_box.display_box()
             if confirm == 1:
                 d_box.destroy_box()
-                return 'quit'  # exit game
+                return 'exit'  # exit game
             elif confirm == 0:
                 if first:
                     first = False

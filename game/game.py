@@ -18,6 +18,7 @@ from game.object import build_objects
 from game.object import object
 from game.user_interface import inventory
 from game.user_interface import character
+from game import main_menu
 from game.user_interface import menus
 from game import ranged_combat
 from game import input_handler
@@ -105,6 +106,9 @@ class Game:
     def deactivate(self):
         self.active = False
 
+    def on_exit(self):
+        self.deactivate()
+
     def run(self, key, mouse):
         #close = self.handle_keys(key)
         #if close is True:
@@ -116,6 +120,7 @@ class Game:
 
 
         while not libtcod.console_is_window_closed():
+
             libtcod.map_compute_fov(self.fov, self.player.x, self.player.y)
 
             #self.render_all()
@@ -152,6 +157,13 @@ class Game:
                     libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
 
                     self.player_action = input_handler.handle_keys(key, self)#self.handle_keys(key)
+                    if self.player_action == 'exit' or libtcod.console_is_window_closed():
+                        # self.logger.log.info('Exiting and saving game..')
+                        self.gEngine.remove_module((self))
+                        m = main_menu.MainMenu(self.gEngine)
+                        self.gEngine.add_module(m)
+                        # self.save_game()
+                        return
                     if mouse.lbutton_pressed:
                         #intensity = 1.0 # libtcod.random_get_float(0, 1.0, 1.5)
                         #l = lights.Light(mouse.cx, mouse.cy, self.light_handler, flicker=True, decay=0.005)
@@ -187,10 +199,7 @@ class Game:
                 #if self.player_action == 'turn-used' or self.player_action == 'player-moved':
                 #    self.ticker.schedule_turn(self.player.fighter.speed, self.player)
 
-            if self.player_action == 'exit' or libtcod.console_is_window_closed():
-                # self.logger.log.info('Exiting and saving game..')
-                # self.save_game()
-                return True
+
 
             # fast forward until the next object gets its turn
             self.ticker.get_next_tick()

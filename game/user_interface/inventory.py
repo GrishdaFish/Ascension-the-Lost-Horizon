@@ -113,7 +113,7 @@ def inventory(con, player, game, width=80, height=43):
 
         exit_input = exit_button.display()
         drop_input = drop_button.display()
-        inventory_tab.display()
+        #inventory_tab.display()
         game.gEngine.console_blit(inventory_window, 0, 0, width / 2, height, 0, (width / 2), 0, 1.0, 1.0)
         game.gEngine.console_blit(wielded_window, 0, 0, width / 2, height, 0, 0, 0, 1.0, 1.0)
         game.gEngine.console_blit(equipment_window, 0, 0, width / 2, height, 0, 0, equip_y, 1.0, 1.0)
