@@ -4,6 +4,8 @@ import math
 import copy
 import logging
 
+from game.status_effects.stat_panel import StatPanel
+
 sys.path.append(sys.path[0])
 import tcod as libtcod
 from game import combat
@@ -216,6 +218,9 @@ class Fighter:
         # weapons/shield
         self.wielded = [None, None]
         self.skills = copy.deepcopy(combat.skill_list)  # skill list needs to have its own copies
+
+        # damage, resistance, effects and conditions
+        self.stat_panel = StatPanel()
 
     def level_up(self):
         self.xp_to_next_level, sp = combat.next_level(self.level)
