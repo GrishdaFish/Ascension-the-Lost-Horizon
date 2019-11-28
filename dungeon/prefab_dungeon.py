@@ -49,6 +49,7 @@ class PrefabGenerator:
 
     def load_prefab_rooms(self):
         """
+        TODO: Put these into a rect class like in dungeon, and add a doors position for later use
         Loads all of the prefab rooms from /content/prefabs/prefab_rooms for later use
         :return:
         """
@@ -66,7 +67,7 @@ class PrefabGenerator:
             room_offset += 1  # offset past the number of room sizes, acts a sort of shift in the file
             for ii in range(room_offset, new_offset + room_offset):
                 room.append(m[ii + offset].strip('\n'))
-            offset = int(m[i + offset])  # change our offset to the next room's height value
+            offset = offset + int(m[i + offset])  # change our offset to the next room's height value
 
             #convert array of strings, to 2d array to match layout
             h = []  # height array
@@ -83,29 +84,40 @@ class PrefabGenerator:
 
     def add_prefab_room(self, map, width, height, first=False):
         """
+        Todo: after rect is implemented, pick from list of rooms randomly rather than a random tile
+            should give a faster and better way of drawing hallways
+            would be able to draw from door to door, then always draw doorways
         :param map: The map array to be worked on
         :param width: The width of the map
         :param height: The Height of the map
         :param first: Is this the first room generated on the map?
-        :return: the worked on map
+        :return: the worked on map, or False if no room was placed
         """
+        backup = deepcopy(map)
         r = libtcod.random_get_int(0, 0, len(self.room_holder)-1)
         new_room = self.room_holder[r]  # grab a random room from the  list of rooms
         new_room_tiles = new_room[0]  # pull out relevant data
         new_room_width = new_room[1]
         new_room_height = new_room[2]
+        center_x = int(new_room_width / 2)
+        center_y = int(new_room_height / 2)
+        room_x = 0
+        room_y = 0
+        doors = []  # to hold the positions of where we can make door and draw hallways from
         trys = 8  # limit the number of trys so we don't waste too much time trying to place a room in a crowded map
+        failed = False
+        print("Finding room placement")
         while trys > 0:
             # pick random room co-ords clamped to map dimensions, from room centerpoint
-            room_x = libtcod.random_get_int(0, int(new_room_width + 1), int(width - new_room_width / 2 - 1))
-            room_y = libtcod.random_get_int(0, int(new_room_height + 1), int(height - new_room_height / 2 - 1))
+            room_x = libtcod.random_get_int(0, int(new_room_width + 1), int(width - center_x - 1))
+            room_y = libtcod.random_get_int(0, int(new_room_height + 1), int(height - center_y - 1))
             failed = False
 
             # check to see if placing this room here would overlap another room or hallway
-            for y in range(room_y - int(new_room_height / 2), room_y + int(new_room_height / 2)):
+            for y in range(room_y - center_y-1, room_y + center_y+1):  # extend boundaries by 1 to leave a gap
                 if failed:
-                    break
-                for x in range(room_x - int(new_room_width / 2), room_x + int(new_room_width / 2)):
+                    break  # as soon as we find a failure, break out of the loop to speed things along
+                for x in range(room_x - center_x-1, room_x + center_x+1):
                     if not map[x][y].blocked:  # if we find one, we fail this try
                         failed = True
                         break
@@ -113,14 +125,79 @@ class PrefabGenerator:
                 trys -= 1
             else:  # if we find an open area large enough for this room, dig it o ut
                 # loop through the room array
-                for x in range(new_room_width-1):
-                    for y in range(new_room_height-1):
-                        if new_room_tiles[y][x] == '.':
+                for x in range(new_room_width):
+                    for y in range(new_room_height):
+                        if new_room_tiles[y][x] == 'd':
+                            doors.append((x + room_x - center_x, y + room_y - center_y))
+                        elif new_room_tiles[y][x] == '.':
                             # then place the room at the proper offsets from the center of the room
-                            self.set_ground(x+room_x - int(new_room_width/2), y+room_y - int(new_room_height/2), map)
-                break
+                            self.set_ground(x + room_x - center_x, y + room_y - center_y, map)
+                break  # break out of the loop if we draw a room to not waste time
+
+        if trys == 0 and failed:  # if we ran out of trys and was unable to place a room
+            print("Failed to place room")
+            return False  # room was unable to fit
+
         if not first:  # don't try to draw a hallway if this is the first room placed.
-            pass  # draw hallways to the nearest connected room from a randomly chosen door
+            print("Room placed, generating tunnel")
+            pmap = libtcod.map_new(width, height)  # create a new map for path finding to draw our new hallways
+            # draw hallways to the nearest connected room from a randomly chosen door
+            r = libtcod.random_get_int(0, 0, len(doors)-1)
+            doorway = doors[r]
+            self.set_ground(doorway[0], doorway[1])
+            libtcod.map_set_properties(pmap, doorway[0], doorway[1], True, True)
+            # set the walkable area to the entire map, except for the new room
+            print("setting map settings for pathing...")
+            for y in range(height):
+                for x in range(width):
+                    if x > (room_x - center_x - 1) and x < (room_x + center_x + 1):
+                        if y > (room_y - center_y - 1) and y < (room_y + center_y + 1):
+                            # new room tiles are set as unwalkable so we don't path through the new room
+                            libtcod.map_set_properties(pmap, x, y, False, False)
+                        else:  # everything else is fair game
+                            libtcod.map_set_properties(pmap, x, y, True, True)  # visible and walkable
+                    else:
+                        libtcod.map_set_properties(pmap, x, y, True, True)
+
+            wpath = libtcod.path_new_using_map(pmap, 0)  # we set the diagonal cost to 0 to avoid using diags for halls
+            found_dest = False
+            dest = ()
+            new_dest_x = None
+            new_dest_y = None
+            trys = 1000
+            print("Trying to find path from room to another area...")
+            while not found_dest:  # loop until we find a proper destination for our hallway
+                if trys <= 0:
+                    found_dest = False
+                    break
+                dest_x = libtcod.random_get_int(0, 0, width-1)
+                dest_y = libtcod.random_get_int(0, 0, height-1)
+                if not map[dest_x][dest_y].blocked:
+                    new_dest_x = dest_x
+                    new_dest_y = dest_y
+                    # make sure that the hallway doesnt try to connect to the new room
+                    if new_dest_x < (room_x - center_x-1) or new_dest_x > (room_x + center_x +1):
+                        if new_dest_y < (room_y - center_y-1) or new_dest_y > (room_y + center_y+1):
+                            dest = (new_dest_x, new_dest_y)
+                            if libtcod.path_compute(wpath, doorway[0], doorway[1], dest[0], dest[1]):
+                                found_dest = True
+                                break
+                trys -= 1
+                print("Trys: " + str(trys))
+            if not found_dest and trys <= 0:
+                print("Too many tries, aboring!")
+                return backup
+            # loop through the path to create the hallway to the target room
+            libtcod.path_compute(wpath, doorway[0], doorway[1], dest[0], dest[1])
+            print("Walking path....")
+            for i in range(libtcod.path_size(wpath)):
+                x, y = libtcod.path_get(wpath, i)
+                if not map[x][y].blocked:  # if we find our next step is a walkable tile, stop the hallway
+                    print("Ran into another blank space, ending pathing!")
+                    self.set_ground(x, y, map)
+                    break
+                self.set_ground(x, y, map)
+        print("Room addition completed!")
         return map
 
     def level_from_prefabs(self):
