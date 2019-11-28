@@ -1,3 +1,4 @@
+__author__ = 'GrishdaFish'
 import gEngine.gEngine as gngine
 import os
 import sys

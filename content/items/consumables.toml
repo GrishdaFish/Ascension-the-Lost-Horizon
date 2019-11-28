@@ -106,7 +106,7 @@
     additional_effects="None"
     spell_effect="None"
     effect_color=[255, 255, 255]
-    range=5 # turns of light
+    range=50 # turns of light
     radius=0
     max_targets=1
     col=[155, 155, 155]
@@ -124,7 +124,7 @@
     additional_effects="None"
     spell_effect="None"
     effect_color=[255, 255, 255]
-    range=10
+    range=100
     radius=0
     max_targets=1
     col=[200, 200, 200]
@@ -142,7 +142,7 @@
     additional_effects="None"
     spell_effect="None"
     effect_color=[255, 255, 255]
-    range=20
+    range=200
     radius=0
     max_targets=1
     col=[255, 255, 255]

@@ -2,6 +2,7 @@
   <dictionary name="Grishnak">
     <words>
       <w>dijikstra</w>
+      <w>grishda</w>
       <w>libtcod</w>
       <w>lightmask</w>
       <w>newgame</w>

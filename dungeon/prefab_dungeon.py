@@ -1,4 +1,4 @@
-__author__ = 'Grishnak'
+__author__ = 'GrishdaFish'
 from dungeon import tile
 from dungeon import level
 from dungeon import spawn_node
@@ -14,7 +14,8 @@ from gEngine.utilities import xp_loader
 import os
 import sys
 import tcod as libtcod
-
+from copy import deepcopy
+import time
 width = 80
 height = 43
 
@@ -27,6 +28,13 @@ path = path.replace('core.exe', '')
 
 
 class PrefabGenerator:
+    """
+    Prefabricated map generator. Can be used as a standaone and build an entire level out of prefab rooms,
+    can be used to generate a single prefabricated room in a map being  generated elsewhere,
+    can load an entire level from a string.
+
+    Will power scripted levels when scripting becomes available.
+    """
     def __init__(self, w,  h, gEngine=None, game=None):
         self.game = game
         self.gEngine = gEngine
@@ -40,6 +48,10 @@ class PrefabGenerator:
         self.load_prefab_rooms()
 
     def load_prefab_rooms(self):
+        """
+        Loads all of the prefab rooms from /content/prefabs/prefab_rooms for later use
+        :return:
+        """
         p = os.path.join(path, 'prefabs', 'prefab_rooms.txt')
         f = open(p)
         m = f.readlines()
@@ -69,35 +81,115 @@ class PrefabGenerator:
             room_height = len(h) # and get the height of our entire room
             self.room_holder.append((h, room_width, room_height))  # add a tuple with the room, plus it dimensions
 
+    def add_prefab_room(self, map, width, height, first=False):
+        """
+        :param map: The map array to be worked on
+        :param width: The width of the map
+        :param height: The Height of the map
+        :param first: Is this the first room generated on the map?
+        :return: the worked on map
+        """
+        r = libtcod.random_get_int(0, 0, len(self.room_holder)-1)
+        new_room = self.room_holder[r]  # grab a random room from the  list of rooms
+        new_room_tiles = new_room[0]  # pull out relevant data
+        new_room_width = new_room[1]
+        new_room_height = new_room[2]
+        trys = 8  # limit the number of trys so we don't waste too much time trying to place a room in a crowded map
+        while trys > 0:
+            # pick random room co-ords clamped to map dimensions, from room centerpoint
+            room_x = libtcod.random_get_int(0, int(new_room_width + 1), int(width - new_room_width / 2 - 1))
+            room_y = libtcod.random_get_int(0, int(new_room_height + 1), int(height - new_room_height / 2 - 1))
+            failed = False
+
+            # check to see if placing this room here would overlap another room or hallway
+            for y in range(room_y - int(new_room_height / 2), room_y + int(new_room_height / 2)):
+                if failed:
+                    break
+                for x in range(room_x - int(new_room_width / 2), room_x + int(new_room_width / 2)):
+                    if not map[x][y].blocked:  # if we find one, we fail this try
+                        failed = True
+                        break
+            if failed:
+                trys -= 1
+            else:  # if we find an open area large enough for this room, dig it o ut
+                # loop through the room array
+                for x in range(new_room_width-1):
+                    for y in range(new_room_height-1):
+                        if new_room_tiles[y][x] == '.':
+                            # then place the room at the proper offsets from the center of the room
+                            self.set_ground(x+room_x - int(new_room_width/2), y+room_y - int(new_room_height/2), map)
+                break
+        if not first:  # don't try to draw a hallway if this is the first room placed.
+            pass  # draw hallways to the nearest connected room from a randomly chosen door
+        return map
+
+    def level_from_prefabs(self):
+        pass
 
     def load_level_from_string(self, l, light_handler=None, colorset='town'):
+        """
+        Loads an entire level from a supplied string
+        :param l: The level in string format to be loaded
+        :param light_handler: the main light handler to place the levels pre placed lights
+        :param colorset: the colorset to be used for this level, Defaults to town
+        :return: Level() class with all relevant data populated for use
+        TODO: When scripting is enabled, change the hardcoded values for floor, walls, npc, etc.. to script values
+        """
         row = l.split('\n')
         h = []
-        ground_color = color_sets.colorset_town['ground']
-        wall_color = color_sets.colorset_town['wall']
+        ground_color = [libtcod.desaturated_green]  # color_sets.colorset_town['ground']
+        wall_color = [libtcod.light_grey]  # color_sets.colorset_town['wall']
         floor_color = color_sets.colorset_town['floor']
+        noise = libtcod.noise_new(2)
+        noise_zoom = 7.5
+        noise_octaves = 1.9
         #print(cs)
         for r in row:
             w = []
             for c in r:
                 w.append(c)
             h.append(w)
-
+        dx, dy = 0, 0
         for y in range(self.height):
             for x in range(self.width):
                 if colorset == 'town':
                     self.dungeon[x][y].explored = True
                 if h[y][x] == ' ':
+                    dx *= 1.25
+                    dy *= 1.25
+                    f = [noise_zoom * x / self.width + dx,
+                         noise_zoom * y / self.width + dy]
+                    value = libtcod.noise_get_fbm(noise, f, noise_octaves, libtcod.NOISE_PERLIN)
+                    if value < 0:
+                        value = -value
                     self.set_ground(x, y)
                     r = libtcod.random_get_int(0, 0, len(ground_color)-1)
-                    self.dungeon[x][y].color = ground_color[r]
+                    r = deepcopy(ground_color[r])
+                    # print(r)
+                    r[0] += max(0, min(255, (r[0]*value)))
+                    r[1] += max(0, min(255, (r[1]*value)))
+                    r[2] += max(0, min(255, (r[2]*value)))
+                    # print(r)
+                    self.dungeon[x][y].color = r
                 if h[y][x] == 'f':
                     self.set_ground(x, y)
                     r = libtcod.random_get_int(0, 0, len(floor_color)-1)
                     self.dungeon[x][y].color = floor_color[r]
                 if h[y][x] == '#':
+                    dx *= (dx * dx)
+                    dy *= (dx * dx)
+                    f = [-(noise_zoom * -x / self.width + dx),
+                         (noise_zoom * -y / self.width + dy)]
+                    value = libtcod.noise_get_fbm(noise, f, noise_octaves, libtcod.NOISE_PERLIN)
+                    if value < 0:
+                        value = -value
+
                     r = libtcod.random_get_int(0, 0, len(wall_color) - 1)
-                    self.dungeon[x][y].color = wall_color[r]
+                    r = deepcopy(wall_color[r])
+                    r[0] += max(0, min(255, (r[0] * value)))
+                    r[1] += max(0, min(255, (r[1] * value)))
+                    r[2] += max(0, min(255, (r[2] * value)))
+                    self.dungeon[x][y].color = r
 
                 # check for doors
                 # check for stairs
@@ -167,6 +259,7 @@ class PrefabGenerator:
                     self.set_ground(x, y)
                     self.game.player.x = x
                     self.game.player.y = y
+        # populate the level class with mandatory data
         if self.gEngine:
             self.gEngine.map_clear()
             self.set_draw_map(self.dungeon)
@@ -177,9 +270,19 @@ class PrefabGenerator:
                                    fov_map=fov_map, draw_map=mmap)
 
     def load_room_from_xp(self, xp):
+        """
+        Loads a room from a RexPaint xp file
+        :param xp: the xp file to load
+        :return:
+        """
         pass
 
     def set_draw_map(self, map):
+        """
+        Loads the generated map into the engine, and set light map opacity values, then inits the level FoV
+        :param map: The map to be loaded into the engine
+        :return: Nothing
+        """
         for y in range(self.height):
             for x in range(self.width):
                 c = map[x][y]
@@ -188,16 +291,25 @@ class PrefabGenerator:
                                           c.opacity)
         self.gEngine.map_init_level(self.width, self.height)
 
-    def set_ground(self, x, y):
+    def set_ground(self, x, y, map=None):
+        """
+        Sets the current tile to default walkable state
+        :param x: X position of the tile
+        :param y: Y position of the tile
+        :param map: If supplied, the map to pull the  tile from, otherwise uses the class's dungeon
+        :return: Nothing
+        """
         x = int(x)
         y = int(y)
-        self.dungeon[x][y].blocked = False
-        self.dungeon[x][y].block_sight = False
-        self.dungeon[x][y].tile = ' '#ground_tiles[libtcod.random_get_int(0, 0, (len(ground_tiles) - 1))]
-        self.dungeon[x][y].opacity = 0.0
-        self.dungeon[x][y].color = libtcod.Color(125, 125, 125)
-
-if __name__ == "__main__":
-    import tile
-    p = PrefabGenerator()
-    p.load_level_from_string(town)
+        if not map:
+            self.dungeon[x][y].blocked = False
+            self.dungeon[x][y].block_sight = False
+            self.dungeon[x][y].tile = ' '#ground_tiles[libtcod.random_get_int(0, 0, (len(ground_tiles) - 1))]
+            self.dungeon[x][y].opacity = 0.0
+            self.dungeon[x][y].color = libtcod.Color(125, 125, 125)
+        else:
+            map[x][y].blocked = False
+            map[x][y].block_sight = False
+            map[x][y].tile = ' '  # ground_tiles[libtcod.random_get_int(0, 0, (len(ground_tiles) - 1))]
+            map[x][y].opacity = 0.0
+            map[x][y].color = libtcod.Color(125, 125, 125)

@@ -1,6 +1,7 @@
 __author__ = 'Grishnak'
 import tcod as libtcod
 from dungeon import dungeon
+from dungeon import prefab_dungeon
 from gEngine.utilities.dijikstra_map import *
 from copy import deepcopy
 
@@ -31,15 +32,30 @@ class FleeingAi:
             return self.x, self.y
         else:
             return None, None
-
-
+class Level:
+    def __init__(self):
+        self.dungeon = None
+        self.MAP_WIDTH = 0
+        self.MAP_HEIGHT = 0
+        self.fov_map = None
 
 class DevMode:
     def __init__(self, gEngine):
         self.gEngine = gEngine
         self.con = self.gEngine.console_new(self.gEngine.w, 48)
-        self.dungeon_gen = dungeon.BasicDungeon(48, self.gEngine.w, 10, 15, 15, 0, 0, self.gEngine)
-        self.level = self.dungeon_gen.make_map()
+        # self.dungeon_gen = dungeon.BasicDungeon(48, self.gEngine.w, 10, 15, 15, 0, 0, self.gEngine)
+        self.dungeon_gen = prefab_dungeon.PrefabGenerator(self.gEngine.w, 48, self.gEngine)
+        #self.level = self.dungeon_gen.make_map()
+        self.level = Level()
+        self.level.dungeon = self.dungeon_gen.dungeon
+        self.level.MAP_HEIGHT = 48
+        self.level.MAP_WIDTH = self.gEngine.w
+
+        self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
+        self.dungeon_gen.set_draw_map(self.level.dungeon)
+
+        self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
+        self.level.fov_map = self.gEngine.get_fov_map()
         self.print_d_map = False
         self.active = True
         self.d = DijikstraMap(self.gEngine, self.gEngine.w, 48)
@@ -48,8 +64,12 @@ class DevMode:
         self.m = None
         self.cx, self.cy = 0, 0
         self.v_map = None
-        self.gEngine.mMap = self.level.dungeon
-
+        #self.gEngine.mMap = self.level.dungeon
+        self.first = True
+        self.level.dungeon = self.dungeon_gen.add_prefab_room(self.level.dungeon,
+                                                              self.dungeon_gen.width,
+                                                              self.dungeon_gen.height,
+                                                              self.first)
     def run(self, key, mouse):
         while not libtcod.console_is_window_closed():
             self.gEngine.console_clear_all()
@@ -62,8 +82,8 @@ class DevMode:
             self.testing(key, mouse)
 
             self.gEngine.lightmask_compute(self.level.dungeon)
-            #self.gEngine.map_draw(self.con, mouse.cx, mouse.cy)
-            self.gEngine.map_draw_fast(self.con, mouse.cx, mouse.cy)
+            self.gEngine.map_draw(self.con, mouse.cx, mouse.cy, run_fov=False)
+            #self.gEngine.map_draw_fast(self.con, mouse.cx, mouse.cy)
 
             self.gEngine.console_blit(self.con, 0, 0, 0, 0, 0, 0, 0, 1.0, 1.0)
             self.gEngine.console_flush()
@@ -75,11 +95,17 @@ class DevMode:
         self.gEngine.console_print(self.con, 1, 5, "(%dfps) Depth: %d" % (libtcod.sys_get_fps(), 1))
         if mouse.cx < self.level.MAP_WIDTH and mouse.cy < self.level.MAP_HEIGHT:
             self.gEngine.lightmask.add_light(mouse.cx, mouse.cy, 1.0)
-        fr, fg, fb = libtcod.black
-        br, bg, bb = libtcod.grey
 
         if key.vk == libtcod.KEY_SPACE:
-            self.print_d_map = not self.print_d_map
+            self.gEngine.map_clear()
+            self.level.dungeon = self.dungeon_gen.add_prefab_room(self.level.dungeon,
+                                                                  self.dungeon_gen.width,
+                                                                  self.dungeon_gen.height,
+                                                                  self.first)
+            print(self.level.dungeon)
+            self.dungeon_gen.set_draw_map(self.level.dungeon)
+            self.level.fov_map = self.gEngine.get_fov_map()
+            self.first = False
 
         if mouse.lbutton_pressed:
             self.d.add_point(mouse.cx, mouse.cy, 0)
@@ -101,28 +127,3 @@ class DevMode:
             x, y = self.m.calculate_move(self.d.map)
             if x:
                 self.cx, self.cy = x, y
-        if self.print_d_map:
-            for x in range(self.gEngine.w):
-                for y in range(48):
-                    h, s, v = self.gEngine.console_get_char_background(self.con, int(x), int(y))
-
-                    if 36 > self.v_map[x][y] >= 0:
-                        col = self.visualize_colors[self.v_map[x][y]]
-                    else:
-                        if not self.gEngine.mMap[x +y * self.gEngine.w].blocked:
-                            col = libtcod.grey
-                        else:
-                            col = libtcod.dark_grey
-                        #libtcod.color_set_hsv(col, h, s, v)
-                    br, bg, bb = col
-                    self.gEngine.mMap[x +y * self.gEngine.w].color = col
-                    c = ' '
-                    c = self.v_map[x][y]
-
-                    if 9 >= c >= 0:
-                        c = ord(str(c))
-                    else:
-                        c = ' '
-                    self.gEngine.console_put_char_ex(self.con, x, y, c, fr, fg, fb, br, bg, bb)
-        fr, fg, fb = libtcod.black
-        self.gEngine.console_put_char_ex(self.con, self.cx, self.cy, 'x', fr, fg, fb, br, bg, bb)

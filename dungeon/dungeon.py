@@ -1,3 +1,4 @@
+__author__ = 'GrishdaFish'
 '''import sys, os
 import math
 
@@ -201,8 +202,9 @@ class BasicDungeon:
 
                 # add some contents to this room, such as monsters
                 if not empty:
-                    self.place_light(new_room, rand, game, light_handler)
-                    self.place_objects(new_room, game, rand)
+                    if game:
+                        self.place_light(new_room, rand, game, light_handler)
+                        self.place_objects(new_room, game, rand)
 
                 # center coordinates of new room, will be useful later
                 (new_x, new_y) = new_room.center()
