@@ -32,12 +32,16 @@ class FleeingAi:
             return self.x, self.y
         else:
             return None, None
+
+
 class Level:
     def __init__(self):
         self.dungeon = None
         self.MAP_WIDTH = 0
         self.MAP_HEIGHT = 0
         self.fov_map = None
+        self.rooms = None
+
 
 class DevMode:
     def __init__(self, gEngine):
@@ -65,10 +69,11 @@ class DevMode:
         self.cx, self.cy = 0, 0
         self.v_map = None
         #self.gEngine.mMap = self.level.dungeon
-        self.level.dungeon = self.dungeon_gen.add_prefab_room(self.level.dungeon,
+        self.level.dungeon, self.level.rooms = self.dungeon_gen.add_prefab_room(self.level.dungeon,
                                                               self.dungeon_gen.width,
                                                               self.dungeon_gen.height,
-                                                              True)
+                                                              True,
+                                                              self.level.rooms)
         self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
         self.dungeon_gen.set_draw_map(self.level.dungeon)
 
@@ -103,11 +108,12 @@ class DevMode:
 
         if key.vk == libtcod.KEY_SPACE:
             self.gEngine.map_clear()
-            d = self.dungeon_gen.add_prefab_room(self.level.dungeon,
+            d, r = self.dungeon_gen.add_prefab_room(self.level.dungeon,
                                                                   self.dungeon_gen.width,
-                                                                  self.dungeon_gen.height, False)
+                                                                  self.dungeon_gen.height, False, self.level.rooms)
             if d:
                 self.level.dungeon = d
+                self.level.rooms = r
             self.dungeon_gen.set_draw_map(self.level.dungeon)
             self.level.fov_map = self.gEngine.get_fov_map()
 
