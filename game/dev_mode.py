@@ -115,7 +115,7 @@ class DevMode:
                                                     False,
                                                     self.level.rooms,
                                                     False,
-                                                    100)
+                                                    50)
             if d:
                 self.level.dungeon = d
                 self.level.rooms = r

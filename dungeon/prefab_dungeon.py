@@ -206,16 +206,21 @@ class PrefabGenerator:
             print('Pathing complete')
 
             r = libtcod.random_get_int(0, 0, 100)
-            if r >= connect_to_closest:
+            if r <= connect_to_closest:
+                origin_doors = []
+                dest_doors = []
                 print("Generating secondary connection...")
                 origin_room = rooms[len(rooms)-1]
                 distance = 100000000
                 dest_room = None
                 for room in rooms:
                     new_distance = self.room_distance_to(origin_room, room)
-                    if new_distance < distance:
-                        distance = new_distance
-                        dest_room = room
+                    #print(new_distance)
+                    if new_distance != 0.0:
+                        if new_distance < distance:
+                            distance = new_distance
+                            dest_room = room
+                    print(distance)
                 origin_doors = origin_room.doors
                 dest_doors = dest_room.doors
                 distance = 100000
@@ -224,10 +229,18 @@ class PrefabGenerator:
                 for odoor in origin_doors:
                     for ddoor in dest_doors:
                         new_distance = self.door_distance_to(odoor, ddoor)
+                        #print(new_distance)
                         if new_distance < distance:
                             origin_door = odoor  # hodor????
                             dest_door = ddoor
                             distance = new_distance
+
+                self.set_ground(origin_door[0], origin_door[1], map)
+                libtcod.map_set_properties(pmap, origin_door[0], origin_door[1], True, True)
+                self.set_ground(dest_door[0], dest_door[1], map)
+                libtcod.map_set_properties(pmap, dest_door[0], dest_door[1], True, True)
+
+                wpath = libtcod.path_new_using_map(pmap, 0)
                 libtcod.path_compute(wpath, origin_door[0], origin_door[1], dest_door[0], dest_door[1])
                 print("Walking secondary path....")
                 for i in range(libtcod.path_size(wpath)):
