@@ -84,14 +84,15 @@ class PrefabGenerator:
             room_height = len(h) # and get the height of our entire room
             self.room_holder.append((h, room_width, room_height))  # add a tuple with the room, plus it dimensions
 
-    def add_prefab_room(self, map, width, height, first=False, rooms=None):
+    def add_prefab_room(self, map, width, height, first=False, rooms=None, connect_to_home=False, connect_to_closest=0):
         """
-
         :param map: The map array to be worked on
         :param width: The width of the map
         :param height: The Height of the map
         :param first: Is this the first room generated on the map?
         :param rooms: A list of rooms contained in this map
+        :param connect_to_home: Force this room to connect to the first room generated
+        :param connect_to_closest: Force this room to connect to the closest room as a secondary connection
         :return: the worked on map, or False if no room was placed
         """
         if not rooms:
@@ -162,16 +163,22 @@ class PrefabGenerator:
                         #self.set_ground(x, y, map)
                         libtcod.map_set_properties(pmap, x, y, False, False)
 
-            r = libtcod.random_get_int(0, 0, len(rooms)-2)  # get a room that isnt the new room
-            dest_room = rooms[r]
+            dest_room = None
+            if connect_to_home:  # should create a sort of spiral type map
+                dest_room = rooms[0]
+            else:
+                r = libtcod.random_get_int(0, 0, len(rooms)-2)  # get a room that isnt the new room
+                dest_room = rooms[r]
             dest_doors = dest_room.doors
             origin_doors = rooms[len(rooms)-1].doors  # will always be our newly created room
+
+            # origin_door, dest_door = self.pick_doors(origin_doors, dest_doors)
             distance = 100000
             origin_door = []
             dest_door = []
             for odoor in origin_doors:
                 for ddoor in dest_doors:
-                    new_distance = self.distance_to(odoor, ddoor)
+                    new_distance = self.door_distance_to(odoor, ddoor)
                     if new_distance < distance:
                         origin_door = odoor  # hodor????
                         dest_door = ddoor
@@ -197,6 +204,43 @@ class PrefabGenerator:
                     break
                 self.set_ground(x, y, map)
             print('Pathing complete')
+
+            r = libtcod.random_get_int(0, 0, 100)
+            if r >= connect_to_closest:
+                print("Generating secondary connection...")
+                origin_room = rooms[len(rooms)-1]
+                distance = 100000000
+                dest_room = None
+                for room in rooms:
+                    new_distance = self.room_distance_to(origin_room, room)
+                    if new_distance < distance:
+                        distance = new_distance
+                        dest_room = room
+                origin_doors = origin_room.doors
+                dest_doors = dest_room.doors
+                distance = 100000
+                origin_door = []
+                dest_door = []
+                for odoor in origin_doors:
+                    for ddoor in dest_doors:
+                        new_distance = self.door_distance_to(odoor, ddoor)
+                        if new_distance < distance:
+                            origin_door = odoor  # hodor????
+                            dest_door = ddoor
+                            distance = new_distance
+                libtcod.path_compute(wpath, origin_door[0], origin_door[1], dest_door[0], dest_door[1])
+                print("Walking secondary path....")
+                for i in range(libtcod.path_size(wpath)):
+                    x, y = libtcod.path_get(wpath, i)
+                    # if not map[x][y].blocked:  # if we find our next step is a walkable tile, stop the hallway
+                    #     print("Ran into another blank space, ending secondary pathing!")
+                    #     self.set_ground(x, y, map)
+                    #     # set the dest door to a wall so it doesnt look out of place since we wont path to it
+                    #     # self.set_wall(dest_door[0], dest_door[1], map)
+                    #     break
+                    self.set_ground(x, y, map)
+                print('Secondary pathing complete')
+
             print("Checking to see if room is connected...")
             for y in range(height):
                 for x in range(width):
@@ -254,6 +298,25 @@ class PrefabGenerator:
         else:
             print("First room set!")
         return map, rooms
+
+    def pick_doors(self, dest_doors, origin_doors):  # this bugs the generator out for some reason *shrugs*
+        """
+        Returns the pair of closest doors from a list of doors
+        :param dest_doors:
+        :param origin_doors:
+        :return:
+        """
+        distance = 100000
+        origin_door = []
+        dest_door = []
+        for odoor in origin_doors:
+            for ddoor in dest_doors:
+                new_distance = self.distance_to(odoor, ddoor)
+                if new_distance < distance:
+                    origin_door = odoor  # hodor????
+                    dest_door = ddoor
+                    distance = new_distance
+        return (origin_door, dest_door)
 
     def level_from_prefabs(self):
         pass
@@ -462,8 +525,17 @@ class PrefabGenerator:
             map[x][y].opacity = 1.0
             map[x][y].color = libtcod.Color(99, 99, 99)
 
-    def distance_to(self, door1, door2):
+    def door_distance_to(self, door1, door2):
         dx = door2[0] - door1[0]
         dy = door2[1] - door1[1]
         v = (dx ** 2) + (dy ** 2)
         return math.sqrt((int(v)))
+
+    def room_distance_to(self, room1, room2):
+        x2, y2 = room2.center()
+        x1, y1 = room1.center()
+        dx = x2 - x1
+        dy = y2 - y1
+        v = (dx ** 2) + (dy **2)
+        return math.sqrt((int(v)))
+

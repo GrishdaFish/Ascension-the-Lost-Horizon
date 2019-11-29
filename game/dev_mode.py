@@ -73,7 +73,8 @@ class DevMode:
                                                               self.dungeon_gen.width,
                                                               self.dungeon_gen.height,
                                                               True,
-                                                              self.level.rooms)
+                                                              self.level.rooms,
+                                                              True)
         self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
         self.dungeon_gen.set_draw_map(self.level.dungeon)
 
@@ -109,8 +110,12 @@ class DevMode:
         if key.vk == libtcod.KEY_SPACE:
             self.gEngine.map_clear()
             d, r = self.dungeon_gen.add_prefab_room(self.level.dungeon,
-                                                                  self.dungeon_gen.width,
-                                                                  self.dungeon_gen.height, False, self.level.rooms)
+                                                    self.dungeon_gen.width,
+                                                    self.dungeon_gen.height,
+                                                    False,
+                                                    self.level.rooms,
+                                                    False,
+                                                    100)
             if d:
                 self.level.dungeon = d
                 self.level.rooms = r
