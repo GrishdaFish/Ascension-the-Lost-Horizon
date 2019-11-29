@@ -287,7 +287,7 @@ class GameObjects:
         equip.objects = game.objects
 
         # lets check out some enchants motherf^(!%3r!!!
-        effect = Effect(equip, "Fire")
+        effect = Effect(equip.item, "Fire")
         equip.item.equipment.effects.append(effect)
 
         # equip.send_to_back(game.objects)

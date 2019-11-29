@@ -255,6 +255,7 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
         # prepare a big dumb ass string to output ######################################################################
         y = do_string_output(game, stat_window, y, " Modifiers:")
         # format modifiers
+        mod_start_index = y
         for stat in game.player.fighter.stat_panel.panel['modifiers']:
             y = do_string_output(game, stat_window, y, "%s:  %d " %
                                  (stat, game.player.fighter.stat_panel.panel['modifiers'][stat]))
@@ -263,6 +264,7 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
         y = do_string_output(game, stat_window, y, " Combat Effects:")
         y = do_string_output(game, stat_window, y, "Effect: Damage / Resist")
         # format combat effects
+        combat_start_index = y
         for stat, val in zip(game.player.fighter.stat_panel.panel['combat'].keys(),
                             game.player.fighter.stat_panel.panel['combat'].values()):
             stat = color_text(str(stat), val[2])
@@ -272,10 +274,15 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
         y = do_string_output(game, stat_window, y, " Conditions:")
         y = do_string_output(game, stat_window, y, "Effect: Damage / Resist / Trigger %")
         # format conditions
+        conditions_start_index = y
         for stat, val in zip(game.player.fighter.stat_panel.panel['conditions'].keys(), game.player.fighter.stat_panel.panel['conditions'].values()):
             stat = color_text(str(stat), val[3])
             y = do_string_output(game, stat_window, y, "%s:  %d / %d / %d " % (stat, val[0], val[1], val[2]))
         ################################################################################################################
+
+        mod_count = game.player.fighter.stat_panel.get_category_count('modifiers') + 3
+        combat_count = game.player.fighter.stat_panel.get_category_count('combat') + mod_count + 3
+        conditions_count = game.player.fighter.stat_panel.get_category_count('conditions') + combat_count + 3
 
   #      letter_index = ord('a')
    #     stat_max = 5
@@ -324,11 +331,46 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
         game.gEngine.console_print_frame(stat_desc_window, 0, 0, width/2, height/2, True)
         game.gEngine.console_print(stat_desc_window, d_pos, 0, d_header)
 
-  #      #mouse input
-  #      if mouse.cx >= width/2 +3:
-  #          if mouse.cy-2 < len(game.player.fighter.stats) and mouse.cy >= 0:
- #               current_selection = mouse.cy-2
-#                stat = game.player.fighter.stats[current_selection]
+        #mouse input
+        stat = ""
+        source = ""
+        detail = ""
+        if mouse.cx >= width/2 +3:
+            if mod_count >= mouse.cy >= mod_start_index:
+                current_mod_index = mod_start_index
+                for stat_iter in game.player.fighter.stat_panel.panel['modifiers']:
+                    if current_mod_index == mouse.cy:
+                        stat = stat_iter
+                        for things in game.player.fighter.stat_panel.modifiers:
+                            if things.effect_name == stat:
+                                source = things.item.owner.name
+                                detail = str(things.amount)
+                    current_mod_index += 1
+            if combat_count >= mouse.cy >= combat_start_index:
+                current_mod_index = combat_start_index
+                for stat_iter in game.player.fighter.stat_panel.panel['combat']:
+                    if current_mod_index == mouse.cy:
+                        stat = color_text(stat_iter, game.player.fighter.stat_panel.panel['combat'][stat_iter][2])
+                        for things in game.player.fighter.stat_panel.combat_effects:
+                            if things.effect_name == stat_iter:
+                                source = things.item.owner.name
+                                detail = str(things.amount)
+                    current_mod_index += 1
+
+            #if conditions_count >= mouse.cy >= conditions_start_index:
+            #    current_mod_index = conditions_start_index
+            #    actual_index = 0
+            #    for stat_iter in game.player.fighter.stat_panel.panel['conditions']:
+            #        if current_mod_index == mouse.cy:
+            #            stat = color_text(stat_iter, game.player.fighter.stat_panel.panel['conditions'][stat_iter][3])
+            #            source = game.player.fighter.stat_panel.combat_effects[actual_index].item
+            #            detail = game.player.fighter.stat_panel.combat_effects[actual_index].amount
+            #        current_mod_index += 1
+            #        actual_index += 1
+
+#            if mouse.cy-2 < len(game.player.fighter.stats) and mouse.cy >= 0:
+#                current_selection = mouse.cy-2
+#                stat = game.player.fighter.stat_panel[current_selection]
 #                desc = color_text(stat.get_description(), libtcod.light_gray)
 #                desc = "Stat Description: %s" % desc
 #                cat = color_text(stat.get_category(), libtcod.light_gray)
@@ -352,9 +394,9 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
 #                elif stat.get_category() == 'Weapon':
 #                    bonus = 'Increases your (%s) damage by [%s].' % (name, bonus)
 
-        game.gEngine.console_print_rect(stat_desc_window, 1, 1, width/2-2, 3, 'desc')
-        game.gEngine.console_print(stat_desc_window, 1, 5, 'cat')
-        game.gEngine.console_print_rect(stat_desc_window, 1, 7, width/2-2, 3, 'bonus')
+        game.gEngine.console_print_rect(stat_desc_window, 1, 1, width/2-2, 3, stat)
+        game.gEngine.console_print(stat_desc_window, 1, 5, "%s: + %s" % (source, detail))
+        #game.gEngine.console_print_rect(stat_desc_window, 1, 7, width/2-2, 3, detail)
 
             #    if mouse.lbutton_pressed:
             #        game.player.fighter.apply_skill_points(game.player.fighter.skills[current_selection]) # use unused player skill points

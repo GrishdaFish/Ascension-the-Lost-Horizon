@@ -257,3 +257,6 @@ def town_menu(con, header, game, width, screen_height, screen_width):
             t_menu.last_input = 0
         libtcod.console_flush()
         game.gEngine.console_clear(0)
+
+
+

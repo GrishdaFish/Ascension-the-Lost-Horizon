@@ -12,6 +12,17 @@ class StatPanel:
         #             "Modifiable stat" : value
         #             "Light-based effects" : Not sure yet #TODO  <- consider this
         self.panel = {
+            "modifiers" : {
+                # modifiable base stats
+                "HP": 0,
+                "Regen": 0,
+                "Defense": 0,
+                "Strength": 0,
+                "Constitution": 0,
+                "Dexterity": 0,
+                "Intelligence": 0,
+                "Speed": 0,
+            },
             "combat" : {
                 # elemental damage/resist/display color
                 "Fire": [0, 0, libtcod.red],
@@ -27,17 +38,6 @@ class StatPanel:
                 "Crit Rate": [0, 0, libtcod.light_grey],
                 # petrify ?
             },
-            "modifiers" : {
-                # modifiable base stats
-                "HP": 0,
-                "Regen": 0,
-                "Defense": 0,
-                "Strength": 0,
-                "Constitution": 0,
-                "Dexterity": 0,
-                "Intelligence": 0,
-                "Speed": 0,
-            },
             "conditions" : {
                 # conditions the actor can cause / resist [damage, resistance, rate, display color]
                 "Burn":  [0, 0, 0, libtcod.red],
@@ -49,7 +49,7 @@ class StatPanel:
                 "Plague":  [0, 0, 0, libtcod.green],
                 "Gash":  [0, 0, 0, libtcod.dark_crimson],
                 "Stun": [0, 0, 0, libtcod.orange],
-                "Blind": [0, 0, 0, libtcod.darkest_grey],
+                "Blind": [0, 0, 0, libtcod.lightest_gray],
             }
             # dodge, armor, weapon, etc can all be stored here as well
         }
@@ -126,6 +126,9 @@ class StatPanel:
             line = "%s:  %d / %d / %d " % (stat, val[0], val[1], val[2])
             info.append(line)
         return info
+
+    def get_category_count(self, category):
+        return len(self.panel[category])
 
 # manages effects that are active
 class ConditionManager:

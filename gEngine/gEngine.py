@@ -324,9 +324,9 @@ class gEngine:
             for tile in self.mMap2x:
                 r, g, b = tile.color
                 brightness = self.lightmask.mask[tile.x + tile.y * (self.w * 2)]
-               # r *= brightness[0]
-               # g *= brightness[1]
-               # b *= brightness[2]
+                r *= brightness[0]
+                g *= brightness[1]
+                b *= brightness[2]
                 self.image_put_pixel(self.subcell_map_image, tile.x, tile.y, int(r), int(g), int(b))
                 '''if tile.block_sight:
                     r, g, b = self.color_light_wall
