@@ -189,7 +189,6 @@ class PrefabGenerator:
             print("Walking path....")
             for i in range(libtcod.path_size(wpath)):
                 x, y = libtcod.path_get(wpath, i)
-                print(x, y)
                 if not map[x][y].blocked:  # if we find our next step is a walkable tile, stop the hallway
                     print("Ran into another blank space, ending pathing!")
                     self.set_ground(x, y, map)
@@ -197,7 +196,63 @@ class PrefabGenerator:
                     #self.set_wall(dest_door[0], dest_door[1], map)
                     break
                 self.set_ground(x, y, map)
-        print("Room addition completed!")
+            print('Pathing complete')
+            print("Checking to see if room is connected...")
+            for y in range(height):
+                for x in range(width):
+                    if not map[x][y].blocked:
+                        libtcod.map_set_properties(pmap, x, y, True, True)
+            wpath = libtcod.path_new_using_map(pmap, 0)
+            this_room = rooms[len(rooms)-1]
+            home_room = rooms[0]
+            this_cx, this_cy = this_room.center()
+
+            if map[this_cx][this_cy].blocked:
+                print("This_room center is not walkable, finding first walkable tile in room...")
+                x1, x2, y1, y2 = this_room.outside_border()
+                found = False
+                for y in range(y1, y2):
+                    if found:
+                        break
+                    for x in range(x1, x2):
+                        if not map[x][y].blocked:
+                            this_cx = x
+                            this_cy = y
+                            found = True
+                            print("..found walkable tile.")
+                            break
+
+            home_cx, home_cy = home_room.center()
+            if map[home_cx][home_cy].blocked:
+                print("Home_room center is not walkable, finding first walkable tile in room...")
+                x1, x2, y1, y2 = home_room.outside_border()
+                found = False
+                for y in range(y1, y2):
+                    if found:
+                        break
+                    for x in range(x1, x2):
+                        if not map[x][y].blocked:
+                            home_cx = x
+                            home_cy = y
+                            found = True
+                            print("..found walkable tile.")
+                            break
+
+            if not libtcod.path_compute(wpath, this_cx, this_cy, home_cx, home_cy):
+                print('Room is not connected...')
+                x1, x2, y1, y2 = this_room.outside_border()
+                print('Covering up room...')
+                for y in range(y1, y2):
+                    for x in range(x1, x2):
+                        self.set_wall(x, y, map)
+                print('...Done. Removing room from list...')
+                rooms.remove(this_room)
+                print('...Done. Room addition failed due to lack of proper connection. Returning...')
+            else:
+                print('Room is connected')
+                print("Room addition completed!")
+        else:
+            print("First room set!")
         return map, rooms
 
     def level_from_prefabs(self):
