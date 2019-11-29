@@ -1,3 +1,4 @@
+import tcod as libtcod
 
 class StatPanel:
     """ """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""" """
@@ -12,32 +13,43 @@ class StatPanel:
         #             "Light-based effects" : Not sure yet #TODO  <- consider this
         self.panel = {
             "combat" : {
-                # elemental damage/resist
-                "Fire"  : [ 0, 0] ,
-                "Ice"   : [ 0, 0] ,
-                "Stone" : [ 0, 0] ,
-                "Storm" : [ 0, 0] ,
-                "Holy"  : [ 0, 0] ,
-                "Evil"  : [ 0, 0] ,
-                # physical damage/resistance
-                "Poison" : [ 0, 0] ,
-                "Bleed"  : [ 0, 0] ,
-                # physical state rate/resistance
-                "Stun Rate"    : [ 0, 0] ,
-                "Blind Rate"   : [ 0, 0] ,
-                "Crit Rate"   : [ 0, 0] ,
+                # elemental damage/resist/display color
+                "Fire": [0, 0, libtcod.red],
+                "Ice": [0, 0, libtcod.light_blue],
+                "Stone": [0, 0, libtcod.grey],
+                "Storm": [0, 0, libtcod.light_purple],
+                "Holy": [0, 0, libtcod.gold],
+                "Evil": [0, 0, libtcod.dark_grey],
+                # physical damge/resistance
+                "Poison": [0, 0, libtcod.green],
+                "Bleed": [0, 0, libtcod.dark_crimson],
+                # physical stae rate/resistance
+                "Crit Rate": [0, 0, libtcod.light_grey],
                 # petrify ?
             },
             "modifiers" : {
                 # modifiable base stats
-                "HP Modifier"           : 0,
-                "Regen Rate"            : 0,
-                "Defense Modifier"      : 0,
-                "Strength Modifier"     : 0,
-                "Constitution Modifier" : 0,
-                "Dexterity Modifier"    : 0,
-                "Intelligence Modifier" : 0,
-                "Speed Modifier"        : 0,
+                "HP": 0,
+                "Regen": 0,
+                "Defense": 0,
+                "Strength": 0,
+                "Constitution": 0,
+                "Dexterity": 0,
+                "Intelligence": 0,
+                "Speed": 0,
+            },
+            "conditions" : {
+                # conditions the actor can cause / resist [damage, resistance, rate, display color]
+                "Burn":  [0, 0, 0, libtcod.red],
+                "Freeze":  [0, 0, 0, libtcod.light_blue],
+                "Tremor":  [0, 0, 0, libtcod.grey],
+                "Shock":  [0, 0, 0, libtcod.light_purple],
+                "Smite":  [0, 0, 0, libtcod.gold],
+                "Corrupt":  [0, 0, 0, libtcod.dark_grey],
+                "Plague":  [0, 0, 0, libtcod.green],
+                "Gash":  [0, 0, 0, libtcod.dark_crimson],
+                "Stun": [0, 0, 0, libtcod.orange],
+                "Blind": [0, 0, 0, libtcod.darkest_grey],
             }
             # dodge, armor, weapon, etc can all be stored here as well
         }
@@ -50,18 +62,18 @@ class StatPanel:
     def apply_effect(self, effect, modifier=False):
         if modifier:
             self.modifiers.append(effect)
-            self.panel['modifiers'][effect.stat_effected] += effect.amount
+            self.panel['modifiers'][effect.effect_name] += effect.amount
         else:
             self.combat_effects.append(effect)
-            self.panel['combat'][effect.stat_effected] += effect.amount
+            self.panel['combat'][effect.effect_name][0] += effect.amount # 0 index calls damage, hard coded for testing
 
     # called by an effect to un-register itself
-    def remove_modifier(self, effect, modifier=False):
+    def remove_effect(self, effect, modifier=False):
         if modifier:
             self.modifiers.remove(effect)
         else:
             self.combat_effects.remove(effect)
-        self.panel[effect.stat_effected] -= effect.amount
+        self.panel['combat'][effect.effect_name][0] -= effect.amount  # 0 index calls damage, hard coded for testing
 
     # pass it a damage stat to get the resistance to that stat
     def check_resistance(self, stat):
@@ -86,16 +98,32 @@ class StatPanel:
     # because of the nature of game's output it seems easier to return an array to iterate over
     def to_string(self):
         info = []
-        combat_keys = self.panel['combat'].keys()
-        combat_vals = self.panel['combat'].values()
-        mod_keys = self.panel['modifiers'].keys()
-        mod_vals = self.panel['modifiers'].values()
-
-        for key, val in zip(combat_keys, combat_vals):
-            line = "%s D:%d R:%d" % (key, val[0], val[1])
+        #prepare a big dumb ass string to output
+        line = " Combat Effects:"
+        info.append(line)
+        line = "Effect: Damage / Resist"
+        info.append(line)
+        # format combat effects
+        for key, val in zip(self.panel['combat'].keys(), self.panel['combat'].values()):
+            line = "%s:  %d / %d" % (key, val[0], val[1])
             info.append(line)
+        line = ""
+        info.append(line)
+        line = " Modifiers:"
+        info.append(line)
+        # format modifiers
         for stat in self.panel['modifiers']:
-            line = " %s  %d " % (stat, self.panel['modifiers'][stat])
+            line = "%s:  %d " % (stat, self.panel['modifiers'][stat])
+            info.append(line)
+        line = ""
+        info.append(line)
+        line = " Conditions:"
+        info.append(line)
+        line = "Effect: Damage / Resist / Trigger %"
+        info.append(line)
+        # format conditions
+        for stat, val in zip(self.panel['conditions'].keys(), self.panel['conditions'].values()):
+            line = "%s:  %d / %d / %d " % (stat, val[0], val[1], val[2])
             info.append(line)
         return info
 

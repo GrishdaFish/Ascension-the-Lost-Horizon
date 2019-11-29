@@ -251,12 +251,31 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
         t, p = get_centered_text('Damage / Resistance:', width/4)
         game.gEngine.console_print(stat_window, p, 1, t)
 
-        data = game.player.fighter.stat_panel.to_string()
-        line_ind = 2
-        for line in data:
-            game.gEngine.console_print(stat_window, 1, line_ind, line)
-            line_ind += 1
+        y = 3
+        # prepare a big dumb ass string to output ######################################################################
+        y = do_string_output(game, stat_window, y, " Modifiers:")
+        # format modifiers
+        for stat in game.player.fighter.stat_panel.panel['modifiers']:
+            y = do_string_output(game, stat_window, y, "%s:  %d " %
+                                 (stat, game.player.fighter.stat_panel.panel['modifiers'][stat]))
 
+        y += 1
+        y = do_string_output(game, stat_window, y, " Combat Effects:")
+        y = do_string_output(game, stat_window, y, "Effect: Damage / Resist")
+        # format combat effects
+        for stat, val in zip(game.player.fighter.stat_panel.panel['combat'].keys(),
+                            game.player.fighter.stat_panel.panel['combat'].values()):
+            stat = color_text(str(stat), val[2])
+            y = do_string_output(game, stat_window, y, "%s:  %d / %d" % (stat, val[0], val[1]))
+
+        y += 1
+        y = do_string_output(game, stat_window, y, " Conditions:")
+        y = do_string_output(game, stat_window, y, "Effect: Damage / Resist / Trigger %")
+        # format conditions
+        for stat, val in zip(game.player.fighter.stat_panel.panel['conditions'].keys(), game.player.fighter.stat_panel.panel['conditions'].values()):
+            stat = color_text(str(stat), val[3])
+            y = do_string_output(game, stat_window, y, "%s:  %d / %d / %d " % (stat, val[0], val[1], val[2]))
+        ################################################################################################################
 
   #      letter_index = ord('a')
    #     stat_max = 5
@@ -351,3 +370,8 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
     game.gEngine.console_remove_console(stat_window)
 
     return None
+
+def do_string_output(game, stat_window, y, line):
+    game.gEngine.console_print(stat_window, 2, y, line)
+    y += 1
+    return y

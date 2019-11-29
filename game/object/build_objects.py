@@ -8,6 +8,7 @@ from game import combat
 from game import content_parser
 from game.object.actor import entity
 from gEngine import gEngine
+from game.status_effects.effects import Effect
 
 
 class GameObjects:
@@ -284,6 +285,10 @@ class GameObjects:
             equip = Object(game.dungeon_console, x, y, ' ', eq.name, (0, 0, 0), item=item_component)
         equip.message = game.message
         equip.objects = game.objects
+
+        # lets check out some enchants motherf^(!%3r!!!
+        effect = Effect(equip, "Fire")
+        equip.item.equipment.effects.append(effect)
 
         # equip.send_to_back(game.objects)
         return equip
