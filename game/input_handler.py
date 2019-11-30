@@ -34,12 +34,12 @@ def handle_misc(key, game):
     if key.vk == libtcod.KEY_ESCAPE:
         turn = handle_quit(key, game, turn)
 
-    # if key.vk == libtcod.KEY_SPACE:
-    #     for item in self.objects:
-    #         if item.misc:
-    #             if item.misc.type == 'down':
-    #                 self.player.x = item.x
-    #                 self.player.y = item.y
+    if key.vk == libtcod.KEY_SPACE:
+        for item in game.objects:
+            if item.misc:
+                if item.misc.type == 'down':
+                    game.player.x = item.x
+                    game.player.y = item.y
     return turn
 
 

@@ -445,7 +445,7 @@ class PrefabGenerator:
         fov_map = self.gEngine.get_fov_map()
         mmap = self.gEngine.get_map()
         if self.game:
-            return level.Level(self.width, self.height, self.gEngine, self.dungeon, self.game.objects, 0,
+            return level.Level(self.width, self.height, self.gEngine, self.dungeon, self.game.objects, self.game.depth,
                                fov_map=fov_map, draw_map=mmap)
         else:
             return level.Level(self.width, self.height, self.gEngine, self.dungeon, fov_map=fov_map, draw_map=mmap)
