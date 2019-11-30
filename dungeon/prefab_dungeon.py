@@ -619,7 +619,7 @@ class PrefabGenerator:
         num_items = libtcod.random_get_int(0, 0, max_room_items)
         types = {0: self.game.build_objects.build_light_source,
                  1: self.game.build_objects.build_potion,
-                 1: self.game.build_objects.build_scroll,
+                 2: self.game.build_objects.build_scroll,
                  }
         for i in range(num_items):
             # choose random spot for this item

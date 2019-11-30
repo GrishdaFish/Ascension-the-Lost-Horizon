@@ -3,8 +3,7 @@ from gEngine import lights
 from game.object import object
 from game.object import item
 from game import render
-#sys.path.append(os.path.join(sys.path[0], 'utils'))
-#import utils.spell_effects as spell_effects
+
 
 
 class Spell:
