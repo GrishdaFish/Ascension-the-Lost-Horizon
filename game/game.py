@@ -260,7 +260,7 @@ class Game:
             self.ticker.schedule_turn(10, self.player)
             for object in self.objects:
                 if object.misc:
-                    if object.misc.type == 'down':  # place the player at the down stairs on the previous level
+                    if object.misc.type == 'up':  # place the player at the down stairs on the previous level
                         self.player.x = object.x
                         self.player.y = object.y
 
@@ -293,7 +293,9 @@ class Game:
         self.objects = []
 
         l = lights.LightHandler(self.gEngine)
-        level = self.basic_dungeon.make_map(game=self, light_handler=l)
+        # level = self.basic_dungeon.make_map(game=self, light_handler=l)
+        level = self.prefab_generator.level_from_prefabs(light_handler=l)
+        print("Light handler size = %d" % len(l.lights))
         level.depth = self.depth + 1
         self.depth += 1
         if self.depth > 0:
@@ -303,10 +305,17 @@ class Game:
         level.light_handler = l
         self.levels.append(level)
         self.level = level
+        print("Light handler size = %d" % len(self.level.light_handler.lights))
         self.fov = self.level.fov_map
         self.ticker.schedule_turn(10, self.player)
         # self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
         self.game_state = 'playing'
+        for object in self.objects:
+            if object.misc:
+                if object.misc.type == 'up':  # place the player at the down stairs on the previous level
+                    self.player.x = object.x
+                    self.player.y = object.y
+        print("\nNew map ready to play.\n\n")
 
     def prev_level(self):
         # self.gEngine.console_remove_all()

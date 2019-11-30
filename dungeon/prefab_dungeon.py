@@ -1,12 +1,13 @@
 __author__ = 'GrishdaFish'
 from dungeon import tile
 from dungeon import level
+from dungeon import rect
 from dungeon import spawn_node
 from dungeon.prefabs import prefabs
 from dungeon.prefabs import color_sets
 from game.user_interface import shop
 from game.object import misc
-from game.object import object
+from game.object import object as objects
 from game.object import npc
 from gEngine import lights
 from gEngine import gEngine as _gEngine
@@ -15,7 +16,9 @@ import os
 import sys
 import tcod as libtcod
 from copy import deepcopy
+import math
 import time
+
 width = 80
 height = 43
 
@@ -49,7 +52,6 @@ class PrefabGenerator:
 
     def load_prefab_rooms(self):
         """
-        TODO: Put these into a rect class like in dungeon, and add a doors position for later use
         Loads all of the prefab rooms from /content/prefabs/prefab_rooms for later use
         :return:
         """
@@ -82,18 +84,34 @@ class PrefabGenerator:
             room_height = len(h) # and get the height of our entire room
             self.room_holder.append((h, room_width, room_height))  # add a tuple with the room, plus it dimensions
 
-    def add_prefab_room(self, map, width, height, first=False):
+    def add_prefab_room(self, map, width, height, first=False, rooms=None, connect_to_home=False, connect_to_closest=0,
+                        max_path=25, place_over_hallways=False, light_handler=None, light_spawn_chance=100, max_trys=8):
         """
-        Todo: after rect is implemented, pick from list of rooms randomly rather than a random tile
-            should give a faster and better way of drawing hallways
-            would be able to draw from door to door, then always draw doorways
+        Prefab room placement. Tries to plop in a prefabricated room into a map.
+        Prefab room Legend:
+        # = Wall
+        . = Floor
+        d = Door
+        L = Wall + Light
+        l = Floor + light (lowercase L)
+        s = Monster Spawner (SpawnNode())
         :param map: The map array to be worked on
         :param width: The width of the map
         :param height: The Height of the map
         :param first: Is this the first room generated on the map?
-        :return: the worked on map, or False if no room was placed
+        :param rooms: A list of rooms contained in this map
+        :param connect_to_home: Force this room to connect to the first room generated
+        :param connect_to_closest: Force this room to connect to the closest room as a secondary connection
+        :param max_path: The longest a path hallway can be, before it triggers a mandatory secondary connection
+        :param place_over_hallways: Can this room be placed over another hallway (but not a room) ?
+        :param light_handler:  For generated lights to be placed in
+        :param light_spawn_chance:  Chance to spawn pre placed room lights
+        :param max_trys: The maximum number of attempts to place a room before failing
+        :return: the worked on map, the list of rooms, and a spawn node
+
         """
-        backup = deepcopy(map)
+        if not rooms:
+            rooms = []
         r = libtcod.random_get_int(0, 0, len(self.room_holder)-1)
         new_room = self.room_holder[r]  # grab a random room from the  list of rooms
         new_room_tiles = new_room[0]  # pull out relevant data
@@ -104,104 +122,333 @@ class PrefabGenerator:
         room_x = 0
         room_y = 0
         doors = []  # to hold the positions of where we can make door and draw hallways from
-        trys = 8  # limit the number of trys so we don't waste too much time trying to place a room in a crowded map
+        trys = max_trys  # limit the number of trys so we don't waste time trying to place a room in a crowded map
         failed = False
+        node_obj = None
         print("Finding room placement")
         while trys > 0:
-            # pick random room co-ords clamped to map dimensions, from room centerpoint
-            room_x = libtcod.random_get_int(0, int(new_room_width + 1), int(width - center_x - 1))
-            room_y = libtcod.random_get_int(0, int(new_room_height + 1), int(height - center_y - 1))
-            failed = False
+            # pick random room co-ords clamped to map dimensions, from room center point
+            if first:
+                room_x = int(width/2)
+                room_y = int(height/2)
+            else:
+                room_x = libtcod.random_get_int(0, int(new_room_width + 1), int(width - center_x - 1))
+                room_y = libtcod.random_get_int(0, int(new_room_height + 1), int(height - center_y - 1))
+                failed = False
 
-            # check to see if placing this room here would overlap another room or hallway
-            for y in range(room_y - center_y-1, room_y + center_y+1):  # extend boundaries by 1 to leave a gap
-                if failed:
-                    break  # as soon as we find a failure, break out of the loop to speed things along
-                for x in range(room_x - center_x-1, room_x + center_x+1):
-                    if not map[x][y].blocked:  # if we find one, we fail this try
-                        failed = True
-                        break
+                if place_over_hallways:
+                    nroom = rect.Rect(room_x-center_x, room_y-center_y, new_room_width,
+                                      new_room_height, doors, new_room_tiles)
+                    for r in rooms:
+                        if nroom.intersect(r):
+                            failed = True
+                            break
+                else:
+                    # check to see if placing this room here would overlap another room or hallway
+                    for y in range(room_y - center_y-1, room_y + center_y+1):  # extend boundaries by 1 to leave a gap
+                        if failed:
+                            break  # as soon as we find a failure, break out of the loop to speed things along
+                        for x in range(room_x - center_x-1, room_x + center_x+1):
+                            if not map[x][y].blocked:  # if we find one, we fail this try
+                                failed = True
+                                break
             if failed:
                 trys -= 1
             else:  # if we find an open area large enough for this room, dig it o ut
                 # loop through the room array
+
                 for x in range(new_room_width):
                     for y in range(new_room_height):
                         if new_room_tiles[y][x] == 'd':
                             doors.append((x + room_x - center_x, y + room_y - center_y))
+                            # self.set_ground(x + room_x - center_x, y + room_y - center_y, map)
                         elif new_room_tiles[y][x] == '.':
                             # then place the room at the proper offsets from the center of the room
                             self.set_ground(x + room_x - center_x, y + room_y - center_y, map)
+                        elif new_room_tiles[y][x] == 'L':
+                            print("Found a wall light...")
+                            if light_handler:
+                                r = libtcod.random_get_int(0, 0, 100)
+                                if r <= light_spawn_chance:
+                                    print("...wall light added to light map")
+                                    i = libtcod.random_get_float(0, 0.75, 1.0)
+                                    l = lights.Light(x + room_x - center_x, y + room_y - center_y, light_handler,
+                                                     flicker=True, intensity=i)
+                                    light_handler.add_light(l)
+                        elif new_room_tiles[y][x] == 'l':
+                            print("Found floor light...")
+                            self.set_ground(x + room_x - center_x, y + room_y - center_y, map)
+                            if light_handler:
+                                r = libtcod.random_get_int(0, 0, 100)
+                                if r <= light_spawn_chance:
+                                    print("...floor light added")
+                                    i = libtcod.random_get_float(0, 0.75, 1.0)
+                                    l = lights.Light(x + room_x - center_x, y + room_y - center_y, light_handler,
+                                                     flicker=True, intensity=i)
+                                    light_handler.add_light(l)
+                        elif new_room_tiles[y][x] == 's':
+                            self.set_ground(x + room_x - center_x, y + room_y - center_y, map)
+                            if self.game:
+                                map[x + room_x - center_x][y].spawn_node = True
+                                node = spawn_node.SpawnNode(map[x + room_x - center_x][y + room_y - center_y],
+                                                            x + room_x - center_x, y + room_y - center_y, self.game)
+                                node_obj = objects.Object()
+                                node_obj.node = node
+                                node_obj.use = node.spawn_mobs
+                                node_obj.node.owner = node_obj
+                                node_obj.node.ticker.schedule_turn(0, node_obj)
+
+                room = rect.Rect(room_x-center_x, room_y-center_y, new_room_width, new_room_height, doors,
+                                 new_room_tiles)
+                rooms.append(room)
                 break  # break out of the loop if we draw a room to not waste time
 
         if trys == 0 and failed:  # if we ran out of trys and was unable to place a room
             print("Failed to place room")
-            return False  # room was unable to fit
+            return False, rooms, node_obj  # room was unable to fit
 
         if not first:  # don't try to draw a hallway if this is the first room placed.
+            # draw hallways to the nearest doorway from a randomly chosen door
             print("Room placed, generating tunnel")
             pmap = libtcod.map_new(width, height)  # create a new map for path finding to draw our new hallways
-            # draw hallways to the nearest connected room from a randomly chosen door
-            r = libtcod.random_get_int(0, 0, len(doors)-1)
-            doorway = doors[r]
-            self.set_ground(doorway[0], doorway[1])
-            libtcod.map_set_properties(pmap, doorway[0], doorway[1], True, True)
-            # set the walkable area to the entire map, except for the new room
+
             print("setting map settings for pathing...")
+            # set the walkable area to the entire map
             for y in range(height):
                 for x in range(width):
-                    if x > (room_x - center_x - 1) and x < (room_x + center_x + 1):
-                        if y > (room_y - center_y - 1) and y < (room_y + center_y + 1):
-                            # new room tiles are set as unwalkable so we don't path through the new room
-                            libtcod.map_set_properties(pmap, x, y, False, False)
-                        else:  # everything else is fair game
-                            libtcod.map_set_properties(pmap, x, y, True, True)  # visible and walkable
-                    else:
-                        libtcod.map_set_properties(pmap, x, y, True, True)
+                    libtcod.map_set_properties(pmap, x, y, True, True)
+            for room in rooms:  # create a non walkable border around all rooms so we don't run halls next to rooms
+                x1, x2, y1, y2 = room.outside_border()
+                for y in range(y1, y2):
+                    for x in range(x1, x2):
+                        # self.set_ground(x, y, map)
+                        libtcod.map_set_properties(pmap, x, y, False, False)
+
+            dest_room = None
+            if connect_to_home:  # should create a sort of spiral type map
+                dest_room = rooms[0]
+            else:
+                r = libtcod.random_get_int(0, 0, len(rooms)-2)  # get a room that isnt the new room
+                dest_room = rooms[r]
+            dest_doors = dest_room.doors
+            origin_doors = rooms[len(rooms)-1].doors  # will always be our newly created room
+
+            # origin_door, dest_door = self.pick_doors(origin_doors, dest_doors)
+            distance = 100000
+            origin_door = []
+            dest_door = []
+            for odoor in origin_doors:
+                for ddoor in dest_doors:
+                    new_distance = self.door_distance_to(odoor, ddoor)
+                    if new_distance < distance:
+                        origin_door = odoor  # hodor????
+                        dest_door = ddoor
+                        distance = new_distance
+
+            self.set_ground(origin_door[0], origin_door[1], map)
+            libtcod.map_set_properties(pmap, origin_door[0], origin_door[1], True, True)
+            self.set_ground(dest_door[0], dest_door[1], map)
+            libtcod.map_set_properties(pmap, dest_door[0], dest_door[1], True, True)
 
             wpath = libtcod.path_new_using_map(pmap, 0)  # we set the diagonal cost to 0 to avoid using diags for halls
-            found_dest = False
-            dest = ()
-            new_dest_x = None
-            new_dest_y = None
-            trys = 1000
-            print("Trying to find path from room to another area...")
-            while not found_dest:  # loop until we find a proper destination for our hallway
-                if trys <= 0:
-                    found_dest = False
-                    break
-                dest_x = libtcod.random_get_int(0, 0, width-1)
-                dest_y = libtcod.random_get_int(0, 0, height-1)
-                if not map[dest_x][dest_y].blocked:
-                    new_dest_x = dest_x
-                    new_dest_y = dest_y
-                    # make sure that the hallway doesnt try to connect to the new room
-                    if new_dest_x < (room_x - center_x-1) or new_dest_x > (room_x + center_x +1):
-                        if new_dest_y < (room_y - center_y-1) or new_dest_y > (room_y + center_y+1):
-                            dest = (new_dest_x, new_dest_y)
-                            if libtcod.path_compute(wpath, doorway[0], doorway[1], dest[0], dest[1]):
-                                found_dest = True
-                                break
-                trys -= 1
-                print("Trys: " + str(trys))
-            if not found_dest and trys <= 0:
-                print("Too many tries, aboring!")
-                return backup
+
             # loop through the path to create the hallway to the target room
-            libtcod.path_compute(wpath, doorway[0], doorway[1], dest[0], dest[1])
+            libtcod.path_compute(wpath, origin_door[0], origin_door[1], dest_door[0], dest_door[1])
+            if libtcod.path_size(wpath) > max_path:
+                connect_to_closest = 100  # if a path is too long, force a connection to the closest room
             print("Walking path....")
             for i in range(libtcod.path_size(wpath)):
                 x, y = libtcod.path_get(wpath, i)
                 if not map[x][y].blocked:  # if we find our next step is a walkable tile, stop the hallway
                     print("Ran into another blank space, ending pathing!")
                     self.set_ground(x, y, map)
+                    # set the dest door to a wall so it doesnt look out of place since we wont path to it
+                    # self.set_wall(dest_door[0], dest_door[1], map)
                     break
                 self.set_ground(x, y, map)
-        print("Room addition completed!")
-        return map
+            print('Pathing complete')
 
-    def level_from_prefabs(self):
-        pass
+            r = libtcod.random_get_int(0, 0, 100)
+            if r <= connect_to_closest:
+                origin_doors = []
+                dest_doors = []
+                print("Generating secondary connection...")
+                origin_room = rooms[len(rooms)-1]
+                distance = 100000000
+                dest_room = None
+                for room in rooms:
+                    new_distance = self.room_distance_to(origin_room, room)
+                    #print(new_distance)
+                    if new_distance != 0.0:
+                        if new_distance < distance:
+                            distance = new_distance
+                            dest_room = room
+                origin_doors = origin_room.doors
+                dest_doors = dest_room.doors
+                distance = 100000
+                origin_door = []
+                dest_door = []
+                for odoor in origin_doors:
+                    for ddoor in dest_doors:
+                        new_distance = self.door_distance_to(odoor, ddoor)
+                        #print(new_distance)
+                        if new_distance < distance:
+                            origin_door = odoor  # hodor????
+                            dest_door = ddoor
+                            distance = new_distance
+
+                self.set_ground(origin_door[0], origin_door[1], map)
+                libtcod.map_set_properties(pmap, origin_door[0], origin_door[1], True, True)
+                self.set_ground(dest_door[0], dest_door[1], map)
+                libtcod.map_set_properties(pmap, dest_door[0], dest_door[1], True, True)
+
+                wpath = libtcod.path_new_using_map(pmap, 0)
+                libtcod.path_compute(wpath, origin_door[0], origin_door[1], dest_door[0], dest_door[1])
+                print("Walking secondary path....")
+                for i in range(libtcod.path_size(wpath)):
+                    x, y = libtcod.path_get(wpath, i)
+                    self.set_ground(x, y, map)
+                print('Secondary pathing complete')
+
+            print("Checking to see if room is connected...")
+            for y in range(height):
+                for x in range(width):
+                    if not map[x][y].blocked:
+                        libtcod.map_set_properties(pmap, x, y, True, True)
+            wpath = libtcod.path_new_using_map(pmap, 0)
+            this_room = rooms[len(rooms)-1]
+            home_room = rooms[0]
+            this_cx, this_cy = this_room.center()
+
+            if map[this_cx][this_cy].blocked:
+                print("This_room center is not walkable, finding first walkable tile in room...")
+                x1, x2, y1, y2 = this_room.outside_border()
+                found = False
+                for y in range(y1, y2):
+                    if found:
+                        break
+                    for x in range(x1, x2):
+                        if not map[x][y].blocked:
+                            this_cx = x
+                            this_cy = y
+                            found = True
+                            print("..found walkable tile.")
+                            break
+
+            home_cx, home_cy = home_room.center()
+            if map[home_cx][home_cy].blocked:
+                print("Home_room center is not walkable, finding first walkable tile in room...")
+                x1, x2, y1, y2 = home_room.outside_border()
+                found = False
+                for y in range(y1, y2):
+                    if found:
+                        break
+                    for x in range(x1, x2):
+                        if not map[x][y].blocked:
+                            home_cx = x
+                            home_cy = y
+                            found = True
+                            print("..found walkable tile.")
+                            break
+
+            if not libtcod.path_compute(wpath, this_cx, this_cy, home_cx, home_cy):
+                print('Room is not connected...')
+                x1, x2, y1, y2 = this_room.outside_border()
+                print('Covering up room...')
+                for y in range(y1, y2):
+                    for x in range(x1, x2):
+                        self.set_wall(x, y, map)
+                print('...Done. Removing room from list...')
+                rooms.remove(this_room)
+                print('...Done. Room addition failed due to lack of proper connection. Returning...')
+            else:
+                print('Room is connected')
+                print("Room addition completed!")
+        else:
+            print("First room set!")
+        return map, rooms, node_obj
+
+    def pick_doors(self, dest_doors, origin_doors):  # this bugs the generator out for some reason *shrugs*
+        """
+        Returns the pair of closest doors from a list of doors
+        :param dest_doors:
+        :param origin_doors:
+        :return:
+        """
+        distance = 100000
+        origin_door = []
+        dest_door = []
+        for odoor in origin_doors:
+            for ddoor in dest_doors:
+                new_distance = self.distance_to(odoor, ddoor)
+                if new_distance < distance:
+                    origin_door = odoor  # hodor????
+                    dest_door = ddoor
+                    distance = new_distance
+        return (origin_door, dest_door)
+
+    def level_from_prefabs(self, max_rooms=15, max_trys=50, max_room_items=3, max_level_items=15,
+                           light_handler=None, light_spawn_chance=100):
+        self.dungeon = [[tile.Tile(True)
+                         for y in range(self.height)]
+                        for x in range(self.width)]
+        map_rooms = []
+        spawn_nodes = []
+        first = True
+
+        for r in range(max_rooms):
+            print("Light handler size = %d" % len(light_handler.lights))
+            dungeon, rooms, s = self.add_prefab_room(self.dungeon, self.width, self.height, first=first,
+                                                          rooms=map_rooms, connect_to_home=False, connect_to_closest=50,
+                                                          max_path=30, place_over_hallways=True,
+                                                          light_handler=light_handler,
+                                                          light_spawn_chance=light_spawn_chance, max_trys=max_trys)
+            first = False
+            if dungeon:
+                self.dungeon = dungeon
+            map_rooms = rooms
+            if s:
+                spawn_nodes.append(s)
+        down = False
+        if self.game:
+            while not down:
+                x = libtcod.random_get_int(0,  0, self.width-1)
+                y = libtcod.random_get_int(0, 0, self.height-1)
+                if not self.dungeon[x][y].blocked:
+                    m = misc.Misc(type='down')
+                    down = objects.Object(self.game.dungeon_console, x, y, '>', 'set of stairs going down', libtcod.white,
+                                  blocks=False, misc=m)
+                    self.game.objects.append(down)
+                    down.send_to_back(self.game.objects)
+                    down = True
+            up = False
+            while not up:
+                x = libtcod.random_get_int(0, 0, self.width - 1)
+                y = libtcod.random_get_int(0, 0, self.height - 1)
+                if not self.dungeon[x][y].blocked:
+                    m = misc.Misc(type='up')
+                    up = objects.Object(self.game.dungeon_console, x, y, '<', 'set of stairs going up',
+                                         libtcod.white,
+                                         blocks=False, misc=m)
+                    self.game.objects.append(up)
+                    up.send_to_back(self.game.objects)
+                    up = True
+            for room in map_rooms:
+                max_level_items = self.spawn_ground_items(room, min(max_room_items, max_level_items), max_level_items)
+                if max_level_items <= 0:
+                    break
+            for object in self.game.objects:
+                object.message = self.game.message
+                object.objects = self.game.objects
+        self.gEngine.map_clear()
+        self.set_draw_map(self.dungeon)
+        fov_map = self.gEngine.get_fov_map()
+        mmap = self.gEngine.get_map()
+        if self.game:
+            return level.Level(self.width, self.height, self.gEngine, self.dungeon, self.game.objects, 0,
+                               fov_map=fov_map, draw_map=mmap)
+        else:
+            return level.Level(self.width, self.height, self.gEngine, self.dungeon, fov_map=fov_map, draw_map=mmap)
 
     def load_level_from_string(self, l, light_handler=None, colorset='town'):
         """
@@ -275,7 +522,7 @@ class PrefabGenerator:
                     r = libtcod.random_get_int(0, 0, len(floor_color) - 1)
                     self.dungeon[x][y].color = floor_color[r]
                     m = misc.Misc(type='down')
-                    down = object.Object(self.game.dungeon_console, x, y, '>', 'set of stairs going down', libtcod.white,
+                    down = objects.Object(self.game.dungeon_console, x, y, '>', 'set of stairs going down', libtcod.white,
                                   blocks=False, misc=m)
                     self.game.objects.append(down)
                     down.send_to_back(self.game.objects)
@@ -289,7 +536,7 @@ class PrefabGenerator:
                     container.sort(key=lambda cons: cons.name)
                     n = npc.NPC()
                     n.attach_shop("Johan's Weaporium", img, container, shop.shop)
-                    n = object.Object(self.game.dungeon_console, x, y, '@', 'Johan', libtcod.white, blocks=True, npc=n)
+                    n = objects.Object(self.game.dungeon_console, x, y, '@', 'Johan', libtcod.white, blocks=True, npc=n)
                     self.game.objects.append(n)
                     self.set_ground(x, y)
                 if h[y][x] == 'M':
@@ -307,7 +554,7 @@ class PrefabGenerator:
                     container.sort(key=lambda cons: cons.name)
                     n = npc.NPC()
                     n.attach_shop("Fizzilip's Magiteria", img, container, shop.shop)
-                    n = object.Object(self.game.dungeon_console, x, y, '@', 'Fizzilip', libtcod.white, blocks=True, npc=n)
+                    n = objects.Object(self.game.dungeon_console, x, y, '@', 'Fizzilip', libtcod.white, blocks=True, npc=n)
                     self.game.objects.append(n)
                     self.set_ground(x, y)
                 if h[y][x] == 'Q':
@@ -321,7 +568,7 @@ class PrefabGenerator:
                     container.sort(key=lambda cons: cons.name)
                     n = npc.NPC()
                     n.attach_shop("The Helm and Buckler", img, container, shop.shop)
-                    n = object.Object(self.game.dungeon_console, x, y, '@', 'Garrius', libtcod.white, blocks=True, npc=n)
+                    n = objects.Object(self.game.dungeon_console, x, y, '@', 'Garrius', libtcod.white, blocks=True, npc=n)
                     self.game.objects.append(n)
                     self.set_ground(x, y)
                 # check for light locations
@@ -368,6 +615,22 @@ class PrefabGenerator:
                                           c.opacity)
         self.gEngine.map_init_level(self.width, self.height)
 
+    def spawn_ground_items(self, room, max_room_items, max_level_items):
+        num_items = libtcod.random_get_int(0, 0, max_room_items)
+        types = {0: self.game.build_objects.build_light_source,
+                 1: self.game.build_objects.build_potion,
+                 1: self.game.build_objects.build_scroll,
+                 }
+        for i in range(num_items):
+            # choose random spot for this item
+            x = libtcod.random_get_int(0, room.x1 + 1, room.x2 - 1)
+            y = libtcod.random_get_int(0, room.y1 + 1, room.y2 - 1)
+            t = libtcod.random_get_int(0, 0, len(types)-1)
+            # only place it if the tile is not blocked
+            if not self.dungeon[x][y].blocked:
+                self.game.objects.append(types[t](self.game, x, y))
+        return max_level_items - num_items
+
     def set_ground(self, x, y, map=None):
         """
         Sets the current tile to default walkable state
@@ -390,3 +653,34 @@ class PrefabGenerator:
             map[x][y].tile = ' '  # ground_tiles[libtcod.random_get_int(0, 0, (len(ground_tiles) - 1))]
             map[x][y].opacity = 0.0
             map[x][y].color = libtcod.Color(125, 125, 125)
+
+    def set_wall(self, x, y, map=None):
+        x = int(x)
+        y = int(y)
+        if not map:
+            self.dungeon[x][y].blocked = False
+            self.dungeon[x][y].block_sight = False
+            self.dungeon[x][y].tile = ' '  # ground_tiles[libtcod.random_get_int(0, 0, (len(ground_tiles) - 1))]
+            self.dungeon[x][y].opacity = 0.0
+            self.dungeon[x][y].color = libtcod.Color(99, 99, 99)
+        else:
+            map[x][y].blocked = True
+            map[x][y].block_sight = True
+            map[x][y].tile = '#'  # ground_tiles[libtcod.random_get_int(0, 0, (len(ground_tiles) - 1))]
+            map[x][y].opacity = 1.0
+            map[x][y].color = libtcod.Color(99, 99, 99)
+
+    def door_distance_to(self, door1, door2):
+        dx = door2[0] - door1[0]
+        dy = door2[1] - door1[1]
+        v = (dx ** 2) + (dy ** 2)
+        return math.sqrt((int(v)))
+
+    def room_distance_to(self, room1, room2):
+        x2, y2 = room2.center()
+        x1, y1 = room1.center()
+        dx = x2 - x1
+        dy = y2 - y1
+        v = (dx ** 2) + (dy **2)
+        return math.sqrt((int(v)))
+
