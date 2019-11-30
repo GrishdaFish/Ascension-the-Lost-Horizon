@@ -69,12 +69,13 @@ class DevMode:
         self.cx, self.cy = 0, 0
         self.v_map = None
         #self.gEngine.mMap = self.level.dungeon
-        self.level.dungeon, self.level.rooms = self.dungeon_gen.add_prefab_room(self.level.dungeon,
-                                                              self.dungeon_gen.width,
-                                                              self.dungeon_gen.height,
-                                                              True,
-                                                              self.level.rooms,
-                                                              True)
+        # self.level.dungeon, self.level.rooms = self.dungeon_gen.add_prefab_room(self.level.dungeon,
+        #                                                       self.dungeon_gen.width,
+        #                                                       self.dungeon_gen.height,
+        #                                                       True,
+        #                                                       self.level.rooms,
+        #                                                       True)
+        self.level = self.dungeon_gen.level_from_prefabs()
         self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
         self.dungeon_gen.set_draw_map(self.level.dungeon)
 
@@ -115,7 +116,9 @@ class DevMode:
                                                     False,
                                                     self.level.rooms,
                                                     False,
-                                                    50)
+                                                    50,
+                                                    30,
+                                                    True)
             if d:
                 self.level.dungeon = d
                 self.level.rooms = r
