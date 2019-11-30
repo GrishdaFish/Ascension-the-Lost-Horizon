@@ -1,6 +1,6 @@
 #DO NOT CHANGE THIS FILE UNLESS YOU KNOW WHAT YOU ARE DOING!
 [engine_config]
-screen_width = 80 
+screen_width = 80
 screen_height = 55 
 #font = 'terminal10x10_gs_tc.png'
 font = 'dejavu_wide16x16_gs_tc.png'
