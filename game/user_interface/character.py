@@ -217,7 +217,7 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
             name = condition.effect.effect_name
             amount = condition.effect.amount
             duration = condition.effect.duration
-            stat = condition.effect.stat_effected
+            stat = condition.effect.stat_effect
             game.gEngine.console_print(condition_window, 1, line_ind, '%s %s %s %s' % name, stat, amount, duration)
             line_ind += 1
         #############################################################################################################
@@ -266,18 +266,21 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
         # format combat effects
         combat_start_index = y
         for stat, val in zip(game.player.fighter.stat_panel.panel['combat'].keys(),
-                            game.player.fighter.stat_panel.panel['combat'].values()):
-            stat = color_text(str(stat), val[2])
-            y = do_string_output(game, stat_window, y, "%s:  %d / %d" % (stat, val[0], val[1]))
+                             game.player.fighter.stat_panel.panel['combat'].values()):
+            if stat != 'key':
+                stat = color_text(str(stat), val[2])
+                y = do_string_output(game, stat_window, y, "%s:  %d / %d" % (stat, val[0], val[1]))
 
         y += 1
         y = do_string_output(game, stat_window, y, " Conditions:")
         y = do_string_output(game, stat_window, y, "Effect: Damage / Resist / Trigger %")
         # format conditions
         conditions_start_index = y
-        for stat, val in zip(game.player.fighter.stat_panel.panel['conditions'].keys(), game.player.fighter.stat_panel.panel['conditions'].values()):
-            stat = color_text(str(stat), val[3])
-            y = do_string_output(game, stat_window, y, "%s:  %d / %d / %d " % (stat, val[0], val[1], val[2]))
+        for stat, val in zip(game.player.fighter.stat_panel.panel['conditions'].keys(),
+                             game.player.fighter.stat_panel.panel['conditions'].values()):
+            if stat != 'key':
+                stat = color_text(str(stat), val[3])
+                y = do_string_output(game, stat_window, y, "%s:  %d / %d / %d " % (stat, val[0], val[1], val[2]))
         ################################################################################################################
 
         mod_count = game.player.fighter.stat_panel.get_category_count('modifiers') + 3
@@ -333,8 +336,8 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
 
         #mouse input
         stat = ""
-        source = ""
-        detail = ""
+        sources = []
+        details = []
         if mouse.cx >= width/2 +3:
             if mod_count >= mouse.cy >= mod_start_index:
                 current_mod_index = mod_start_index
@@ -343,18 +346,19 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
                         stat = stat_iter
                         for things in game.player.fighter.stat_panel.modifiers:
                             if things.effect_name == stat:
-                                source = things.item.owner.name
-                                detail = str(things.amount)
+                                sources.append(things.item.owner.name)
+                                details.append(str(things.amount))
                     current_mod_index += 1
             if combat_count >= mouse.cy >= combat_start_index:
-                current_mod_index = combat_start_index
+                current_mod_index = combat_start_index - 1  # offset by 1 because 1st index is key
                 for stat_iter in game.player.fighter.stat_panel.panel['combat']:
                     if current_mod_index == mouse.cy:
-                        stat = color_text(stat_iter, game.player.fighter.stat_panel.panel['combat'][stat_iter][2])
-                        for things in game.player.fighter.stat_panel.combat_effects:
-                            if things.effect_name == stat_iter:
-                                source = things.item.owner.name
-                                detail = str(things.amount)
+                        if stat_iter != 'key':
+                            stat = color_text(stat_iter, game.player.fighter.stat_panel.panel['combat'][stat_iter][2])
+                            for things in game.player.fighter.stat_panel.combat_effects:
+                                if things.effect_name == stat_iter:
+                                    sources.append(things.item.owner.name)
+                                    details.append(str(things.amount))
                     current_mod_index += 1
 
             #if conditions_count >= mouse.cy >= conditions_start_index:
@@ -395,7 +399,10 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
 #                    bonus = 'Increases your (%s) damage by [%s].' % (name, bonus)
 
         game.gEngine.console_print_rect(stat_desc_window, 1, 1, width/2-2, 3, stat)
-        game.gEngine.console_print(stat_desc_window, 1, 5, "%s: + %s" % (source, detail))
+        y = 5
+        for source, detail in zip(sources, details):
+            game.gEngine.console_print(stat_desc_window, 1, y, "%s: + %s" % (source, detail))
+            y += 1
         #game.gEngine.console_print_rect(stat_desc_window, 1, 7, width/2-2, 3, detail)
 
             #    if mouse.lbutton_pressed:

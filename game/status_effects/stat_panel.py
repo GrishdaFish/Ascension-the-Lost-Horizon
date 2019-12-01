@@ -1,4 +1,6 @@
+__author__ = 'noobspanker'
 import tcod as libtcod
+
 
 class StatPanel:
     """ """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""" """
@@ -25,21 +27,23 @@ class StatPanel:
             },
             "combat" : {
                 # elemental damage/resist/display color
+                "key": ["Damage", "Resistance", "Color"],
                 "Fire": [0, 0, libtcod.red],
                 "Ice": [0, 0, libtcod.light_blue],
                 "Stone": [0, 0, libtcod.grey],
                 "Storm": [0, 0, libtcod.light_purple],
                 "Holy": [0, 0, libtcod.gold],
                 "Evil": [0, 0, libtcod.dark_grey],
-                # physical damge/resistance
+                # physical damage/resistance
                 "Poison": [0, 0, libtcod.green],
                 "Bleed": [0, 0, libtcod.dark_crimson],
-                # physical stae rate/resistance
+                # physical state rate/resistance
                 "Crit Rate": [0, 0, libtcod.light_grey],
                 # petrify ?
             },
             "conditions" : {
-                # conditions the actor can cause / resist [damage, resistance, rate, display color]
+                # conditions the actor can cause / resist [damage, resistance, inflict_rate, display color]
+                "key": ["Damage", "Resistance", "Rate", "Color"],
                 "Burn":  [0, 0, 0, libtcod.red],
                 "Freeze":  [0, 0, 0, libtcod.light_blue],
                 "Tremor":  [0, 0, 0, libtcod.grey],
@@ -57,23 +61,31 @@ class StatPanel:
         self.condition_manager = ConditionManager()    # tracks afflicted conditions
         self.combat_effects = []                # tracks actor's equipped combat effects
         self.modifiers = []                     # tracks actor's equipped modifiers
+        self.conditions = []                    # tracks actor's equipped inflict-able conditions
 
     # called by an effect to register itself
-    def apply_effect(self, effect, modifier=False):
-        if modifier:
+    def apply_effect(self, effect):
+        if effect.panel_group == 'modifiers':
             self.modifiers.append(effect)
-            self.panel['modifiers'][effect.effect_name] += effect.amount
-        else:
+            self.panel[effect.panel_group][effect.effect_name] += effect.amount
+        if effect.panel_group == 'combat':
             self.combat_effects.append(effect)
-            self.panel['combat'][effect.effect_name][0] += effect.amount # 0 index calls damage, hard coded for testing
+            self.panel[effect.panel_group][effect.effect_name][effect.index] += effect.amount
+        if effect.panel_group == 'conditions':
+            self.conditions.append(effect)
+            self.panel[effect.panel_group][effect.effect_name][effect.index] += effect.amount
 
     # called by an effect to un-register itself
-    def remove_effect(self, effect, modifier=False):
-        if modifier:
+    def remove_effect(self, effect):
+        if effect.panel_group == 'modifier':
             self.modifiers.remove(effect)
-        else:
+            self.panel[effect.panel_group][effect.effect_name] -= effect.amount
+        if effect.panel_group == 'combat':
             self.combat_effects.remove(effect)
-        self.panel['combat'][effect.effect_name][0] -= effect.amount  # 0 index calls damage, hard coded for testing
+            self.panel[effect.panel_group][effect.effect_name][effect.index] -= effect.amount
+        if effect.panel_group == 'conditions':
+            self.conditions.remove(effect)
+            self.panel[effect.panel_group][effect.effect_name][effect.index] -= effect.amount
 
     # pass it a damage stat to get the resistance to that stat
     def check_resistance(self, stat):
@@ -94,41 +106,9 @@ class StatPanel:
                 if "Damage" in mod:
                     damage += val
 
-    # basic to string method to output panel data
-    # because of the nature of game's output it seems easier to return an array to iterate over
-    def to_string(self):
-        info = []
-        #prepare a big dumb ass string to output
-        line = " Combat Effects:"
-        info.append(line)
-        line = "Effect: Damage / Resist"
-        info.append(line)
-        # format combat effects
-        for key, val in zip(self.panel['combat'].keys(), self.panel['combat'].values()):
-            line = "%s:  %d / %d" % (key, val[0], val[1])
-            info.append(line)
-        line = ""
-        info.append(line)
-        line = " Modifiers:"
-        info.append(line)
-        # format modifiers
-        for stat in self.panel['modifiers']:
-            line = "%s:  %d " % (stat, self.panel['modifiers'][stat])
-            info.append(line)
-        line = ""
-        info.append(line)
-        line = " Conditions:"
-        info.append(line)
-        line = "Effect: Damage / Resist / Trigger %"
-        info.append(line)
-        # format conditions
-        for stat, val in zip(self.panel['conditions'].keys(), self.panel['conditions'].values()):
-            line = "%s:  %d / %d / %d " % (stat, val[0], val[1], val[2])
-            info.append(line)
-        return info
-
     def get_category_count(self, category):
         return len(self.panel[category])
+
 
 # manages effects that are active
 class ConditionManager:

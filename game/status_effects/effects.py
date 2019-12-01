@@ -1,8 +1,10 @@
-import tcod as libtcod
+import random
 
+import tcod as libtcod
 from game.status_effects.stat_panel import StatPanel
 
 DEFAULT_EFFECT_SPEED = 10
+
 
 class Effect:
     """ """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""" """
@@ -19,52 +21,117 @@ class Effect:
      A usable item should have an array for effects that are applied/removed @ on_use
      Weapon damage calculated must now include effect damage and test for resistances @ on_hit
     """ """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""" """
-    def __init__(self, item, effect):
 
-        self.effect_name = effect   # name of the desired effect type - pull from stat_panel.panel (will make function for it)
-        self.effect_type = self.get_type(effect)  # combat or modifier, so we know where to look for it in stat panel
-        self.item = item            # the item that instantiated this effect, used to reference @ on_unequip in case 2 items with same effect etc.
-        self.actor = None           # owner of this effect, set on activation/equip
-        self.target = None          # STRING: "self" or "target" - who feels the effect, self - on_use, on_equip, target - on_hit
-        self.stat_effected = None
-        self.current_stack = 0      # tracks how many times the stat has been activated
-        self.max_stack = 10         # max times effect can stack - 10 is arbitrary # TODO:this should really be predefined across the board
+    def __init__(self, item, effect=None):
+        # data manipulation
+        self.panel_group = None  # combat modifiers or conditions, relating to stat panel.panel[panel_group]
+        self.effect_name = effect  # name relating to stat_panel.panel[panel_group][name]
+        self.effect_real_name = None  # name relating to stat_panel.panel[panel_group]['key'][effect_real_name] (output)
+        self.index = None  # logical storage index for ease of reference
+        # linked objects
+        self.item = item  # the item that instantiated this effect, used to reference @ on_unequip in case 2 items with same effect etc.
+        self.actor = None  # owner of this effect, set during on_equip in activate_effect
+
+        self.amount = 0  # strength of effect *should support range (i.e +5 or +5-10) for damage spread
+
+        # Related to conditions
+        self.target = None  # actor receiving
+        self.probability = 100  # % chance to trigger effect
+        self.duration = None  # inflicted duration, passed to condition
+        self.can_cancel = None  # effect can be cancelled by item or spell (applies to status conditions)
+        self.speed = DEFAULT_EFFECT_SPEED  # declared above ^
+        self.max_stack = 3  # max times effect can stack - 3 is arbitrary but will likely suffice
+        # self.current_stack = 0      # tracks how many times the condition has been activated ----***Calculating this on the fly defeats the purpose of concurrent as well
         # self.max_stack_concurrent = max_concurrent  # set limit for stacking same effect from multiple items? Otherwise you can stack endlessly from replenishing resources (ie buff scrolls or pots)
-        self.can_cancel = None      # effect can be cancelled by item or spell (applies to status conditions)
-        self.probability = 100      # % chance to trigger effect
-        self.amount = 0             # strength of effect or range (+5 or +5-10) useful for damage spread or randomized outcomes
-        self.duration = None        # inflicted duration, passed to condition
-        self.speed = DEFAULT_EFFECT_SPEED   # declared above ^
 
-        # call this to fill shit in randomly, this will be optional later on
-        self.generate_effect()
+        if effect is None:
+            self.generate_effect()
+        if self.panel_group is None:
+            self.get_type()
+        self.get_real_name()
 
+    ################################################ACTIVATE/DEACTIVATE#####################################################
+
+    # pass the actor you want to use the effect
     def activate_effect(self, actor):
-        self.actor = actor
-        if self.target == "self" and not self.duration:  # then it's a modifier
-            # let's see if it's already active / at max stack
-            if self in self.actor.stat_panel.modifiers or self.current_stack >= self.max_stack:
-                pass  # cus that shit is already equipped / at max_stack
-            else:
-                self.actor.stat_panel.apply_effect(self, True)
-                self.current_stack += 1
-        else:  # it's not a modifier then it must be a combat effect
-            if self in self.actor.stat_panel.combat_effects or self.current_stack >= self.max_stack:
-                pass
-            else:
-                self.actor.stat_panel.apply_effect(self)
-                self.current_stack -= 1
+        if self.actor is None:
+            self.actor = actor
+        self.actor.stat_panel.apply_effect(self)
+#        if self.panel_group == 'modifiers':
+#            if self in self.actor.stat_panel.modifiers:
+#                pass  # cus that shit is already equipped / at max_stack
+#            else:
+#                self.actor.stat_panel.apply_effect(self)
+#                # self.current_stack += 1
+#        if self.panel_group == 'combat':
+#            if self in self.actor.stat_panel.combat_effects:
+#                pass
+#            else:
+#                self.actor.stat_panel.apply_effect(self)
+#               # self.current_stack += 1
+#        if self.panel_group == 'conditions':
+#            if self in self.actor.stat_panel.conditions:
+#                pass
+#            else:
+#                self.actor.stat_panel.apply_effect(self)
+                # self.current_stack += 1
 
-    def deactivate_effect(self):
-        if self.target == "self" and not self.duration:  # then it's a modifier
-            # let's make sure it's active
-            if self in self.actor.stat_panel.modifiers:
-                self.actor.stat_panel.remove_effect(self, True)
-                self.current_stack -= 1
+    def deactivate_effect(self, actor):
+        actor.stat_panel.remove_effect(self)
+        self.actor = None
+#        if self.panel_group == 'modifiers':
+#            # let's make sure it's active
+#            if self in self.actor.stat_panel.modifiers:
+#                self.actor.stat_panel.remove_effect(self)
+#                # self.current_stack -= 1
+#        if self.panel_group == 'combat':
+#            if self in self.actor.stat_panel.combat_effects:
+#                self.actor.stat_panel.remove_effect(self)
+#                # self.current_stack -= 1
+#        if self.panel_group == 'conditions':
+#            if self in self.actor.stat_panel.conditions:
+#                self.actor.stat_panel.remove_effect(self)
+#                # self.current_stack -= 1
+
+    def activate_condition(self, actor):
+        # condition = hit the actor target's stat_panel.condition_manager with a new condition
+        #  built from this effect's condition stats TODO <-this
+        pass
+    #################################################UTILITY################################################################
+
+    def generate_effect(self):
+        if self.effect_name is None:
+            stat_panel = StatPanel()
+            self.panel_group = random.choice(list(stat_panel.panel))
+            name_list = list(stat_panel.panel[self.panel_group])
+
+            if self.panel_group == 'modifiers':
+                self.index = None
+            if self.panel_group == 'combat' or self.panel_group == 'conditions':
+                self.index = libtcod.random_get_int(0, 0, 1)
+                name_list.pop(0)
+
+            self.effect_name = random.choice(name_list)
+        self.amount = libtcod.random_get_int(0, 1, 3)
+        # self.duration = 1
+
+    def get_type(self):
+        stat_panel = StatPanel()
+        if self.effect_name in stat_panel.panel['combat']:
+            self.panel_group = 'combat'
+        if self.effect_name in stat_panel.panel['modifiers']:
+            self.panel_group = 'modifiers'
+        if self.effect_name in stat_panel.panel['conditions']:
+            self.panel_group = 'conditions'
+
+    def get_real_name(self):
+        stat_panel = StatPanel()
+        if self.panel_group != 'modifiers':
+            self.effect_real_name = stat_panel.panel[self.panel_group]['key'][self.index]
         else:
-            if self in self.actor.stat_panel.combat_effects:
-                self.actor.stat_panel.remove_effect(self)
-                self.current_stack -= 1
+            self.effect_real_name = " "
+
+    #####################################################COMBAT#########################################################
 
     def trigger_probability(self):
         triggered = False
@@ -72,25 +139,15 @@ class Effect:
             triggered = True
         return triggered
 
+    def inflict_condition(self, actor):
+        if self.panel_group == 'conditions' and self.trigger_probability:
+            self.activate_condition(actor)
 
-    def generate_effect(self):
-        self.target = "target" # or "self"
-        # if target self stat should be beneficial ie resistance or modifier
-        #stat = ''
-        #else stat = combat_effect
-        #max_stack = 10 # TODO:this should really be predefined across the board
-        # can cancel True if has condition
-        #can_cancel = ""
-        # conditions have probability, otherwise it's 100
-        #probability = ""
-        #
-        self.amount = 5
-        self.duration = 1
+    def inflict_damage(self):
+        if self.panel_group != 'modifiers' and self.index == 0:  # damage is always the first stat in the index
+            return self.amount
 
-
-    def get_type(self, effect):
-        stat_panel = StatPanel()
-        if effect in stat_panel.panel['combat']:
-            self.effect_type = 'combat'
-        if effect in stat_panel.panel['modifiers']:
-            self.effect_type = 'modifiers'
+    def get_resistance(self, effect_name):
+        if self.panel_group != 'modifiers':
+            if self.effect_name == effect_name and self.index == 1:  # resistances are always second stat in the index
+                return self.amount

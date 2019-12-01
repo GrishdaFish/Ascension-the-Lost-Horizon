@@ -123,6 +123,7 @@ class Equipment:
 
     def calc_damage(self):
         total_damage = 0
+
         if self.damage is not None:
             num_dice = self.damage[0]  # num dice
             sides = self.damage[1]  # num faces
@@ -130,7 +131,7 @@ class Equipment:
             bonus = self.damage[3]  # bonus damages
             for i in range(num_dice):
                 total_damage += libtcod.random_get_int(0, 1, sides)
-            total_damage = (total_damage * multiplier) + bonus
+            total_damage = (total_damage * multiplier) + bonus + effect_damage
         return total_damage
 
     def equip(self, target, game=None, owner=None, slot=0):
@@ -144,6 +145,10 @@ class Equipment:
             'shoulders': 6,
             'back': 7
         }
+
+        for effect in self.effects:
+            effect.activate_effect(target.fighter)
+
         torch = None
         if self.type == 'armor':
             if target.fighter.equipment[locations[self.location]] is None:
@@ -232,11 +237,8 @@ class Equipment:
             target.fighter.inventory.remove(owner)
             if game:
                 game.message.message(owner.name + " equipped.", 1)
-        for effect in self.effects:
-            effect.activate_effect(target.fighter)
 
     def un_equip(self, target, item):
         target.fighter.inventory.append(item)
-        for effect in target.fighter.stat_panel.combat_effects:
-            if effect.item == item:
-                effect.deactivate_effect()
+        for effect in self.effects:
+            effect.deactivate_effect(target.fighter)

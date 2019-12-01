@@ -287,8 +287,8 @@ class GameObjects:
         equip.objects = game.objects
 
         # lets check out some enchants motherf^(!%3r!!!
-        effect = Effect(equip.item, "Fire")
-        equip.item.equipment.effects.append(effect)
+        effect = Effect(equip.item)                  # generate an effect randomly linking it to the item
+        equip.item.equipment.effects.append(effect)  # stick it to the item array
 
         # equip.send_to_back(game.objects)
         return equip
