@@ -1,6 +1,7 @@
 __author__ = 'GrishdaFish'
 import tcod as libtcod
 from gEngine import lights
+from gEngine.utilities import dijikstra_map
 from game.object import object
 from game.object import item
 from game import render
@@ -169,6 +170,7 @@ def detect_monsters(min, max, range, radius, targets, target, player, game, effe
         game.message.message("You can now see all monsters around you for " + str(num_turns) +
                              " turns!", libtcod.light_cyan)
 
+
 def detect_loot(min, max, range, radius, targets, target, player, game, effect_color):
     num_turns = libtcod.random_get_int(0, min, max)
     if game.loot_force_display[0]:
@@ -180,6 +182,11 @@ def detect_loot(min, max, range, radius, targets, target, player, game, effect_c
         game.loot_force_display[1] = num_turns
         game.message.message("You can now see all items around you for " + str(num_turns) +
                              " turns!", libtcod.light_cyan)
+
+
+def magical_mapping(min, max, range, radius, targets, tile, player, game, effect_color):
+    for tile in game.level.dungeon:
+        tile.explored = True
 
 
 spells = {
