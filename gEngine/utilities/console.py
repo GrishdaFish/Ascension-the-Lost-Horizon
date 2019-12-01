@@ -124,10 +124,10 @@ class Console:
             self.input_string = ''.join(self.input_list)
             return False
 
-        if key.vk is libtcod.KEY_SPACE:
-            self.input_list.append(' ')
-            self.input_string = ''.join(self.input_list)
-            return False
+        # if key.vk is libtcod.KEY_SPACE:
+        #     self.input_list.append(' ')
+        #     self.input_string = ''.join(self.input_list)
+        #     return False
 
         return False
 
