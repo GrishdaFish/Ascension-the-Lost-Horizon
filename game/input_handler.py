@@ -28,7 +28,7 @@ def handle_misc(key, game):
         turn = None
 
     if key.c is ord('`') or key.c is ord('~'):
-        # self.console.run_console()
+        game.dev_console.run_console()
         turn = None
 
     if key.vk == libtcod.KEY_ESCAPE:

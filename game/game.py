@@ -7,11 +7,13 @@ import tcod as libtcod
 import esper
 from game.ecs import systems
 from gEngine.utilities.timing import ticker
+from gEngine.utilities import console
 from gEngine.utilities import status_bar
 from gEngine.utilities import messaging
 from gEngine.utilities.user_interface import menu
 from gEngine.utilities.user_interface import hot_bar
 from gEngine.utilities.user_interface import dialog_box
+
 from gEngine import lights
 from game import bark
 from game.object import build_objects
@@ -99,6 +101,7 @@ class Game:
         self.player_action = None
         self.bark_manager = bark.BarkManager()
         self.ambient = 0.15
+        self.dev_console = console.Console(self, self.dungeon_width, self.dungeon_height, 'debug')
         self.monster_force_display = [False, 0]
         self.loot_force_display = [False, 0]
 
