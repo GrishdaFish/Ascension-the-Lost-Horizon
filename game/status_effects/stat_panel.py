@@ -65,6 +65,7 @@ class StatPanel:
 
     # called by an effect to register itself
     def apply_effect(self, effect):
+        print('called apply')
         if effect.panel_group == 'modifiers':
             self.modifiers.append(effect)
             self.panel[effect.panel_group][effect.effect_name] += effect.amount
@@ -77,6 +78,7 @@ class StatPanel:
 
     # called by an effect to un-register itself
     def remove_effect(self, effect):
+        print('called remove')
         if effect.panel_group == 'modifier':
             self.modifiers.remove(effect)
             self.panel[effect.panel_group][effect.effect_name] -= effect.amount

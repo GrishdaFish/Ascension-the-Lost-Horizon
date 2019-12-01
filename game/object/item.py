@@ -146,9 +146,6 @@ class Equipment:
             'back': 7
         }
 
-        for effect in self.effects:
-            effect.activate_effect(target.fighter)
-
         torch = None
         if self.type == 'armor':
             if target.fighter.equipment[locations[self.location]] is None:
@@ -156,6 +153,8 @@ class Equipment:
                 if game:
                     game.message.message(owner.name + " equipped.", 1)
                     target.fighter.inventory.remove(owner)
+                    for effect in self.effects:
+                        effect.activate_effect(target.fighter)
                 # target.fighter.defense+=self.defense
                 target.fighter.set_armor_bonus()
                 target.fighter.set_armor_penalty()
@@ -171,7 +170,8 @@ class Equipment:
                 if game:
                     game.message.message(owner.name + " equipped.", 1)
                     target.fighter.inventory.remove(owner)
-
+                    for effect in self.effects:
+                        effect.deactivate_effect(target.fighter)
                 return
 
         if self.type == 'melee':
@@ -237,8 +237,10 @@ class Equipment:
             target.fighter.inventory.remove(owner)
             if game:
                 game.message.message(owner.name + " equipped.", 1)
+        for effect in self.effects:
+            effect.activate_effect(target.fighter)
 
     def un_equip(self, target, item):
-        target.fighter.inventory.append(item)
         for effect in self.effects:
             effect.deactivate_effect(target.fighter)
+        target.fighter.inventory.append(item)
