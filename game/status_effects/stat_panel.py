@@ -68,6 +68,8 @@ class StatPanel:
         print('called apply')
         if effect.panel_group == 'modifiers':
             self.modifiers.append(effect)
+            print(str(self.panel[effect.panel_group][effect.effect_name]))
+            print(str(effect.amount))
             self.panel[effect.panel_group][effect.effect_name] += effect.amount
         if effect.panel_group == 'combat':
             self.combat_effects.append(effect)
@@ -79,8 +81,10 @@ class StatPanel:
     # called by an effect to un-register itself
     def remove_effect(self, effect):
         print('called remove')
-        if effect.panel_group == 'modifier':
+        if effect.panel_group == 'modifiers':
             self.modifiers.remove(effect)
+            print(str(self.panel[effect.panel_group][effect.effect_name]))
+            print(str(effect.amount))
             self.panel[effect.panel_group][effect.effect_name] -= effect.amount
         if effect.panel_group == 'combat':
             self.combat_effects.remove(effect)
@@ -89,24 +93,25 @@ class StatPanel:
             self.conditions.remove(effect)
             self.panel[effect.panel_group][effect.effect_name][effect.index] -= effect.amount
 
-    # pass it a damage stat to get the resistance to that stat
-    def check_resistance(self, stat):
-        resistance = stat + 1
-        return self.panel[resistance]
+
+    def check_resistance(self):
+        pass
 
     # call as is for bulk damage, pass True for full details
-    def return_damage(self, details=False): #TODO determine desired output format
+    def return_damage(self, details=False): #TODO determine desired output format / dont use details yet
         damage = 0
         damage_detail = []
         if details:
             for mod, val in self.panel:
                 if "Damage" in mod:
                     damage_detail.append( [mod, val] )
-
         else:
-            for mod, val in self.panel:
-                if "Damage" in mod:
-                    damage += val
+            for group in self.panel:
+                if group != 'modifiers':
+                    for type in group:
+                        if type != 'key':
+                            damage += list(type)[0]
+        return damage
 
     def get_category_count(self, category):
         return len(self.panel[category])

@@ -123,7 +123,10 @@ class Equipment:
 
     def calc_damage(self):
         total_damage = 0
-
+        effect_damage = 0
+        if len(self.effects) > 0:
+            if self.effects[0].actor is not None:
+                effect_damage = self.effects[0].actor.stat_panel.return_damage()
         if self.damage is not None:
             num_dice = self.damage[0]  # num dice
             sides = self.damage[1]  # num faces
@@ -241,6 +244,6 @@ class Equipment:
             effect.activate_effect(target.fighter)
 
     def un_equip(self, target, item):
-        for effect in self.effects:
+        for effect in item.item.equipment.effects:  #item.equipment.effects:
             effect.deactivate_effect(target.fighter)
         target.fighter.inventory.append(item)
