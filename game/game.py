@@ -99,6 +99,8 @@ class Game:
         self.player_action = None
         self.bark_manager = bark.BarkManager()
         self.ambient = 0.15
+        self.monster_force_display = [False, 0]
+        self.loot_force_display = [False, 0]
 
     def activate(self):
         self.active = True
@@ -193,6 +195,19 @@ class Game:
                         self.ticker.schedule_turn(self.player.fighter.speed, self.player)
                         self.player.torch.update(self)
 
+                        if self.monster_force_display[0]:
+                            if self.monster_force_display[1] <= 0:
+                                self.monster_force_display[0] = False
+                                self.message.message("Your detect monster spell has expired.", libtcod.light_cyan)
+                            else:
+                                self.monster_force_display[1] -= 1
+
+                        if self.loot_force_display[0]:
+                            if self.loot_force_display[1] <= 0:
+                                self.loot_force_display[0] = False
+                                self.message.message("Your detect items spell has expired.", libtcod.light_cyan)
+                            else:
+                                self.loot_force_display[1] -= 1
 
                     render.render_all(self)# self.render_all()
                     self.gEngine.console_flush()

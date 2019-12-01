@@ -1,9 +1,10 @@
+__author__ = 'GrishdaFish'
 import tcod as libtcod
 from gEngine import lights
 from game.object import object
 from game.object import item
 from game import render
-
+from game.spells import spell_effects
 
 
 class Spell:
@@ -71,16 +72,50 @@ def lightning(min, max, range, radius, targets, target, player, game, effect_col
     c = [libtcod.white, libtcod.light_blue]
     l.staged_lerp(2.0, 1.0, 0.05, 0.0095, c)
     game.level.light_handler.add_light(l)
-    LIGHTNING_DAMAGE = libtcod.random_get_int(0, min, max)
+    lightning_damage = libtcod.random_get_int(0, min, max)
     game.message.message('A lighting bolt strikes the ' + monster.name +
                          ' with a loud thunder! The damage is '
-                         + str(LIGHTNING_DAMAGE) + ' hit points.', libtcod.light_crimson)
-    monster.fighter.take_damage(LIGHTNING_DAMAGE, player, game)
+                         + str(lightning_damage) + ' hit points.', libtcod.light_crimson)
+    monster.fighter.take_damage(lightning_damage, player, game)
 
     # draw the effect
     #game.gEngine.particle_projectile(1, player.x, player.y, monster.x, monster.y, color=libtcod.lightest_blue)
     # spell_effects.path_effect(game,player.x,player.y,monster.x,monster.y,5)
 
+
+def chain_lightning(min, max, r, radius, targets, target, player, game, effect_color):
+    num_chains = libtcod.random_get_int(0, 1, radius)
+    monster = closest_monster(game, r)
+    # blast with lightning
+    if monster is None:  # no enemy found within maximum range
+        game.message.message('No enemy is close enough to strike.', libtcod.light_cyan)
+        return 'cancelled'
+    l = lights.Light(monster.x, monster.y, game.light_handler, flicker=True)
+    c = [libtcod.white, libtcod.light_blue]
+    l.staged_lerp(2.0, 1.0, 0.05, 0.0095, c)
+    game.level.light_handler.add_light(l)
+    lightning_damage = libtcod.random_get_int(0, min, max)
+    game.message.message('A lighting bolt strikes the ' + monster.name +
+                         ' with a loud thunder! The damage is '
+                         + str(lightning_damage) + ' hit points.', libtcod.light_crimson)
+    monster.fighter.take_damage(lightning_damage, player, game)
+    for x in range(num_chains):
+        monster = closest_target(game, r-1, monster)  # get the next closest target to the first target
+        if monster is None:  # no enemy found within maximum range
+            game.message.message('No enemy is close enough to chain to.', libtcod.light_cyan)
+            return
+        l = lights.Light(monster.x, monster.y, game.light_handler, flicker=True)
+        c = [libtcod.white, libtcod.light_blue]
+        l.staged_lerp(2.0, 1.0, 0.05, 0.0095, c)
+        game.level.light_handler.add_light(l)
+        lightning_damage = libtcod.random_get_int(0, min, max)
+        if monster == game.player:
+            game.message.message('You get blasted by your own spell!', libtcod.red)
+        else:
+            game.message.message('The lighting bolt chains and strikes the ' + monster.name +
+                                 ' with a loud thunder! The damage is '
+                                 + str(lightning_damage) + ' hit points.', libtcod.light_crimson)
+        monster.fighter.take_damage(lightning_damage, player, game)
 
 
 def confuse(min, max, range, radius, targets, target, player, game, effect_color):
@@ -121,13 +156,42 @@ def light(min, max, range, radius, targets, target, player, game, effect_color):
                 target.fighter.inventory.append(target.fighter.light_source)
         target.fighter.light_source = equip
 
+
+def detect_monsters(min, max, range, radius, targets, target, player, game, effect_color):
+    num_turns = libtcod.random_get_int(0, min, max)
+    if game.monster_force_display[0]:
+        game.monster_force_display[1] += num_turns
+        game.message.message("You've extended your ability to see all monsters around you by " + str(num_turns) +
+                             " turns!", libtcod.light_cyan)
+    else:
+        game.monster_force_display[0] = True
+        game.monster_force_display[1] = num_turns
+        game.message.message("You can now see all monsters around you for " + str(num_turns) +
+                             " turns!", libtcod.light_cyan)
+
+def detect_loot(min, max, range, radius, targets, target, player, game, effect_color):
+    num_turns = libtcod.random_get_int(0, min, max)
+    if game.loot_force_display[0]:
+        game.loot_force_display[1] += num_turns
+        game.message.message("You've extended your ability to see all items around you by " + str(num_turns) +
+                             " turns!", libtcod.light_cyan)
+    else:
+        game.loot_force_display[0] = True
+        game.loot_force_display[1] = num_turns
+        game.message.message("You can now see all items around you for " + str(num_turns) +
+                             " turns!", libtcod.light_cyan)
+
+
 spells = {
     'heal': heal,
     'fireball': fireball,
     'light': light,
+    'chain lightning': chain_lightning,
     'lightning': lightning,
     'confusion': confuse,
     'confuse': confuse,
+    'detect monster': detect_monsters,
+    'detect items': detect_loot,
     'none': None,
 }
 
@@ -145,6 +209,17 @@ def target_monster(game, max_range=None):
             if obj.x == x and obj.y == y and obj.fighter and obj != game.player:
                 return obj
 
+def closest_target(game, max_range, target):
+    close_target = None
+    closest_dist = max_range + 1
+    for object in game.objects:
+        if object.fighter:
+            if object != target:
+                dist = target.distance_to(object)
+                if dist < closest_dist:
+                    close_target = object
+                    closest_dist = dist
+    return close_target
 
 def closest_monster(game, max_range):
     # find closest enemy, up to a maximum range, and in the player's FOV
@@ -162,25 +237,43 @@ def closest_monster(game, max_range):
 
 
 def target_tile(game, max_range=None, radius=None):
-    # return the position of a tile left-clicked in player's FOV (optionally in a range), or (None,None) if right-clicked.
+    if not radius:
+        radius = 1
+    targeting_window = TargetRender(radius, game.dungeon_console, game)
+    renderers = [targeting_window.render]
     while True:
-        # render the screen. this erases the inventory and shows the names of objects under the mouse.
-        render.render_all(game)
-        libtcod.console_flush()
 
+        render.render_all(game, renderers)
+        libtcod.console_flush()
         key = libtcod.Key()
         mouse = libtcod.Mouse()
         libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
-        (x, y) = (mouse.cx, mouse.cy)
-
-        if mouse.rbutton_pressed or key.vk == libtcod.KEY_ESCAPE:
+        x, y = (mouse.cx-int(radius/2)-1, mouse.cy-int(radius/2)-1)
+        if mouse.rbutton or key.vk == libtcod.KEY_ESCAPE:
             return None, None  # cancel if the player right-clicked or pressed Escape
 
         # accept the target if the player clicked in FOV, and in case a range is specified, if it's in that range
-        if (mouse.lbutton_pressed and libtcod.map_is_in_fov(game.fov, x, y) and
+        if (mouse.lbutton and libtcod.map_is_in_fov(game.fov, x, y) and
                 (max_range is None or game.player.distance(x, y) <= max_range)):
             return x, y
 
+
+class TargetRender:
+    def __init__(self, radius, target_console, game):
+        self.radius = radius
+        self.target_console = target_console
+        self.targeting_window = game.gEngine.console_new(radius + 2, radius + 2)
+
+    def render(self, game):
+        key = libtcod.Key()
+        mouse = libtcod.Mouse()
+        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+        x, y = (mouse.cx, mouse.cy)
+        r, g, b = libtcod.white
+        game.gEngine.console_set_default_background(self.targeting_window, r, g, b)
+        game.gEngine.console_print_frame(self.targeting_window, 0, 0, self.radius + 2, self.radius + 2, True)
+        game.gEngine.console_blit(self.targeting_window, 0, 0, 0, 0, self.target_console,
+                                  x - int(self.radius / 2) - 2, y - int(self.radius / 2) - 2, 0.5, 0.5)
 
 def line_listener(x, y):
     pass

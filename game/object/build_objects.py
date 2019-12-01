@@ -1,8 +1,6 @@
-import tcod as libtcod
 from game.object.object import *
 from game.object.item import *
-from game.object.misc import *
-from game.object.spells import *
+from game.spells.spells import *
 # import actor
 from game import combat
 from game import content_parser

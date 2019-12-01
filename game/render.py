@@ -59,7 +59,12 @@ def draw_objects(game):
             else:
                 object.draw(game.fov, game.gEngine)
         else:
-            object.draw(game.fov, game.gEngine)
+            if game.monster_force_display[0] and object.fighter:
+                object.draw(game.fov, game.gEngine, force_display=True)
+            elif game.loot_force_display[0] and object.item:
+                object.draw(game.fov, game.gEngine, force_display=True)
+            else:
+                object.draw(game.fov, game.gEngine)
     game.player.draw(game.fov, game.gEngine)
 
 
