@@ -340,6 +340,17 @@ class Fighter:
 
     def take_damage(self, damage, attacker, game):
         # apply damage if possible
+        if self.owner == game.player:
+            most_damage = game.ai_director.get_player_stat('most damage received')
+            if damage > most_damage:
+                game.ai_director.add_player_stat('most damage received', damage, True)
+            game.ai_director.add_player_stat('total damage received', damage)
+        else:
+            most_damage = game.ai_director.get_player_stat('most damage dealt')
+            if damage > most_damage:
+                game.ai_director.add_player_stat('most damage dealt', damage, True)
+            game.ai_director.add_player_stat('total damage dealt', damage)
+
         if damage > 0:
             self.hp -= damage
             self.owner.flashing = True
@@ -352,6 +363,8 @@ class Fighter:
 
             # check for death. if there's a death function, call it
             if self.hp <= 0:
+                if self.owner != game.player:
+                    game.ai_director.add_player_stat('kills', 1)
                 attacker.fighter.current_xp += self.current_xp
                 function = self.death_function
                 if function is not None:

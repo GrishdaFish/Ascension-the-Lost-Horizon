@@ -25,6 +25,7 @@ from game.user_interface import menus
 from game import ranged_combat
 from game import input_handler
 from game import render
+from game.ai_director import ai_director
 # todo externalize this data
 dungeon_height = 55
 dungeon_width = 80
@@ -104,6 +105,8 @@ class Game:
         self.dev_console = console.Console(self, self.dungeon_width, self.dungeon_height, 'debug')
         self.monster_force_display = [False, 0]
         self.loot_force_display = [False, 0]
+        self.ai_director = ai_director.AiDirector(self, self.gEngine)
+        self.turns = 0
 
     def activate(self):
         self.active = True
@@ -183,7 +186,7 @@ class Game:
 
                     if self.player_action == 'player-moved':
                         self.player_moved = True
-
+                        self.ai_director.add_player_stat('steps moved', 1)
 
                     if libtcod.console_is_window_closed():
                         self.player_action = 'exit'
@@ -197,6 +200,8 @@ class Game:
                     if self.player_action == 'turn-used' or self.player_action == 'player-moved':
                         self.ticker.schedule_turn(self.player.fighter.speed, self.player)
                         self.player.torch.update(self)
+                        self.turns += 1
+                        self.ai_director.add_player_stat('turns taken', 1)
 
                         if self.monster_force_display[0]:
                             if self.monster_force_display[1] <= 0:
@@ -247,6 +252,7 @@ class Game:
 
         #self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
         self.game_state = 'playing'
+        self.ai_director.add_player_stat('gold earned', self.player.fighter.money)
 
     def setup_world(self):
         self.world.add_processor(systems.DisplayProcessor())
@@ -303,7 +309,16 @@ class Game:
         self.ambient -= 0.025
         self.gEngine.lightmask_set_ambient(self.ambient)
         self.bark_manager.empty(self.gEngine)
-
+        left_over_items = 0
+        left_over_monsters = 0
+        for object in self.objects:
+            if object.item:
+                left_over_items += 1
+            if object.fighter:
+                if object != self.player:
+                    left_over_monsters += 1
+        self.ai_director.add_player_stat('items left behind', left_over_items)
+        self.ai_director.add_player_stat('monster left behind', left_over_monsters)
         self.ticker.clear_ticker()
         self.level.objects = []
         for objects in self.objects:
@@ -332,6 +347,13 @@ class Game:
                 if object.misc.type == 'up':  # place the player at the down stairs on the previous level
                     self.player.x = object.x
                     self.player.y = object.y
+        fast_level_speed = self.ai_director.get_player_stat('fastest level')
+        long_level_speed = self.ai_director.get_player_stat('longest level')
+        if self.turns < fast_level_speed:
+            self.ai_director.add_player_stat('fastest level', self.turns, True)
+        if self.turns > long_level_speed:
+            self.ai_director.add_player_stat('longest level', self.turns, True)
+        self.turns = 0
 
     def prev_level(self):
         self.objects = []
@@ -367,12 +389,13 @@ class Game:
 
     def player_death(self, player):
         # the game ended!
-        self.message.message('You died!', 1)
+        self.message.message('You died! Press Escape to return to the main menu.', 1)
         self.game_state = 'dead'
 
         # for added effect, transform the player into a corpse!
         self.player.char = '%'
         self.player.color = libtcod.dark_red
+        self.ai_director.dump_data()
 
     def get_names_under_mouse(self):
         # return a string with the names of all objects under the mouse
