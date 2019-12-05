@@ -329,6 +329,16 @@ class Game:
         # level = self.basic_dungeon.make_map(game=self, light_handler=l)
         level = self.prefab_generator.level_from_prefabs(light_handler=l)
 
+        fast_level_speed = self.ai_director.get_player_stat('fastest level')
+        long_level_speed = self.ai_director.get_player_stat('longest level')
+        if self.turns < fast_level_speed:
+            self.ai_director.add_player_stat('fastest level', self.turns, True)
+
+        if self.turns > long_level_speed:
+            self.ai_director.add_player_stat('longest level', self.turns, True)
+        if self.depth == 1:
+            self.ai_director.add_player_stat('fastest level', self.turns, True)
+        self.turns = 0
         level.depth = self.depth + 1
         self.depth += 1
         if self.depth > 0:
@@ -347,13 +357,7 @@ class Game:
                 if object.misc.type == 'up':  # place the player at the down stairs on the previous level
                     self.player.x = object.x
                     self.player.y = object.y
-        fast_level_speed = self.ai_director.get_player_stat('fastest level')
-        long_level_speed = self.ai_director.get_player_stat('longest level')
-        if self.turns < fast_level_speed:
-            self.ai_director.add_player_stat('fastest level', self.turns, True)
-        if self.turns > long_level_speed:
-            self.ai_director.add_player_stat('longest level', self.turns, True)
-        self.turns = 0
+
 
     def prev_level(self):
         self.objects = []

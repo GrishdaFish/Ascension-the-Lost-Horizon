@@ -199,7 +199,7 @@ class GameObjects:
                 return equip
         return None
 
-    def build_equipment(self, game, x, y, type=None, name=None, mat=None):
+    def build_equipment(self, game, x=0, y=0, type=None, name=None, mat=None):
         # for getting base equipments, no special effects or unique/legendary
 
         # if mat or name return None, random mats or equipments are used
@@ -324,7 +324,7 @@ class GameObjects:
         if mob.can_equip_gear:
             r = libtcod.random_get_int(0, 0, 100)
             if r > 85:  # 15 % chance the mob will have a weapon
-                monster.fighter.wielded[0] = self.build_equipment(game, x, y, type="melee")
+                monster.fighter.wielded[0] = game.ai_director.get_equipment(x, y, type="melee")
         for skill in monster.fighter.skills:
             skill.set_bonus(mob.defense_bonus)
         monster.fighter.max_hp = mob.hp

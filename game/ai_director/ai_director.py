@@ -5,10 +5,13 @@ import pathlib
 import sys
 import os
 import time
+from gEngine import gEngine as GENGINE
 
 
 class AiDirector:
     def __init__(self, game, gEngine):
+        self.game = game
+        self.gEngine = gEngine
         self.threat_engine = t_engine.ThreatEngine(game, gEngine)
         self.speed = 10
         self.ambient_light_level = 0.3
@@ -58,6 +61,12 @@ class AiDirector:
 
     def new_level(self):
         pass
+
+    def get_equipment(self, x=0, y=0, type=None, name=None, mat=None):
+        item = self.game.build_objects.build_equipment(self.game, x, y, type, name, mat)
+        threat = self.threat_engine.get_item_threat(item)
+        item.item.equipment.threat_level = threat
+        return item
 
     def spawn_loot(self):
         pass
@@ -109,7 +118,10 @@ class AiDirector:
             return None
 
     def dump_data(self):
-        path = os.path.join(sys.path[0])
+        if GENGINE.RELEASE:
+            path = getattr(sys, "_MEIPASS", ".")
+        else:
+            path = sys.path[0]
         path = os.path.join(path, 'logs', 'data', 'aid')
         pathlib.Path(path).mkdir(parents=True, exist_ok=True)
         name = 'stats_'+str(int(time.time())) + '.dat'

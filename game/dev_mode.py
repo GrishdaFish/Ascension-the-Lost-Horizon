@@ -4,7 +4,7 @@ from dungeon import dungeon
 from dungeon import prefab_dungeon
 from gEngine.utilities.dijikstra_map import *
 from copy import deepcopy
-
+import math
 class FleeingAi:
     def __init__(self, start_x, start_y):
         self.start_x = start_x
@@ -76,6 +76,15 @@ class DevMode:
         #                                                       self.level.rooms,
         #                                                       True)
         self.level = self.dungeon_gen.level_from_prefabs()
+        # self.height_map = libtcod.heightmap_new(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
+        # noise = libtcod.noise_new(libtcod.random_get_int(0, 3, 5))
+        # libtcod.heightmap_add_fbm(self.height_map, noise, 2.5, 0.5, 1.0, 1.0, 5, 0.5, 0.5)
+        # for y in range(self.level.MAP_HEIGHT):
+        #     for x in range(self.level.MAP_WIDTH):
+        #         self.level.dungeon[x][y].color = libtcod.Color(255,255,255)
+        #         v = libtcod.heightmap_get_value(self.height_map, x, y)
+        #         self.level.dungeon[x][y].color *= v
+
         self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
         self.dungeon_gen.set_draw_map(self.level.dungeon)
 
@@ -84,7 +93,8 @@ class DevMode:
 
     def run(self, key, mouse):
         while not libtcod.console_is_window_closed():
-            self.gEngine.console_clear_all()
+            self.gEngine.console_clear(self.con)
+            self.gEngine.console_clear(0)
             key = libtcod.Key()
             mouse = libtcod.Mouse()
             libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
@@ -109,39 +119,60 @@ class DevMode:
             self.gEngine.lightmask.add_light(mouse.cx, mouse.cy, 1.0)
 
         if key.vk == libtcod.KEY_SPACE:
-            self.gEngine.map_clear()
-            d, r = self.dungeon_gen.add_prefab_room(self.level.dungeon,
-                                                    self.dungeon_gen.width,
-                                                    self.dungeon_gen.height,
-                                                    False,
-                                                    self.level.rooms,
-                                                    False,
-                                                    50,
-                                                    30,
-                                                    True)
-            if d:
-                self.level.dungeon = d
-                self.level.rooms = r
+
+            radius = libtcod.random_get_int(0, 3,  5)
+            radius += 0.5
+            nodes = libtcod.random_get_int(0, 6, 11)
+            centerx = mouse.cx
+            centery = mouse.cy
+            multiplier = 1
+            for n in range(nodes):
+                multiplier = n / nodes
+                nodex = libtcod.random_get_float(0, -radius, radius)
+                nodey = libtcod.random_get_float(0, -radius, radius)
+                nodex = centerx + nodex
+                nodey = centery + nodey
+                self.draw_tree(nodex, nodey, radius, multiplier)
+            self.draw_tree(centerx, centery, radius)
+
             self.dungeon_gen.set_draw_map(self.level.dungeon)
+
+            self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
             self.level.fov_map = self.gEngine.get_fov_map()
 
         if mouse.lbutton_pressed:
-            self.d.add_point(mouse.cx, mouse.cy, 0)
-            self.d.compute(self.level.dungeon)
-            self.v_map = deepcopy(self.d.map)
-            self.d.multiply_map(-1.2, self.level.dungeon)
-            self.d.compute(self.level.dungeon)
+            pass
 
         if mouse.rbutton:
-            self.d.remove_point(mouse.cx, mouse.cy)
-            self.d.compute(self.level.dungeon)
-            self.v_map = deepcopy(self.d.map)
+            pass
         if mouse.mbutton_pressed:
-            self.m = FleeingAi(mouse.cx, mouse.cy)
-            for line in self.d.map:
-                print(line)
+            pass
 
         if key.vk == libtcod.KEY_ENTER:
-            x, y = self.m.calculate_move(self.d.map)
-            if x:
-                self.cx, self.cy = x, y
+            pass
+
+    def in_circle(self, cx, cy, tilex, tiley, r):
+        dx = float(tilex - cx)
+        dy = float(tiley - cy)
+        sq = float(dx*dx + dy*dy)
+        return sq < r*r
+
+    def draw_tree(self, center_x, center_y, radius, layer_multiplier=1.0):
+        layer_multiplier = max(0.3, layer_multiplier)
+        top = int(max(0, center_y - radius + 1))
+        bottom = int(min(self.level.MAP_HEIGHT, center_y + radius + 1))
+        left = int(max(0, center_x - radius + 1))
+        right = int(min(self.level.MAP_WIDTH, center_x + radius + 1))
+        for y in range(top, bottom):
+            for x in range(left, right):
+                if self.in_circle(center_x, center_y, x, y, radius):
+                    dx = center_x - x
+                    dy = center_y - y
+                    sq = dx * dx + dy * dy
+                    d = math.sqrt(sq)
+                    d = d / radius
+                    variance = libtcod.random_get_float(0, 1.0, 1.75)
+                    d = (d / variance)
+                    d = d* layer_multiplier
+                    col = libtcod.color_lerp(libtcod.darkest_green, libtcod.desaturated_green, d)
+                    self.level.dungeon[x][y].color = col

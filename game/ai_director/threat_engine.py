@@ -47,6 +47,26 @@ class ThreatEngine:
         # todo calculate total spent skill points
         return int(threat)
 
+    def get_item_threat(self, item):
+        """
+        Calculates a particular item's threat level based on its specific stats
+        :param item: the item to calculate
+        :return: returns the threat level of the item
+        """
+        threat = 0
+        if item.item.equipment:
+            if item.item.equipment.type == 'melee':
+                threat += item.item.equipment.damage[0] + item.item.equipment.damage[1] / 2
+                threat += item.item.equipment.accuracy
+                # calculate attack pattern
+                # calculate any additional generated effects
+                # calculate mod effect - stun, bleed, etc..
+            if item.item.equipment.type == 'armor':
+                pass
+        if item.item.spell:
+            pass
+        return threat
+
     def get_current_level_monster_threat(self):
         """
         Returns the threat value of all monsters in a level
@@ -126,3 +146,52 @@ if __name__ == "__main__":
         game.objects.append(Actor(fighter=Fighter))
     threat_engine = ThreatEngine(game, None)
     threat_engine.calculate_threat()
+
+# based on 0, 0 being player position
+attack_patterns = {
+        "partial cross": [(0, -1), (-1, -1,), (1, -1), (0, -2)],
+        "checkered": [(-1, -1), (1, -1), (0, -2), (-1, -3), (1, -3)],
+        " ": [(0, -1)],
+        "": [(0, -1)],
+        "default":[(0,-1)]
+        # add additonal north attack patterns here
+    }
+
+#
+# def calc_direction(direction, pattern):
+#     """
+#     Returns direction normalized attack patterns
+#     :param direction: the cardinal direction of the attack
+#     :param pattern:  the requested pattern
+#     :return: the normalized array of attacks
+#     """
+#     attacks = attack_patterns[pattern]
+#     if direction == "north":
+#         return attacks
+#     p = []
+#     if direction == "south":
+#         for cell in attacks:
+#             p.append((cell[0], -cell[1])) # just negate the second value ( y direction)
+#         return p
+#     if direction == "east":
+#         for cell in attacks:  # we may need to negate cell[0], need to test
+#             p.append((-cell[1], cell[0]))  # we swap the x and y then negate the new x
+#         return attacks
+#     if direction == "west":  # we may have to do some negating here, testing required
+#         for cell in attacks:
+#             p.append((cell[1], cell[0]))  # we swap x and y directions
+#         return attacks
+#
+# # below is semi psuedocode implementation
+# direction = "north"
+# pattern = "default"
+# attacks = calc_direction(direction, pattern)  # find your attack direction, and your weapons attack pattern
+# for attack in attacks:  # loop for as many tiles as this weapon targets
+#     target = check_for_target(attack)  # check for targets here, using the offsets
+#     if target:
+#         attack(target)
+#
+# # * *
+# #  *
+# # * *
+# #  @

@@ -101,3 +101,83 @@
     can_equip_gear = true
     size = 'large'
     color = [0,127,0]
+
+[[monster]]
+    name = 'imp'
+    cell = 'i'
+    hp = 25
+    defense = 3
+    power = 5
+    type = 'melee'
+    threat_level = 5.0
+    starting_depth = 3
+    deepest_depth = 9
+    speed = 25
+    strength = 18
+    dexterity = 5
+    intelligence = 4
+    xp_reward = 200
+    defense_bonus = -25
+    can_equip_gear = true
+    size = 'large'
+    color = [99,12,15]
+
+[[monster]]
+    name = 'gargoyle'
+    cell = 'G'
+    hp =35
+    defense = 6
+    power = 10
+    type = 'melee'
+    threat_level = 8.0
+    starting_depth = 4
+    deepest_depth = 15
+    speed = 25
+    strength = 18
+    dexterity = 5
+    intelligence = 4
+    xp_reward = 250
+    defense_bonus = -25
+    can_equip_gear = true
+    size = 'large'
+    color = [200,200,200]
+
+[[monster]]
+    name = 'wereboar'
+    cell = 'w'
+    hp = 40
+    defense = 12
+    power = 15
+    type = 'melee'
+    threat_level = 4.0
+    starting_depth = 4
+    deepest_depth = 20
+    speed = 25
+    strength = 18
+    dexterity = 5
+    intelligence = 4
+    xp_reward = 300
+    defense_bonus = -25
+    can_equip_gear = true
+    size = 'large'
+    color = [140,3,140]
+
+[[monster]]
+    name = 'werewolf'
+    cell = 'W'
+    hp = 50
+    defense = 18
+    power = 22
+    type = 'melee'
+    threat_level = 4.0
+    starting_depth = 4
+    deepest_depth = 20
+    speed = 25
+    strength = 18
+    dexterity = 5
+    intelligence = 4
+    xp_reward = 340
+    defense_bonus = -25
+    can_equip_gear = true
+    size = 'large'
+    color = [140,3,140]

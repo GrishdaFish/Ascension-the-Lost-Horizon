@@ -293,6 +293,12 @@ class gEngine:
     def map_set_properties(self, x, y, blocked, block_sight):
         libtcod.map_set_properties(self.FOV, x, y, blocked, block_sight)
 
+    def map_set_tile_color(self, x, y, col):
+        for tile in self.mMap:
+            if tile.x == x and tile.y == y:
+                tile.color = col
+                return
+
     def map_clear(self):
         self.mMap = []
         self.mMap2x = []
