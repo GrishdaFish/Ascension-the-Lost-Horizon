@@ -200,6 +200,8 @@ spells = {
     'detect monster': detect_monsters,
     'detect items': detect_loot,
     'none': None,
+    '': None,
+    None: None,
 }
 
 

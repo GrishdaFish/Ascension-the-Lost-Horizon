@@ -1,6 +1,6 @@
 from game.object.object import *
 from game.object.item import *
-from game.spells.spells import *
+from game.spells import spells
 # import actor
 from game import combat
 from game import content_parser
@@ -24,6 +24,8 @@ class GameObjects:
         self.currency = []
         self.armor = []
         self.weapons = []
+        self.ranged_weapons = []
+        self.melee_weapons = []
         self.monster_weapons = []
         self.light_sources = []
         self.load_content()
@@ -34,6 +36,10 @@ class GameObjects:
         self.sort_materials()
 
     def load_content(self):
+        """
+        Calls the content parser to load all of the items from disk
+        :return:
+        """
         if gEngine.RELEASE:
             path = getattr(sys, "_MEIPASS", ".")
         else:
@@ -51,31 +57,45 @@ class GameObjects:
         for item in self.armor:
             self.equipment.append(item)
         for item in self.weapons:
+            if item.type == 'melee':
+                self.melee_weapons.append(item)
+            if item.type == 'ranged':
+                self.ranged_weapons.append(item)
             self.equipment.append(item)
         for item in self.monster_weapons:
             self.equipment.append(item)
 
     def sort_materials(self):
+        """
+        Sorts materials based on what it can be used to build
+        :return:
+        """
         for item in self.materials:
             if item.can_be_made_from == 1 or item.can_be_made_from == 3:
                 self.weapon_mats.append(item)
-                '''if item.rarity >= 1.0:
-                    self.weapon_mat_rarity.setdefault(1.0, []).append(item.name)
-                elif item.rarity > 0.75 and item.rarity < 1.0:
-                    pass
-                elif item.rarity > 0.5 and item.rarity < 0.75:
-                    pass '''
             if item.can_be_made_from == 2 or item.can_be_made_from == 3:
                 self.armor_mats.append(item)
 
     def sort_consumables(self):
+        """
+        Sorts potions and scrolls into separate containers
+        :return:
+        """
         for item in self.consumables:
             if item.type == 'potion':
                 self.potions.append(item)
             if item.type == 'scroll':
                 self.scrolls.append(item)
 
+    def sort_equipment(self):
+        """
+        Sorts equipment based on type (eg. Melee, Ranged, Armor, Light Source, etc..)
+        :return:
+        """
+        pass
+
     def sort_threat_levels(self):
+        # TODO depreciate or expand upon
         lvl1 = []
         lvl2 = []
         lvl3 = []
@@ -96,184 +116,179 @@ class GameObjects:
         self.threat_list.append(lvl4)
 
     def get_random_monster_name(self):
+        """
+        Returns a parser class monster based on its name. Helper function to build a specific monster
+        :return: The parser class Monster()
+        """
         r = libtcod.random_get_int(0, 0, (len(self.monsters) - 1))
         return self.monsters[r].name
 
-    def build_potion(self, game, x, y, name=None):
-        pot = None
-        if name:
-            pot = self.get_pot_from_name(name)
-        if not name:
-            pot = self.potions[libtcod.random_get_int(0, 0, (len(self.potions) - 1))]
+    def spell_component(self, type, name=None):
+        """
+        Builds a spell component for use by other constructors
+        :param type: The type of spell component to return
+        :param name: Optional: the name of the specific spell
+        :return: Spell() class,  and the parser class of the specified type
+        """
+        sp = None
+        if type == "potion":
+            if name:
+               sp = self.get_pot_from_name(name)
+            if not name:  # in case you pass a name that doesnt exist, you get a random item
+               sp = self.potions[libtcod.random_get_int(0, 0, (len(self.potions) - 1))]
+        elif type == "scroll":
+            if name:
+                sp = self.get_scroll_from_name(name)
+            if not name:
+                sp = self.scrolls[libtcod.random_get_int(0, 0, (len(self.scrolls) - 1))]
 
-        spell_component = Spell(min=pot.min_effect, max=pot.max_effect, range=pot.range,
-                                radius=pot.radius, ef_type=pot.effect_type, ad_eff=pot.additional_effects,
-                                spel_eff=pot.spell_effect, eff_col=pot.effect_color)
-        item_component = Item(spell=spell_component)
-        item_component.value = int(pot.value)
-        name = "potion of %s" % pot.name
-        item = Object(game.dungeon_console, x, y, pot.cell, name, pot.color, item=item_component)
+        spell_component = spells.Spell()
+        spell_component.min = sp.min_effect
+        spell_component.max = sp.max_effect
+        spell_component.range = sp.range
+        spell_component.radius = sp.radius
+        spell_component.type = sp.effect_type
+        spell_component.effect_type = spells.spells[sp.effect_type]
+        spell_component.addition_effects = sp.additional_effects
+        spell_component.spell_effects = sp.spell_effect
+        spell_component.effect_color = sp.effect_color
+
+        return spell_component, sp
+
+    def build_potion(self, game, x, y, name=None):
+        """
+        Builds a potion game object from required components
+        :param game: the main game object
+        :param x: x position on the map, can be 0 if going directly into inventory
+        :param y: y position
+        :param name: Optional, request a potion by the name (eg. "light healing")
+        :return: the fully constructed object
+        """
+
+        spell_component, potion = self.spell_component('potion', name)
+        item_component = Item()
+        item_component.spell = spell_component
+        item_component.use_function = item_component.spell.cast  # function pointer
+        item_component.value = int(potion.value)
+
+        name = "potion of %s" % potion.name
+        item = Object(game.dungeon_console, x, y, potion.cell, name, potion.color, item=item_component)
+
         return item
 
     def build_scroll(self, game, x, y, name=None):
-        scroll = None
-        if name:
-            scroll = self.get_scroll_from_name(name)
-        if not name:
-            scroll = self.scrolls[libtcod.random_get_int(0, 0, (len(self.scrolls) - 1))]
+        """
+        Builds a scroll game object from required components
+        :param game: the main game object
+        :param x: x position on the map, can be 0 if going directly into inventory
+        :param y: y position
+        :param name: Optional, request a potion by the name (eg. "light healing")
+        :return: the fully constructed object
+        """
 
-        spell_component = Spell(min=scroll.min_effect, max=scroll.max_effect, range=scroll.range,
-                                radius=scroll.radius, ef_type=scroll.effect_type, ad_eff=scroll.additional_effects,
-                                spel_eff=scroll.spell_effect, eff_col=scroll.effect_color)
-        item_component = Item(spell=spell_component)
+        spell_component, scroll = self.spell_component('scroll', name)
+        item_component = Item()
+        item_component.spell = spell_component
+        item_component.use_function = item_component.spell.cast  # function pointer
         item_component.value = int(scroll.value)
+
         name = "scroll of %s" % scroll.name
         item = Object(game.dungeon_console, x, y, scroll.cell, name, scroll.color, item=item_component)
+
         return item
 
     def build_light_source(self, game, x, y, name=None):
+        """
+        Builds a light source game object from required components
+        :param game: the main game object
+        :param x: x position on the map, can be 0 if going directly into inventory
+        :param y: y position
+        :param name: Optional, request a potion by the name (eg. "light healing")
+        :return: the fully constructed object
+        """
         light = None
         if name:
             light = self.get_light_from_name(name)
         else:
             light = self.light_sources[libtcod.random_get_int(0, 0, len(self.light_sources)-1)]
-        equip_component = Equipment(type=light.type, fuel=light.max_fuel, color=light.effect_color, intensity=light.intensity)
-        item_component = Item(equipment=equip_component)
+
+        equip_component = Equipment()
+        equip_component.type = light.type
+        equip_component.fuel = light.max_fuel
+        equip_component.torch_color = light.effect_color
+        equip_component.torch_intensity = light.intensity
+
+        item_component = Item()
+        item_component.equipment = equip_component
+        item_component.use_function = item_component.equipment.equip  # function pointer
         item_component.stackable = False
         item_component.value = int(light.value)
+
         equip = Object(game.dungeon_console, x, y, light.cell, light.name, light.color, item=item_component)
         equip.message = game.message
         equip.objects = game.objects
+
         return equip
 
-    def get_light_from_name(self, name):
-        for light in self.light_sources:
-            if light.name == name:
-                return light
-        return None
-
-    def get_pot_from_name(self, name):
-        for pot in self.potions:
-            if pot.name == name:
-                return pot
-        return None
-
-    def get_scroll_from_name(self, name):
-        for scroll in self.scrolls:
-            if scroll.name == name:
-                return scroll
-        return None
-
-    def get_mat_from_name(self, name):
-        for mat in self.armor_mats:
-            if mat.name == name:
-                return mat
-        for mat in self.weapon_mats:
-            if mat.name == name:
-                return mat
-        return None
-
-    def get_mat_from_rarity(self, type):
-        r = libtcod.random_get_float(0, 0.00000, 1.00000)
-        mat = None
-        rarity = 1.0
-        if type == 'melee':
-            for mats in self.weapon_mats:
-                if mats.rarity >= r:
-                    if mats.rarity <= rarity:
-                        rarity = mats.rarity
-                        mat = mats
-            return mat
-        if type == 'armor':
-            for mats in self.armor_mats:
-                if mats.rarity >= r:
-                    if mats.rarity <= rarity:
-                        rarity = mats.rarity
-                        mat = mats
-            return mat
-        return self.materials[0]
-
-    def get_equip_from_name(self, name):
-        for equip in self.equipment:
-            if equip.name == name:
-                return equip
-        return None
-
     def build_equipment(self, game, x, y, type=None, name=None, mat=None):
-        # for getting base equipments, no special effects or unique/legendary
-
-        # if mat or name return None, random mats or equipments are used
+        """
+        todo: revist when subtypes are implemented
+        Builds a piece of equipment into a game usable object
+        :param game: the main game object
+        :param x: x position on the map, can be 0 if going directly into inventory
+        :param y: y position
+        :param type: Optional: Request a specific type of gear "armor, melee, etc.."
+        :param name: Optional: Request a specific item by name "great sword"
+        :param mat: Optional: request a specific mateiral to be used
+        :return: a completed game Object.item.equipment()
+        """
+        equipment_types = ['melee', 'armor']  # random player equippable equipment, add extra types here
+        random_equipment_types = {
+            'melee': self.melee_weapons[libtcod.random_get_int(0, 0, (len(self.melee_weapons) - 1))],
+            # 'ranged': self.ranged_weapons[libtcod.random_get_int(0, 0, len(self.ranged_weapons) - 1)],
+            'monster_melee': self.monster_weapons[libtcod.random_get_int(0, 0, len(self.monster_weapons) - 1)],
+            'armor': self.armor[libtcod.random_get_int(0, 0, (len(self.armor) - 1))],
+        }
         if mat:
             mat = self.get_mat_from_name(mat)
+        else:
+            mat = self.materials[libtcod.random_get_int(0, 0, len(self.materials) - 1)]
+
         eq = None
-        if name:
-            eq = self.get_equip_from_name(name)
-            if eq:
-                type = eq.type
+        if type:
+            eq = random_equipment_types[type]
+        else:
+            if name:
+                eq = self.get_equip_from_name(name)
+                if not eq:
+                    eq = random_equipment_types[equipment_types[libtcod.random_get_int(0, 0, len(equipment_types) - 1)]]
+            else:
+                eq = random_equipment_types[equipment_types[libtcod.random_get_int(0, 0, len(equipment_types) - 1)]]
 
-        if not type:
-            r = libtcod.random_get_int(0, 0, (len(self.equipment) - 1))
-            eq = self.equipment[r]
-            type = eq.type
+        equip_component = Equipment()
+        equip_component.type = eq.type
+        # equip_component.threat_level = eq.threat_level
 
-        if type == 'melee':
-            if not name:
-                picked = False
-                while not picked:
-                    r = libtcod.random_get_int(0, 0, (len(self.equipment) - 1))
-                    if self.equipment[r].type == 'melee':
-                        eq = self.equipment[r]
-                        picked = True
-            if not mat:
-                mat = self.get_mat_from_rarity(type)
-                # mat = self.weapon_mats[libtcod.random_get_int(0,0,(len(self.weapon_mats)-1))]
+        # todo revist after ranged weapons are in place
+        if equip_component.type == 'melee' or equip_component.type == 'monster_melee':
+            equip_component.handed = eq.handed
+            equip_component.dual_wield = eq.dual_wield
+            equip_component.accuracy = eq.accuracy
+            equip_component.damage = eq.damage
+            equip_component.damage_type = eq.damage_type
 
-            # eq.min_power += mat.modifier
-            # eq.max_power += mat.modifier
-            eq.threat_level += mat.modifier
-            equip_component = Equipment(type=eq.type, handed=eq.handed, dual_wield=eq.dual_wield,
-                                        threat_level=eq.threat_level, accuracy=eq.accuracy, damage=eq.damage,
-                                        damage_type=eq.damage_type)
-            '''equip_component = Equipment(min_power=eq.min_power,max_power=eq.max_power,
-                crit_bonus=eq.crit_bonus,type=eq.type,handed=eq.handed,
-                dual_wield=eq.dual_wield,damage_type=eq.damage_type,threat_level=eq.threat_level, accuracy=eq.accuracy)
-            '''
-
-        if type == 'armor':
-            if not name:
-                picked = False
-                while not picked:
-                    r = libtcod.random_get_int(0, 0, (len(self.equipment) - 1))
-                    if self.equipment[r].type == 'armor':
-                        eq = self.equipment[r]
-
-                        picked = True
-            if not mat:
-                mat = self.get_mat_from_rarity(type)
-                # mat = self.armor_mats[libtcod.random_get_int(0,0,(len(self.armor_mats)-1))]
-
+        elif equip_component.type == 'armor':
             eq.bonus += mat.armor_bonus
             eq.penalty += mat.armor_bonus
-            eq.threat_level += mat.modifier
-            equip_component = Equipment(type=eq.type, location=eq.location, bonus=eq.bonus, penalty=eq.penalty,
-                                        threat_level=eq.threat_level)
-            '''equip_component = Equipment(defense=eq.defense,type=eq.type,location=eq.location,
-                                        best_defense_type=eq.best_defense_type,worst_defense_type=eq.worst_defense_type,
-                                        threat_level=eq.threat_level+mat.modifier)'''
 
-        if type == 'monster_melee':
-            if not name:
-                picked = False
-                while not picked:
-                    r = libtcod.random_get_int(0, 0, (len(self.equipment) - 1))
-                    if self.equipment[r].type == 'monster_melee':
-                        eq = self.equipment[r]
-                        picked = True
-            equip_component = Equipment(type=eq.type, handed=eq.handed, dual_wield=eq.dual_wield,
-                                        accuracy=eq.accuracy, damage=eq.damage,
-                                        damage_type=eq.damage_type)
+            equip_component.location = eq.location
+            equip_component.bonus = eq.bonus
+            equip_component.penalty = eq.penalty
+
         if eq.type != "monster_melee":
-            item_component = Item(equipment=equip_component)
+            item_component = Item()
+            item_component.equipment = equip_component
+            item_component.use_function = item_component.equipment.equip
             item_component.value = int(eq.value * mat.price_mod)
             name = mat.name + " " + eq.name
             equip = Object(game.dungeon_console, x, y, eq.cell, name, mat.color, item=item_component)
@@ -283,36 +298,38 @@ class GameObjects:
         equip.message = game.message
         equip.objects = game.objects
 
-        # equip.send_to_back(game.objects)
         return equip
 
-    def get_monster(self, name):
-        # returns a monster object with the same name supplied
-        # if no monsters are found, returns None
-        for object in self.monsters:
-            if object.name == name:
-                return object
-        return None
-
     def create_monster(self, game, x, y, threat_level=None, mob_name=None):
-        # creates monsters either randomly, by threat level, or by name
-        # returns Object
+        """
+        Builds a fully created monster
+        :param game:  The main game instance
+        :param x: The x position of the monster
+        :param y: The y position of hte monster
+        :param threat_level: depreceated
+        :param mob_name: Optional: spawn a specific monster
+        :return: The ccompleted objects.fighter
+        """
         if not mob_name:
-            mob = None
-            while mob is None:
-                if threat_level:
-                    mob = self.get_monster(self.get_mob_from_threat(threat_level))
-                else:
-                    mob = self.monsters[libtcod.random_get_int(0, 0, len(self.monsters) - 1)]
+            mob = self.monsters[libtcod.random_get_int(0, 0, len(self.monsters) - 1)]
+
         else:
             mob = self.get_monster(mob_name)
             if mob is None:  ##incase the name supplied is not in the monsters, get a random mob
                 mob = self.monsters[libtcod.random_get_int(0, 0, len(self.monsters) - 1)]
 
-        fighter_component = Fighter(hp=mob.hp, defense=mob.defense, power=mob.power,
-                                    death_function=monster_death, ticker=game.ticker,
-                                    speed=mob.speed, Str=mob.strength, Dex=mob.dexterity,
-                                    Int=mob.intelligence, xp_value=mob.xp_value)
+        fighter_component = Fighter(0, 0, 0)  # todo remove calls from fighter() later?
+        fighter_component.max_hp = mob.hp
+        fighter_component.hp = mob.hp
+        fighter_component.death_function = monster_death  # function pointer
+        fighter_component.ticker = game.ticker
+        fighter_component.speed = mob.speed
+        fighter_component.stats[0] = mob.strength
+        fighter_component.stats[1] = mob.dexterity
+        fighter_component.stats[2] = mob.intelligence
+        fighter_component.stats[3] = 10  # todo need this stat to be added to toml and file parser
+        fighter_component.current_xp = mob.xp_value
+
         ai_component = WanderingMonster(x=x, y=y)  # BasicMonster()
 
         monster = Object(game.dungeon_console, x, y, mob.cell, mob.name, mob.color,
@@ -320,26 +337,39 @@ class GameObjects:
 
         monster.fighter.ticker.schedule_turn(monster.fighter.speed, monster)
 
-        monster.fighter.wielded[0] = self.build_equipment(game, x, y, type="monster_melee")
+        # todo fix when either AI director is ready to spawn mobs, or when effects system is enabled
         if mob.can_equip_gear:
             r = libtcod.random_get_int(0, 0, 100)
             if r > 85:  # 15 % chance the mob will have a weapon
                 monster.fighter.wielded[0] = self.build_equipment(game, x, y, type="melee")
+            else:
+                monster.fighter.wielded[0] = self.build_equipment(game, x, y, type="monster_melee")
+
         for skill in monster.fighter.skills:
             skill.set_bonus(mob.defense_bonus)
-        monster.fighter.max_hp = mob.hp
-        monster.fighter.hp = mob.hp
-        #print(monster.char)
-        #print(mob.cell)
-        e = entity.Entity(hp=mob.hp, x=monster.x, y=monster.y, name=monster.name, char=mob.cell,
-                                color=mob.color, s=mob.strength, i=mob.intelligence, d=mob.dexterity,
-                                xp=mob.xp_value)
-        #e = actor.get_component('zombie', e)
-        e.hp += combat.get_stat_bonus(e.constitution)
-        monster = e.convert(monster)
+        # #print(monster.char)
+        # #print(mob.cell)
+        # e = entity.Entity(hp=mob.hp, x=monster.x, y=monster.y, name=monster.name, char=mob.cell,
+        #                         color=mob.color, s=mob.strength, i=mob.intelligence, d=mob.dexterity,
+        #                         xp=mob.xp_value)
+        # #e = actor.get_component('zombie', e)
+        # e.hp += combat.get_stat_bonus(e.constitution)
+        # monster = e.convert(monster)
         return monster
 
+    def get_monster(self, name):
+        """
+        Returns a parser monster class by name
+        :param name:  Name of the monster to grab
+        :return: parser.Monster() class or None
+        """
+        for object in self.monsters:
+            if object.name == name:
+                return object
+        return None
+
     def get_threat_from_mob(self, mob_name):
+        # todo probably remove
         ##returns the threat level of a mob based on its name
         for obj in self.monsters:
             # logging.getLogger('main').debug(obj.threat_level)
@@ -348,6 +378,7 @@ class GameObjects:
         return False
 
     def get_mob_from_threat(self, threat_level=None):  ##basic setup
+        # todo probably remove
         if threat_level is None:
             if libtcod.random_get_int(0, 0, 100) < 80:  # 80% chance of threat level less than 4
                 if libtcod.random_get_int(0, 0, 100) < 30:  # 30% chance of getting lvl 3
@@ -369,3 +400,82 @@ class GameObjects:
                 threat_level = 0
             tl = self.threat_list[threat_level - 1]
             return tl[libtcod.random_get_int(0, 0, (len(tl) - 1))]
+
+    def get_light_from_name(self, name):
+        """
+        Returns a parser light source class by name
+        :param name:  Name of the light source to grab
+        :return: parser.LightSource() class or None
+        """
+        for light in self.light_sources:
+            if light.name == name:
+                return light
+        return None
+
+    def get_pot_from_name(self, name):
+        """
+        Returns a parser potion class by name
+        :param name:  Name of the potion to grab
+        :return: parser.Potion() class or None
+        """
+        for pot in self.potions:
+            if pot.name == name:
+                return pot
+        return None
+
+    def get_scroll_from_name(self, name):
+        """
+        Returns a parser scroll class by name
+        :param name:  Name of the scroll to grab
+        :return: parser.Scroll() class or None
+        """
+        for scroll in self.scrolls:
+            if scroll.name == name:
+                return scroll
+        return None
+
+    def get_mat_from_name(self, name):
+        """
+        Returns a parser material class by name
+        :param name:  Name of the material to grab
+        :return: parser.Material() class or None
+        """
+        for mat in self.armor_mats:
+            if mat.name == name:
+                return mat
+        for mat in self.weapon_mats:
+            if mat.name == name:
+                return mat
+        return None
+
+    def get_mat_from_rarity(self, type):
+        # todo enable rarity or remove
+        r = libtcod.random_get_float(0, 0.00000, 1.00000)
+        mat = None
+        rarity = 1.0
+        if type == 'melee':
+            for mats in self.weapon_mats:
+                if mats.rarity >= r:
+                    if mats.rarity <= rarity:
+                        rarity = mats.rarity
+                        mat = mats
+            return mat
+        if type == 'armor':
+            for mats in self.armor_mats:
+                if mats.rarity >= r:
+                    if mats.rarity <= rarity:
+                        rarity = mats.rarity
+                        mat = mats
+            return mat
+        return self.materials[0]
+
+    def get_equip_from_name(self, name):
+        """
+        Returns a parser equipment type by name
+        :param name:  Name of the equipment to grab
+        :return: Melee, Ranged, MonsterWeapon, Armor, etc.. class or None
+        """
+        for equip in self.equipment:
+            if equip.name == name:
+                return equip
+        return None
