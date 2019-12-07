@@ -1,14 +1,13 @@
-import tcod as libtcod
 from game.object.object import *
 from game.object.item import *
 from game.object.misc import *
-from game.object.spells import *
+from game.spells.spells import *
 # import actor
 from game import combat
 from game import content_parser
-from game.object.actor import entity
+#from game.object.actor import entity
 from gEngine import gEngine
-from game.status_effects.effects import Effect
+from game.object.effects import Effect
 
 
 class GameObjects:
@@ -286,9 +285,11 @@ class GameObjects:
         equip.message = game.message
         equip.objects = game.objects
 
-        # lets check out some enchants motherf^(!%3r!!!
-        effect = Effect(equip.item)                  # generate an effect randomly linking it to the item
-        equip.item.equipment.effects.append(effect)  # stick it to the item array
+        # lets check out some enchants motherf^(!%3r!!!  ## TODO: REFACTOR currently all items get an effect while testing
+        effect = Effect(equip.item)                  # generate 2 effects randomly, linking them to the item
+        effect_two = Effect(equip.item)
+        equip.item.equipment.effects.append(effect)
+        equip.item.equipment.effects.append(effect_two)
 
         # equip.send_to_back(game.objects)
         return equip
@@ -338,12 +339,12 @@ class GameObjects:
         monster.fighter.hp = mob.hp
         #print(monster.char)
         #print(mob.cell)
-        e = entity.Entity(hp=mob.hp, x=monster.x, y=monster.y, name=monster.name, char=mob.cell,
-                                color=mob.color, s=mob.strength, i=mob.intelligence, d=mob.dexterity,
-                                xp=mob.xp_value)
+        #e = entity.Entity(hp=mob.hp, x=monster.x, y=monster.y, name=monster.name, char=mob.cell,
+        #                        color=mob.color, s=mob.strength, i=mob.intelligence, d=mob.dexterity,
+        #                        xp=mob.xp_value)
         #e = actor.get_component('zombie', e)
-        e.hp += combat.get_stat_bonus(e.constitution)
-        monster = e.convert(monster)
+        #e.hp += combat.get_stat_bonus(e.constitution)
+        #monster = e.convert(monster)
         return monster
 
     def get_threat_from_mob(self, mob_name):

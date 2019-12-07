@@ -53,7 +53,7 @@ skill_list = [
     Skill('Weapon', 'Curvesword', 'Mastery in the use of swords with curved edges.'),
     Skill('Weapon', 'Axe', 'Mastery in the use of axes.'),
 ]
-basic_levels = [  # Total xp: Skill Points
+basic_levels = [  # Total xp: Skill Points ## TODO DEPRECATE: now handled by fighter
     (1000,   2),
     (3000,   2),
     (6000,   3),
@@ -81,7 +81,7 @@ def hp_bonus(con):
     return 15 + (get_stat_bonus(con) * 2)
 
 
-def next_level(level):
+def next_level(level):      ## TODO DEPRECATE: now handled by fighter
     return basic_levels[level]
 
 

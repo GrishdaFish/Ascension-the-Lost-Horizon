@@ -131,6 +131,7 @@ def load_weapon(content):
         w.name = weap.get('name')
         w.cell = weap.get('cell')
         w.type = weap.get('type')
+        w.subtype = weap.get('subtype')
         w.handed = weap.get('handed')
         w.dual_wield = weap.get('dual_wield')
         w.damage_type = weap.get("damage_type")
@@ -233,6 +234,7 @@ class Weapon:
         self.min_power = 0
         self.max_power = 0
         self.type = ""
+        self.subtype = ""
         self.handed = 0
         self.dual_wield = False
         self.damage_type = ""

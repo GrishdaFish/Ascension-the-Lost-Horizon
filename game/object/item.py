@@ -1,6 +1,7 @@
 import tcod as libtcod
 from gEngine.utilities.user_interface import menu
-
+# for test output: TODO DEPRECATE remove after debugged
+from pprint import pprint
 
 class Item:
     # an item that can be picked up and used.
@@ -71,7 +72,7 @@ class Item:
 
     def use(self, inventory, creature, game, player=True):
         # just call the "use_function" if it is defined
-        if player:
+        if player:  # TODO CONSIDER why not have mobs just behave the same by default?
             if self.use_function is None:
                 self.owner.message.message('The ' + self.owner.name + ' cannot be used.')
             else:
@@ -84,6 +85,7 @@ class Item:
                                 inventory.remove(self.owner)
                         else:
                             inventory.remove(self.owner)
+                        # TODO CONSIDER cant you just inventory.remove(self.owner) here and catch both elses?
                 else:  ##equip
                     self.use_function(creature, game=game, owner=self.owner)
         else:  ##so mobs can use items
@@ -92,7 +94,7 @@ class Item:
 
 class Equipment:
     def __init__(self, min_power=0, max_power=0, crit_bonus=0, defense=0,
-                 type='', location='', best_defense_type='', worst_defense_type='',
+                 type='', subtype=None, location='', best_defense_type='', worst_defense_type='',
                  handed=0, dual_wield=None, damage_type='', threat_level=0,
                  allowed_materials=0, bonus=0, penalty=0, description='', accuracy=0, damage=None,
                  fuel=0, color=None, intensity=0.0):
@@ -101,6 +103,7 @@ class Equipment:
         self.crit_bonus = crit_bonus
         self.defense = defense
         self.type = type
+        self.subtype = subtype
         self.location = location
         self.best_defense_type = best_defense_type
         self.worst_defense_type = worst_defense_type
@@ -119,14 +122,11 @@ class Equipment:
         self.max_fuel = fuel
         self.torch_color = color
         self.torch_intensity = intensity
+
         self.effects = []
 
     def calc_damage(self):
         total_damage = 0
-        effect_damage = 0
-        if len(self.effects) > 0:
-            if self.effects[0].actor is not None:
-                effect_damage = self.effects[0].actor.stat_panel.return_damage()
         if self.damage is not None:
             num_dice = self.damage[0]  # num dice
             sides = self.damage[1]  # num faces
@@ -134,9 +134,20 @@ class Equipment:
             bonus = self.damage[3]  # bonus damages
             for i in range(num_dice):
                 total_damage += libtcod.random_get_int(0, 1, sides)
-            total_damage = (total_damage * multiplier) + bonus + effect_damage
+            total_damage = (total_damage * multiplier) + bonus  # + effect_damage
         return total_damage
 
+    ########################################################  equip is handled by equipped panel now
+    def equip(self, target, game=None, owner=None, slot=0):  # TODO REFACTOR unnecessary arguments? this isn't marriage
+        if owner is not None:
+            from pprint import pprint
+            print("OWNER:")
+            pprint(vars(owner))
+            print("TARGET:")
+            pprint(vars(target))
+            target.fighter.gear.quip_it(owner)
+            """
+print("now you've done it: " + str(owner))
     def equip(self, target, game=None, owner=None, slot=0):
         locations = {
             'torso': 0,
@@ -148,7 +159,6 @@ class Equipment:
             'shoulders': 6,
             'back': 7
         }
-
         torch = None
         if self.type == 'armor':
             if target.fighter.equipment[locations[self.location]] is None:
@@ -173,8 +183,7 @@ class Equipment:
                 if game:
                     game.message.message(owner.name + " equipped.", 1)
                     target.fighter.inventory.remove(owner)
-                    for effect in self.effects:
-                        effect.deactivate_effect(target.fighter)
+
                 return
 
         if self.type == 'melee':
@@ -240,10 +249,6 @@ class Equipment:
             target.fighter.inventory.remove(owner)
             if game:
                 game.message.message(owner.name + " equipped.", 1)
-        for effect in self.effects:
-            effect.activate_effect(target.fighter)
 
     def un_equip(self, target, item):
-        for effect in item.item.equipment.effects:  #item.equipment.effects:
-            effect.deactivate_effect(target.fighter)
-        target.fighter.inventory.append(item)
+        target.fighter.inventory.append(item)"""

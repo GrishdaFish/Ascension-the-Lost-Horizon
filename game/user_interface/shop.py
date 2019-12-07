@@ -281,8 +281,6 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                                                       'Location: ' + item.item.equipment.location.capitalize())
                     game.gEngine.console_print_ex(compare_window, 1, 6, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Value   : ' + str(item.item.value))
-
-
                 if item.item.spell:
                     game.gEngine.console_print_ex(compare_window, 1, 2, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Name  : ' + color_text(item.name.capitalize(), item.color))
@@ -297,8 +295,9 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                                                   'Radius: ' + str(item.item.spell.radius))
                     game.gEngine.console_print_ex(compare_window, 1, 7, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Value : ' + str(item.item.value))
-                if len(item.item.equipment.effects) != 0:
+                if len(item.item.equipment.effects) != 0:   # REFACTOR added to show effects
                     show_effects(item, game, compare_window)
+
                 if mouse.lbutton:
                     i_n = color_text(item.name.capitalize(), item.color)
                     price = color_text(item.item.value / 2, libtcod.gold)
@@ -349,6 +348,9 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                                                       'Location: ' + item.item.equipment.location.capitalize())
                     game.gEngine.console_print_ex(compare_window, 1, 6, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Value   : ' + str(item.item.value))
+                if item.item.equipment is not None:   # REFACTOR added to show effects
+                    if len(item.item.equipment.effects) != 0:
+                        show_effects(item, game, compare_window)
 
                 if item.item.spell:
                     game.gEngine.console_print_ex(compare_window, 1, 2, libtcod.BKGND_SET, libtcod.LEFT,
@@ -364,9 +366,6 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                                                   'Radius: ' + str(item.item.spell.radius))
                     game.gEngine.console_print_ex(compare_window, 1, 7, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Value : ' + str(item.item.value))
-
-                if len(item.item.equipment.effects) != 0:
-                    show_effects(item, game, compare_window)
 
                 if mouse.lbutton and mouse.cx >= 3:
                     if len(player.fighter.inventory) >= 26:

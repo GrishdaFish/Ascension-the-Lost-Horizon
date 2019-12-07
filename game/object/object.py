@@ -4,7 +4,8 @@ import math
 import copy
 import logging
 
-from game.status_effects.stat_panel import StatPanel
+from game.object.gear_panel import GearPanel
+from game.object.stat_panel import StatPanel
 
 sys.path.append(sys.path[0])
 import tcod as libtcod
@@ -180,24 +181,30 @@ class Fighter:
     # combat-related properties and methods (monster, player, NPC).
     def __init__(self, hp, defense, power, death_function=None, Con=10, Str=10, Dex=10, Int=10, money=0, ticker=None,
                  speed=0, xp_value=0):
+
+        self.stat = StatPanel()   # damage, resistance, effects and conditions
+        self.gear = GearPanel(self)         # equipped items and related controls
+        # Achievement tracker will go here if implemented
+
         self.death_function = death_function
         self.type = 'melee'
         self.money = money
         self.speed = speed
         self.level = 1
         self.current_xp = xp_value
-        self.xp_to_next_level = 1000
+        self.xp_to_next_level = 1
+        self.get_xp_tnl()
         self.inventory = []
         self.owner = None
         self.ticker = ticker
-        self.stats = [Str, Dex, Int, Con]
+        self.stats = [Str, Dex, Int, Con]   # REFACTOR this is in skill panel now
         self.unused_skill_points = 2
-        self.defense = 0
+        self.defense = 0    # REFACTOR in skill panel, not implemented
 
         self.depth = 0
         self.threat = 0.0
 
-        self.max_hp = combat.hp_bonus(Con)
+        self.max_hp = combat.hp_bonus(Con)  # REFACTOR get hp from stats now
         hp = self.max_hp
         self.hp = hp
 
@@ -208,24 +215,50 @@ class Fighter:
         '''self.max_mp = 1 + (2*self.stats[2])
         mp = self.max_mp
         self.mp = mp'''
+                                ####### TODO  REFACTOR add poitners to the correct locations
+        self.equipment = [ copy.deepcopy(self.gear.equipped['head']),
+                           copy.deepcopy(self.gear.equipped['shoulders']),
+                           copy.deepcopy(self.gear.equipped['arms']),
+                           copy.deepcopy(self.gear.equipped['hands']),
+                           copy.deepcopy(self.gear.equipped['torso']),
+                           copy.deepcopy(self.gear.equipped['legs']),
+                           copy.deepcopy(self.gear.equipped['feet']),
+                           copy.deepcopy(self.gear.equipped['cloak'])
+                           ]
 
-        self.equipment = [None, None, None, None, None, None, None, None]
-
-        self.light_source = None
+        self.light_source = self.gear.light_source
         # accessories
-        self.accessories = [None, None, None]
+        self.accessories = [self.gear.equipped['neck'],
+                            self.gear.equipped['ring1'],
+                            self.gear.equipped['ring2']
+                            ]
 
         # weapons/shield
-        self.wielded = [None, None]
+        self.wielded = [copy.deepcopy(self.gear.equipped['1h']), copy.deepcopy(self.gear.equipped['2h'])]
+                                ############################################################
         self.skills = copy.deepcopy(combat.skill_list)  # skill list needs to have its own copies
 
-        # damage, resistance, effects and conditions
-        self.stat_panel = StatPanel()
+    def get_xp_tnl(self):
+        lv_basis = self.level*2    # ARBITRARY BASIS FOR SCALING
+        log_base = 10              # JUST GO WITH BASE 10 FOR NOW
+        modifier = 10000           # MODIFIER TAKES YOU FROM SINGLE DIGITS UP INTO REALISTIC VALUES
+        added_xp = math.log(lv_basis, log_base)
+        added_xp *= modifier
+        self.xp_to_next_level += int(added_xp)
+
+    def get_lv_up_sp(self):
+        sp = self.level / 2
+        sp_add = 1 if sp < 1 else sp
+        sp_add = 5 if sp > 5 else sp
+        return sp_add
 
     def level_up(self):
-        self.xp_to_next_level, sp = combat.next_level(self.level)
+        self.xp_to_next_level = self.get_xp_tnl()
+        sp = self.get_lv_up_sp()
         self.unused_skill_points += sp
         self.level += 1
+        # self.stat_panel.set_stat_by_name("HP", combat.hp_bonus(self.stats[3]))
+        # self.hp = self.stat_panel.get_stat_by_name("HP")
         self.max_hp += combat.hp_bonus(self.stats[3])
         hp = self.max_hp
         self.hp = hp

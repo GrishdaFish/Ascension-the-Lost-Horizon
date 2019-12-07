@@ -55,7 +55,7 @@ def inventory(con, player, game, width=80, height=43):
     game.gEngine.console_set_default_background(compare_window, 0, 0, 0)
 
     check_boxes = []
-    slots = ['Torso    ',
+    slots = ['Torso    ',  # TODO DEPRECATE / REFACTOR all relations should be to gear_panel
              'Head     ',
              'Hands    ',
              'Legs     ',
@@ -213,8 +213,14 @@ def inventory(con, player, game, width=80, height=43):
         game.gEngine.console_set_alignment(equipment_window, libtcod.LEFT)
         armor_bonus = 0
         armor_penalty = 0
-        for item in player.fighter.equipment:
-            text = '(' + chr(index) + ') ' + slots[i] + ': '
+
+        #for item in player.fighter.equipment:                  #
+        #    text = '(' + chr(index) + ') ' + slots[i] + ': '   #
+
+        for item in player.fighter.gear.equipped.values():      ## TODO REFACTOR / CONSIDER is this the bast way to accomplish
+            mylist = list(player.fighter.gear.equipped.keys())  #
+            text = '(' + chr(index) + ') ' + mylist[i] + ': '   #
+
             if item is None:
                 text += color_text('Empty', libtcod.darker_gray)
             else:
@@ -284,8 +290,9 @@ def inventory(con, player, game, width=80, height=43):
                         game.gEngine.console_print(compare_window, 1, 7,
                                                    'Location: ' + item.item.equipment.location.capitalize())
                     game.gEngine.console_print(compare_window, 1, 6, 'Value   : ' + str(item.item.value))
-                    if len(item.item.equipment.effects) != 0:
-                        show_effects(item, game, compare_window)
+                    if item.item.equipment.effects is not None:  ## REFACTOR added to show gear effects
+                        if len(item.item.equipment.effects) != 0:
+                            show_effects(item, game, compare_window)
 
                 if item.item.spell:
                     game.gEngine.console_print(compare_window, 1, 2,
@@ -296,9 +303,6 @@ def inventory(con, player, game, width=80, height=43):
                     game.gEngine.console_print(compare_window, 1, 5, 'Range : ' + str(item.item.spell.range))
                     game.gEngine.console_print(compare_window, 1, 6, 'Radius: ' + str(item.item.spell.radius))
                     game.gEngine.console_print(compare_window, 1, 7, 'Value : ' + str(item.item.value))
-                    if len(item.item.equipment.effects) != 0:
-                        show_effects(item, game, compare_window)
-
                 if mouse.lbutton and item.item.spell:
                     i_n = color_text(item.name.capitalize(), item.color)
                     message = 'Do you want to use %s?' % i_n
@@ -358,9 +362,9 @@ def inventory(con, player, game, width=80, height=43):
                                                    'Accuracy: ' + str(item.item.equipment.accuracy))
                         game.gEngine.console_print(compare_window, 1, 6,
                                                    'Value   : ' + str(item.item.value))
-                        if len(item.item.equipment.effects) != 0:
-                            show_effects(item, game, compare_window)
-
+                        if item.item.equipment.effects is not None: ## REFACTOR added to show gear effects
+                            if len(item.item.equipment.effects) != 0:
+                                show_effects(item, game, compare_window)
             elif (mouse.cy -2) > len(player.fighter.wielded)+1 and (mouse.cy -2 ) < len(player.fighter.wielded)+3 :
                 item = player.fighter.light_source
                 if item is not None:
@@ -373,8 +377,9 @@ def inventory(con, player, game, width=80, height=43):
                                                'Fuel    : ' + str(item.item.equipment.fuel))
                     game.gEngine.console_print(compare_window, 1, 5,
                                                'Max Fuel: ' + str(item.item.equipment.max_fuel))
-                    if len(item.item.equipment.effects) != 0:
-                        show_effects(item, game, compare_window)
+                    if item.item.equipment.effects is not None: ## REFACTOR added to show gear effects
+                        if len(item.item.equipment.effects) != 0:
+                            show_effects(item, game, compare_window)
             # Equipment
             elif (mouse.cy - 2) - equip_y < len(player.fighter.equipment):
                 item = player.fighter.equipment[mouse.cy - 2 - equip_y]
@@ -389,8 +394,9 @@ def inventory(con, player, game, width=80, height=43):
                         game.gEngine.console_print(compare_window, 1, 5,
                                                    'Penalty : ' + str(item.item.equipment.penalty))
                         game.gEngine.console_print(compare_window, 1, 6, 'Value   : ' + str(item.item.value))
-                        if len(item.item.equipment.effects) != 0:
-                            show_effects(item, game, compare_window)
+                        if item.item.equipment.effects is not None: ## REFACTOR added to show gear effects
+                            if len(item.item.equipment.effects) != 0:
+                                show_effects(item, game, compare_window)
 
 
             if mouse.lbutton and item is not None:
@@ -422,17 +428,20 @@ def inventory(con, player, game, width=80, height=43):
                                 if player.fighter.inventory[x].item.equipment.type == 'light_source':
                                     i += ' (%d)' % player.fighter.inventory[x].item.equipment.fuel
                             inventory_items.append(i)
-                        i = 0
-                        for x in player.fighter.wielded:
-                            if x == item:
-                                player.fighter.wielded[i] = None
-                            i += 1
-                        i = 0
-                        for x in player.fighter.equipment:
-                            if x == item:
-                                player.fighter.equipment[i] = None
-                            i += 1
+                        i = 0                                               #
+                        for x in player.fighter.wielded:                    #
+                            if x == item:                                   #
+                                player.fighter.wielded[i] = None            #
+                            i += 1                                          #   TODO
+                        i = 0                                               #   REFACTOR ALL OF THIS
+                        for x in player.fighter.equipment:                  #
+                            if x == item:                                   #
+                                player.fighter.equipment[i] = None          #
+                            i += 1                                          #
 
+                        # for x in player.fighter.gear.equipped:            #
+                        #    if x == item:                                  #   TO THIS, after full player refactor
+                        #        player.fighter.gear.unquip_it(x)           #
         # keyboard input
         # keeps similar feel to old inventory if using the keys
         # keyboard input is sluggish as balls for some reason, need to look into it more
@@ -510,12 +519,13 @@ def inventory(con, player, game, width=80, height=43):
 
 
 def show_effects(item, game, compare_window):
-    if len(item.item.equipment.effects) != 0:
-        game.gEngine.console_print_ex(compare_window, 1, 8, libtcod.BKGND_SET, libtcod.LEFT,
-                                      'Effects : ')
-        y = 8
-        x = 11
-        for fx in item.item.equipment.effects:
-            game.gEngine.console_print_ex(compare_window, x, y, libtcod.BKGND_SET, libtcod.LEFT,
-                                          str(fx.effect_name) + " " + str(fx.amount))
-            y += 1
+    if item.item.equipment.effects is not None:
+        if len(item.item.equipment.effects) != 0:
+            game.gEngine.console_print_ex(compare_window, 1, 8, libtcod.BKGND_SET, libtcod.LEFT,
+                                          'Effects : ')
+            y = 8
+            x = 11
+            for fx in item.item.equipment.effects:
+                game.gEngine.console_print_ex(compare_window, x, y, libtcod.BKGND_SET, libtcod.LEFT,
+                                              str(fx.effect_name) + " " + str(fx.amount))
+                y += 1

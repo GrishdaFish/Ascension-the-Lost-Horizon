@@ -5,7 +5,7 @@ from dungeon import prefab_dungeon
 from dungeon.prefabs import prefabs
 import tcod as libtcod
 import esper
-from game.ecs import systems
+#from game.ecs import systems
 from gEngine.utilities.timing import ticker
 from gEngine.utilities import status_bar
 from gEngine.utilities import messaging
@@ -41,7 +41,7 @@ class Game:
         self.dungeon_generators = []
         self.objects = []
         self.player = None
-        self.world = esper.World()
+    #    self.world = esper.World()
         self.ticker = ticker.Ticker()
         self.is_player_turn = False
         self.game_state = None
@@ -231,8 +231,9 @@ class Game:
         self.game_state = 'playing'
 
     def setup_world(self):
-        self.world.add_processor(systems.DisplayProcessor())
-        self.world.add_processor(systems.MovementProcessor())
+        pass
+        #self.world.add_processor(systems.DisplayProcessor())
+        #self.world.add_processor(systems.MovementProcessor())
 
         # self.ticker.get_next_tick()
     def go_to_town(self, first_visit=False):
