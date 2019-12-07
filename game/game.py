@@ -7,11 +7,13 @@ import tcod as libtcod
 import esper
 #from game.ecs import systems
 from gEngine.utilities.timing import ticker
+from gEngine.utilities import console
 from gEngine.utilities import status_bar
 from gEngine.utilities import messaging
 from gEngine.utilities.user_interface import menu
 from gEngine.utilities.user_interface import hot_bar
 from gEngine.utilities.user_interface import dialog_box
+
 from gEngine import lights
 from game import bark
 from game.object import build_objects
@@ -99,6 +101,9 @@ class Game:
         self.player_action = None
         self.bark_manager = bark.BarkManager()
         self.ambient = 0.15
+        self.dev_console = console.Console(self, self.dungeon_width, self.dungeon_height, 'debug')
+        self.monster_force_display = [False, 0]
+        self.loot_force_display = [False, 0]
 
     def activate(self):
         self.active = True
@@ -193,6 +198,19 @@ class Game:
                         self.ticker.schedule_turn(self.player.fighter.speed, self.player)
                         self.player.torch.update(self)
 
+                        if self.monster_force_display[0]:
+                            if self.monster_force_display[1] <= 0:
+                                self.monster_force_display[0] = False
+                                self.message.message("Your detect monster spell has expired.", libtcod.light_cyan)
+                            else:
+                                self.monster_force_display[1] -= 1
+
+                        if self.loot_force_display[0]:
+                            if self.loot_force_display[1] <= 0:
+                                self.loot_force_display[0] = False
+                                self.message.message("Your detect items spell has expired.", libtcod.light_cyan)
+                            else:
+                                self.loot_force_display[1] -= 1
 
                     render.render_all(self)# self.render_all()
                     self.gEngine.console_flush()
@@ -248,7 +266,7 @@ class Game:
         level.light_handler = l
         for item in self.objects:
             level.objects.append(item)
-        self.levels.append(level)
+        #self.levels.append(level)
         self.level = level
         self.fov = self.level.fov_map
         for object in self.objects:
@@ -261,7 +279,7 @@ class Game:
             self.ticker.schedule_turn(10, self.player)
             for object in self.objects:
                 if object.misc:
-                    if object.misc.type == 'down':  # place the player at the down stairs on the previous level
+                    if object.misc.type == 'up':  # place the player at the down stairs on the previous level
                         self.player.x = object.x
                         self.player.y = object.y
 
@@ -294,7 +312,9 @@ class Game:
         self.objects = []
 
         l = lights.LightHandler(self.gEngine)
-        level = self.basic_dungeon.make_map(game=self, light_handler=l)
+        # level = self.basic_dungeon.make_map(game=self, light_handler=l)
+        level = self.prefab_generator.level_from_prefabs(light_handler=l)
+
         level.depth = self.depth + 1
         self.depth += 1
         if self.depth > 0:
@@ -308,16 +328,18 @@ class Game:
         self.ticker.schedule_turn(10, self.player)
         # self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
         self.game_state = 'playing'
+        for object in self.objects:
+            if object.misc:
+                if object.misc.type == 'up':  # place the player at the down stairs on the previous level
+                    self.player.x = object.x
+                    self.player.y = object.y
 
     def prev_level(self):
-        # self.gEngine.console_remove_all()
-        # self.dungeon_console = self.gEngine.console_new(self.dungeon_width, self.dungeon_height)  # main viewport
-        # self.panel = self.gEngine.console_new(self.screen_width, self.panel_height)  # for messages and others
-        # self.toolbar = self.gEngine.console_new(self.screen_width, 5)  # for the hotbar
-        # self.hotbar.reinit_all(self.toolbar)
         self.objects = []
         self.ticker.clear_ticker()
+        print(self.depth)
         self.depth -= 1
+        print(self.depth)
         self.level = None
         self.level = self.levels[self.depth-1]
         self.level.new_level()

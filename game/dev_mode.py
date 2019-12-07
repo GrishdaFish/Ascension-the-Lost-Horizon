@@ -32,12 +32,16 @@ class FleeingAi:
             return self.x, self.y
         else:
             return None, None
+
+
 class Level:
     def __init__(self):
         self.dungeon = None
         self.MAP_WIDTH = 0
         self.MAP_HEIGHT = 0
         self.fov_map = None
+        self.rooms = None
+
 
 class DevMode:
     def __init__(self, gEngine):
@@ -65,11 +69,19 @@ class DevMode:
         self.cx, self.cy = 0, 0
         self.v_map = None
         #self.gEngine.mMap = self.level.dungeon
-        self.first = True
-        self.level.dungeon = self.dungeon_gen.add_prefab_room(self.level.dungeon,
-                                                              self.dungeon_gen.width,
-                                                              self.dungeon_gen.height,
-                                                              self.first)
+        # self.level.dungeon, self.level.rooms = self.dungeon_gen.add_prefab_room(self.level.dungeon,
+        #                                                       self.dungeon_gen.width,
+        #                                                       self.dungeon_gen.height,
+        #                                                       True,
+        #                                                       self.level.rooms,
+        #                                                       True)
+        self.level = self.dungeon_gen.level_from_prefabs()
+        self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
+        self.dungeon_gen.set_draw_map(self.level.dungeon)
+
+        self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
+        self.level.fov_map = self.gEngine.get_fov_map()
+
     def run(self, key, mouse):
         while not libtcod.console_is_window_closed():
             self.gEngine.console_clear_all()
@@ -92,20 +104,26 @@ class DevMode:
 
     def testing(self, key, mouse):
         cx, cy = 0, 0
-        self.gEngine.console_print(self.con, 1, 5, "(%dfps) Depth: %d" % (libtcod.sys_get_fps(), 1))
+        self.gEngine.console_print(self.con, 1, 1, "(%dfps) Depth: %d" % (libtcod.sys_get_fps(), 1))
         if mouse.cx < self.level.MAP_WIDTH and mouse.cy < self.level.MAP_HEIGHT:
             self.gEngine.lightmask.add_light(mouse.cx, mouse.cy, 1.0)
 
         if key.vk == libtcod.KEY_SPACE:
             self.gEngine.map_clear()
-            self.level.dungeon = self.dungeon_gen.add_prefab_room(self.level.dungeon,
-                                                                  self.dungeon_gen.width,
-                                                                  self.dungeon_gen.height,
-                                                                  self.first)
-            print(self.level.dungeon)
+            d, r = self.dungeon_gen.add_prefab_room(self.level.dungeon,
+                                                    self.dungeon_gen.width,
+                                                    self.dungeon_gen.height,
+                                                    False,
+                                                    self.level.rooms,
+                                                    False,
+                                                    50,
+                                                    30,
+                                                    True)
+            if d:
+                self.level.dungeon = d
+                self.level.rooms = r
             self.dungeon_gen.set_draw_map(self.level.dungeon)
             self.level.fov_map = self.gEngine.get_fov_map()
-            self.first = False
 
         if mouse.lbutton_pressed:
             self.d.add_point(mouse.cx, mouse.cy, 0)

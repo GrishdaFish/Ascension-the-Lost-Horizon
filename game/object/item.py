@@ -142,10 +142,10 @@ class Equipment:
         if owner is not None:
             from pprint import pprint
             print("OWNER:")
-            pprint(vars(owner))
+            pprint(vars(owner.item.equipment))
             print("TARGET:")
             pprint(vars(target))
-            target.fighter.gear.quip_it(owner)
+            target.fighter.gear.quip_it(owner.item.equipment)
             """
 print("now you've done it: " + str(owner))
     def equip(self, target, game=None, owner=None, slot=0):

@@ -1,7 +1,7 @@
 import tcod as libtcod
 
 
-def render_all(game):  # break this up to render ui and other elements separately
+def render_all(game, injected_render_list=None):  # break this up to render ui and other elements separately
     game.gEngine.console_clear(game.dungeon_console)
     if game.fov_recompute:
         game.fov_recompute = False
@@ -22,6 +22,10 @@ def render_all(game):  # break this up to render ui and other elements separatel
     game.message.flush_messages()
 
     game.bark_manager.render_barks()
+
+    if injected_render_list:
+        for r in injected_render_list:
+            r(game)
 
     render_consoles(game)
 
@@ -55,7 +59,12 @@ def draw_objects(game):
             else:
                 object.draw(game.fov, game.gEngine)
         else:
-            object.draw(game.fov, game.gEngine)
+            if game.monster_force_display[0] and object.fighter:
+                object.draw(game.fov, game.gEngine, force_display=True)
+            elif game.loot_force_display[0] and object.item:
+                object.draw(game.fov, game.gEngine, force_display=True)
+            else:
+                object.draw(game.fov, game.gEngine)
     game.player.draw(game.fov, game.gEngine)
 
 

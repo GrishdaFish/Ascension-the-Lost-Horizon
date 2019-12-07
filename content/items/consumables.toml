@@ -59,6 +59,24 @@
 
     
 [["consumable"]]
+    name="chain lightning"
+    cell='#'
+    type="scroll"
+    min_effect=10
+    max_effect=20
+    max_stack=3
+    effect_type="chain lightning"
+    additional_effects="None"
+    spell_effect="beam"
+    effect_color=[0, 0, 0]
+    range=5
+    radius=5
+    max_targets=3
+    col=[255, 255, 0]
+    value=150
+    stackable = true
+
+[["consumable"]]
     name="lightning"
     cell='#'
     type="scroll"
@@ -147,4 +165,40 @@
     max_targets=1
     col=[255, 255, 255]
     value= 225
+    stackable = true
+
+[["consumable"]]
+    name="detect monsters"
+    cell='#'
+    type="scroll"
+    min_effect=15
+    max_effect=25
+    max_stack=3
+    effect_type="detect monster"
+    additional_effects="None"
+    spell_effect="None"
+    effect_color=[255, 255, 255]
+    range=200
+    radius=0
+    max_targets=1
+    col=[255, 255, 255]
+    value= 250
+    stackable = true
+
+[["consumable"]]
+    name="detect items"
+    cell='#'
+    type="scroll"
+    min_effect=15
+    max_effect=25
+    max_stack=3
+    effect_type="detect items"
+    additional_effects="None"
+    spell_effect="None"
+    effect_color=[255, 255, 255]
+    range=200
+    radius=0
+    max_targets=1
+    col=[255, 255, 255]
+    value= 250
     stackable = true
