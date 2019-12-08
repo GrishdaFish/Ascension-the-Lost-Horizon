@@ -6,7 +6,7 @@
     name = "plate"
     cell = ']'
     type = "armor"
-    location = "torso"
+    location = "Torso"
     base_value = 75
     description = "Hard to eat off of"
     threat_level = 0.5
@@ -18,7 +18,7 @@
     name = "plate helm"
     cell = '^'
     type = "armor"
-    location = "head"
+    location = "Head"
     base_value = 50
     description = "Low visibility"
     threat_level = 0.5
@@ -30,7 +30,7 @@
     name = "plate gloves"
     cell = '!'
     type = "armor"
-    location = "hands"
+    location = "Hands"
     base_value = 75
     description = "Hard to eat off of"
     threat_level = 0.5
@@ -42,7 +42,7 @@
     name = "plate greaves"
     cell = 'W'
     type = "armor"
-    location = "legs"
+    location = "Legs"
     base_value = 65
     description = "Low visibility"
     threat_level = 0.5
@@ -54,7 +54,7 @@
     name = "plate boots"
     cell = 'L'
     type = "armor"
-    location = "feet"
+    location = "Feet"
     base_value = 50
     description = "Sounds cool when you walk"
     threat_level = 0.5
@@ -66,7 +66,7 @@
     name = "plate bracers"
     cell = '='
     type = "armor"
-    location = "arms"
+    location = "Arms"
     base_value = 50
     description = "Forearms look buff"
     threat_level = 0.5

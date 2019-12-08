@@ -73,27 +73,11 @@ class GearPanel:
         self.owner = owner
         self.light_source = None
 
-        self.equipped = {  # Key: 'location' : item
-            '1h': None,
-            '2h': None,
-            'head': None,
-            'shoulders': None,
-            'arms': None,
-            'hands': None,
-            'torso': None,
-            'legs': None,
-            'feet': None,
-            'cloak': None,
-            'neck': None,
-            'ring1': None,
-            'ring2': None
-        }
-
         self.weapon_panel = {# do not change indexes of values, add new values to end of arrays, TY!
             #   Key:        [combat_type, damage_type, can_dual, can_shield, level, xp}
             "Shield":       ['melee', 'Slash', True, True, 1, 0],
             "Short Sword":  ['melee', 'Slash', True, True, 1, 0],
-            "Long Sword":   ['melee', 'Slash', False, True, 1, 0],
+            "Long Sword":   ['melee', 'Slash', False, False, 1, 0],
             "Great Sword":  ['melee', 'Slash', False, False, 1, 0],
             "Hand Axe":     ['melee', 'Slash', True, True, 1, 0],
             "Battle Axe":   ['melee', 'Slash', False, False, 1, 0],
@@ -112,15 +96,31 @@ class GearPanel:
             "Javelin":      ['ranged', 'Stab', False, False, 1, 0],
         }
 
+        self.equipped = {  # Key: 'location' : item     # placed here so you can compare to weapons ^ / armor V
+            '1h': None,
+            '2h': None,
+            'Head': None,
+            'Shoulders': None,
+            'Arms': None,
+            'Hands': None,
+            'Torso': None,
+            'Legs': None,
+            'Feet': None,
+            'Cloak': None,
+            'Neck': None,
+            'Ring': None
+        }
         self.armor_panel = {
             #   Key:
-            "Helm": [],
-            "Gloves": [],
+            "Head": [],
+            "Shoulders": [],
+            "Arms": [],
+            "Hands": [],
             "Torso": [],
             "Legs": [],
-            "Boots": [],
+            "Feet": [],
             "Cloak": [],
-            "Amulet": [],
+            "Neck": [],
             "Ring": [],
         }
 
@@ -129,6 +129,18 @@ class GearPanel:
         :return: array of equipment objects, sort it yourself!
         """
         return list(self.equipped.values())
+
+    def gimmie_da_armors(self):
+        da_armors = []
+        for slot_location in self.armor_panel.keys():
+            da_armors.append(self.equipped[slot_location])
+        return da_armors  # to me now!
+
+    def gimmie_da_slots(self):
+        """
+        :return: list of armor slots
+        """
+        return list(self.armor_panel.keys())
 
     def get_quipped_weapon_type(self, off_hand=False):
         """
@@ -144,30 +156,34 @@ class GearPanel:
             it rubs the gears on its skin
         :param gear: the gear to quip
         """
-        for gear in self.owner.inventory:
-            print(gear)
-        self.owner.inventory.remove(gear)
+        #for game_obj in self.owner.inventory:
+        #    print(game_obj)
+        self.owner.inventory.remove(gear)   #should only do this if equip is successful
 
 
         if self.is_light(gear) and self.light_source is None:
             self.light_source = gear
-        if self.is_weapon(gear):
+        elif self.is_weapon(gear):
             if self.is_two_hander(gear): #emtpy both hands and equip
                 if self.equipped['1h'] is not None:
                     self.owner.inventory.append(self.equipped['1h'])
                 if self.equipped['2h'] is not None:
                     self.owner.inventory.append(self.equipped['2h'])
                 self.equipped['1h'] = gear
+                self.equipped['2h'] = None
             else:  # deal with single handed weapons
                 hand_to_equip = '1h'
                 if self.equipped['1h'] is not None:
-                    if self.is_shield(self.equipped['2h']): # must remove shield to dual
+                    if self.can_dual(self.equipped['1h']) and self.can_dual(gear):
+                        if self.equipped['2h'] is not None:
+                            self.owner.inventory.append(self.equipped['2h'])
+                        hand_to_equip = '2h'
+                    elif self.is_shield(gear): # must remove shield to dual
+                        if self.equipped['2h'] is not None:
+                            self.owner.inventory.append(self.equipped['2h'])
+                        hand_to_equip = '2h'
+                    else:
                         self.owner.inventory.append(self.equipped['1h'])
-                    if self.is_weapon(self.equipped['2h']) or self.equipped['2h'] is None: # if already dual equip or no shield try as 2nd dual
-                        if self.can_dual(self.equipped['1h']) and self.can_dual(gear):
-                            if self.equipped['2h'] is not None:
-                                self.owner.inventory.append(self.equipped['2h'])
-                            hand_to_equip = '2h'
                 self.equipped[hand_to_equip] = gear
         elif self.is_shield(gear):
             if self.is_two_hander(self.equipped['1h']):
@@ -175,15 +191,14 @@ class GearPanel:
             if self.equipped['2h'] is not None:
                 self.owner.inventory.append(self.equipped['2h'])
             self.equipped['2h'] = gear
-        elif self.is_armor(gear):
-            if self.equipped[gear.subtype] is not None:
-                self.owner.inventory.append(self.equipped[gear.subtype])
-            self.equipped[gear.subtype] = gear
-        if len(gear.effects) > 0:
+        elif self.is_armor(gear):       ## TODO This does not deal with rings at all
+            if self.equipped[gear.item.equipment.location] is not None:
+                self.owner.inventory.append(self.equipped[gear.item.equipment.location])
+            self.equipped[gear.item.equipment.location] = gear
+        if len(gear.item.equipment.effects) > 0:
             self.activate_effects(gear)
         # self.activate_mods(gear)
         # self.activate_perks(gear)
-        print(self.equipped)
         #game.message.message(gear.name + " equipped.", 1) # this is getting sent to flavor_country
 
     def unquip_it(self, gear):
@@ -191,8 +206,8 @@ class GearPanel:
             nothing lasts forever
         :param gear: the gear to unquip
         """
-        if gear not in self.equipped.values(): # don't do anything if the gear to unequip is not equipped
-            return
+        #if gear not in self.equipped.values(): # don't do anything if the gear to unequip is not equipped
+        #    return
         self.owner.inventory.append(gear)
 
         if self.is_light(gear):
@@ -205,8 +220,8 @@ class GearPanel:
         elif self.is_shield(gear):
             self.equipped['2h'] = None
         elif self.is_armor(gear):
-            self.equipped[gear.subtype] = None
-        if len(gear.effects) > 0:
+            self.equipped[gear.item.equipment.subtype] = None
+        if len(gear.item.equipment.effects) > 0:
             self.deactivate_effects(gear)
         # self.deactivate_mods(gear)
         # self.deactivate_perks(gear)
@@ -214,47 +229,53 @@ class GearPanel:
         # game.message.message(gear.name + " unequipped.", 1) # this is getting sent to flavor_country
 
     def activate_effects(self, gear):
-        for effect in gear.effects:
+        for effect in gear.item.equipment.effects:
             effect.activate_effect(self.owner)
 
     def deactivate_effects(self, gear):
-        for effect in gear.effects:
+        for effect in gear.item.equipment.effects:
             effect.deactivate_effect(self.owner)
 
     # JUST TELL ME IF ITS A FUCKING WEAPON PLX
     def is_weapon(self, gear):
-        if hasattr(gear, 'subtype'):
-            if gear.subtype in self.weapon_panel.keys() and gear.subtype != "Shield":
-                return True
-        else:
-            print("Definitely not a weapon")
-
-    # WEAPON IS A 2H
-    def is_two_hander(self, gear):
-        if gear.handed == 2:
-            return True
-
-    # WEAPON CAN BE DUAL EQUIPPED
-    def can_dual(self, gear):
-        return self.equipped[gear.subtype][3]
+        if gear:
+            if hasattr(gear.item.equipment, 'subtype'):
+                if gear.item.equipment.subtype in self.weapon_panel.keys() and gear.item.equipment.subtype != "Shield":
+                    return True
+            else:
+                print("Definitely not a weapon")
 
     # TELLS ME IF ITS A SHIELD
     def is_shield(self, gear):
-        if hasattr(gear, 'subtype'):
-            if gear.subtype == "Shield":
+        if gear:
+            if hasattr(gear.item.equipment, 'subtype'):
+                if gear.item.equipment.subtype == "Shield":
+                    return True
+            else:
+                print("Definitely not a shield")
+
+    # WEAPON IS A 2H
+    def is_two_hander(self, gear):
+        if gear:
+            if gear.item.equipment.handed == 2:
                 return True
-        else:
-            print("Definitely not a shield")
+
+    # WEAPON CAN BE DUAL EQUIPPED
+    def can_dual(self, gear):
+        if gear:
+            return self.weapon_panel[gear.item.equipment.subtype][3]
 
     # TELLS ME IF ITS AN ARMOR TYPE
     def is_armor(self, gear):
-        if gear in self.armor_panel.keys():
-            return True
+        if gear:
+            if gear.item.equipment.location in self.armor_panel.keys():
+                return True
 
     # IS IT A LIGHT
     def is_light(self, gear):
-        if gear.type == 'light_source':
-            return True
+        if gear:
+            if gear.item.equipment.type == 'light_source':
+                return True
 
     # GET WEAPON EXP TO NEXT LEVEL
     def get_w_xptnl(self, wep_type):
@@ -271,3 +292,6 @@ class GearPanel:
     # ADD XP TO WEAPON
     def add_w_xp(self, wep_type, amount):
         self.weapon_panel[wep_type][6] += amount
+
+    def compare_gear(self, gear_mine, gear_to_compare):
+        pass

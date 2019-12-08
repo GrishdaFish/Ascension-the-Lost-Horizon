@@ -3,7 +3,7 @@
 #                    Base Weapons
 #=======================================================*/
 [["weapon"]]
-    name="great sword"
+    name="Great Sword"
     cell='/' #should keep weapons this character
     type="melee" #can be only melee for now, ranged will come later
     subtype="Great Sword"
@@ -17,6 +17,22 @@
     size="tiny"
     damage = [2, 10, 1, 0] # min damage, max damage, mutliplier, bonus (2d10*1+0)
     accuracy = 0 #accuracy bonus or penalty
+
+[["weapon"]]
+    name="Berzerker"
+    cell='/'
+    type="melee"
+    subtype="Great Sword"
+    handed=1
+    dual_wield=true
+    damage_type="Straightsword"
+    family = "straightsword"
+    base_value=40
+    description="You're making me crazy."
+    threat_level=0.1
+    size="tiny"
+    damage = [4, 12, 1, 0] # min damage, max damage, mutliplier, bonus (2d10*1+0)
+    accuracy = 0
 
 [["weapon"]]
     name="Long Sword"
@@ -48,4 +64,36 @@
     threat_level=0.1
     size="tiny"
     damage = [1, 3, 2, 1] # min damage, max damage, mutliplier, bonus (2d10*1+0)
+    accuracy = 2
+
+[["weapon"]]
+    name="Tower Shield"
+    cell='/'
+    type="melee"
+    subtype="Shield"
+    handed=1
+    dual_wield=false
+    damage_type="Straightsword"
+    family = "straightsword"
+    base_value=40
+    description="Not as tall as the name implies"
+    threat_level=0.1
+    size="tiny"
+    damage = [0, 0, 0, 0] # min damage, max damage, mutliplier, bonus (2d10*1+0)
+    accuracy = 2
+
+[["weapon"]]
+    name="Medium Buckler"
+    cell='/'
+    type="melee"
+    subtype="Shield"
+    handed=1
+    dual_wield=true
+    damage_type="Straightsword"
+    family = "straightsword"
+    base_value=40
+    description="Little guys may call it a Large Buckler"
+    threat_level=0.1
+    size="tiny"
+    damage = [0, 0, 0, 0] # min damage, max damage, mutliplier, bonus (2d10*1+0)
     accuracy = 2

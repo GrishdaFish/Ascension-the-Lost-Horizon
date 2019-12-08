@@ -15,12 +15,12 @@ class StatusBar:
         maximum, value = 0, 0
         if self.type == 'hp':
             value = int(self.owner.hp)
-            maximum = int(self.owner.max_hp)
+            maximum = int(self.owner.stat.get_stat_by_name("HP"))
         if self.type == 'mp':
             pass
         if self.type == 'xp':
             value = self.owner.current_xp
-            maximum = self.owner.xp_to_next_level
+            maximum = int(self.owner.get_xp_tnl())
         if self.type == 'status':  # for status ailments or buffs like poison, stun or regen
             pass
 
@@ -33,7 +33,6 @@ class StatusBar:
                 self.full = self.empty
                 value = 0
                 maximum = 0
-
 
         if maximum <= 0:
             maximum = 0.1

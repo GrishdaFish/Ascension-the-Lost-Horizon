@@ -215,26 +215,27 @@ class Fighter:
         '''self.max_mp = 1 + (2*self.stats[2])
         mp = self.max_mp
         self.mp = mp'''
-                                ####### TODO  REFACTOR add poitners to the correct locations
-        self.equipment = [ copy.deepcopy(self.gear.equipped['head']),
-                           copy.deepcopy(self.gear.equipped['shoulders']),
-                           copy.deepcopy(self.gear.equipped['arms']),
-                           copy.deepcopy(self.gear.equipped['hands']),
-                           copy.deepcopy(self.gear.equipped['torso']),
-                           copy.deepcopy(self.gear.equipped['legs']),
-                           copy.deepcopy(self.gear.equipped['feet']),
-                           copy.deepcopy(self.gear.equipped['cloak'])
+
+        # TODO  CONSIDER / REFACTOR replacing this requires a lot of changes in calls to
+        # TODO fighter.equipment, .light_source, .accessories, and .wielded throughout
+        # logically linked to self.gear.equipped
+        self.equipment = [ self.gear.equipped['Head'],
+                           self.gear.equipped['Shoulders'],
+                           self.gear.equipped['Arms'],
+                           self.gear.equipped['Hands'],
+                           self.gear.equipped['Torso'],
+                           self.gear.equipped['Legs'],
+                           self.gear.equipped['Feet'],
+                           self.gear.equipped['Cloak']
                            ]
-
+        # logically linked to self.gear.light_source
         self.light_source = self.gear.light_source
-        # accessories
-        self.accessories = [self.gear.equipped['neck'],
-                            self.gear.equipped['ring1'],
-                            self.gear.equipped['ring2']
+        # logically linked to self.gear.equipped
+        self.accessories = [self.gear.equipped['Neck'],
+                            self.gear.equipped['Ring']
                             ]
-
-        # weapons/shield
-        self.wielded = [copy.deepcopy(self.gear.equipped['1h']), copy.deepcopy(self.gear.equipped['2h'])]
+        # logically linked to self.gear.equipped
+        self.wielded = [self.gear.equipped['1h'], self.gear.equipped['2h']]
                                 ############################################################
         self.skills = copy.deepcopy(combat.skill_list)  # skill list needs to have its own copies
 
@@ -244,7 +245,8 @@ class Fighter:
         modifier = 10000           # MODIFIER TAKES YOU FROM SINGLE DIGITS UP INTO REALISTIC VALUES
         added_xp = math.log(lv_basis, log_base)
         added_xp *= modifier
-        self.xp_to_next_level += int(added_xp)
+        xp_tnl = (self.xp_to_next_level + int(added_xp))
+        return xp_tnl
 
     def get_lv_up_sp(self):
         sp = self.level / 2
@@ -329,13 +331,14 @@ class Fighter:
             msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' but the attack was blocked!'
         else:
             dmg = 0
-            if self.wielded[0] is not None:
-                skill = self.get_skill(self.wielded[0].item.equipment.damage_type)
+            if self.gear.equipped['1h'] is not None:
+                skill = self.get_skill(self.gear.equipped['1h'].item.equipment.damage_type)
                 if skill is not None:
                     dmg = skill.get_bonus()
                 if dmg is None:
                     dmg = 0
-                dmg += self.wielded[0].item.equipment.calc_damage()
+                dmg += self.gear.equipped['1h'].item.equipment.calc_damage()
+                # TODO if 2 handed get that damage calc too
                 dmg = int(dmg)
             else:
                 # For empty slots
@@ -395,7 +398,7 @@ class Fighter:
                 if function is not None:
                     function(self.owner)
             else:
-                pass  # flash
+                pass  # flash  \ (. )( .) /
 
     def heal(self, amount):
         # heal by the given amount, without going over the maximum

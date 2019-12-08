@@ -236,6 +236,7 @@ class GameObjects:
             equip_component = Equipment(type=eq.type, handed=eq.handed, dual_wield=eq.dual_wield,
                                         threat_level=eq.threat_level, accuracy=eq.accuracy, damage=eq.damage,
                                         damage_type=eq.damage_type)
+            equip_component.subtype = eq.subtype
             '''equip_component = Equipment(min_power=eq.min_power,max_power=eq.max_power,
                 crit_bonus=eq.crit_bonus,type=eq.type,handed=eq.handed,
                 dual_wield=eq.dual_wield,damage_type=eq.damage_type,threat_level=eq.threat_level, accuracy=eq.accuracy)
@@ -328,11 +329,11 @@ class GameObjects:
 
         monster.fighter.ticker.schedule_turn(monster.fighter.speed, monster)
 
-        monster.fighter.wielded[0] = self.build_equipment(game, x, y, type="monster_melee")
+        monster.fighter.gear.equipped['1h'] = self.build_equipment(game, x, y, type="monster_melee")
         if mob.can_equip_gear:
             r = libtcod.random_get_int(0, 0, 100)
             if r > 85:  # 15 % chance the mob will have a weapon
-                monster.fighter.wielded[0] = self.build_equipment(game, x, y, type="melee")
+                monster.fighter.gear.equipped['1h'] = self.build_equipment(game, x, y, type="melee")
         for skill in monster.fighter.skills:
             skill.set_bonus(mob.defense_bonus)
         monster.fighter.max_hp = mob.hp

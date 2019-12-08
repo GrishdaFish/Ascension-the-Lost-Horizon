@@ -85,8 +85,7 @@ class StatPanel:
         """
         if effect.panel_group == 'modifiers' and effect in self.modifiers:
             self.modifiers.remove(effect)
-            self.set_stat_by_name(effect, (effect.amount * -1), True)
-            self.set_stat_by_name(effect.effect_name, (effect.amount * -1), True, True)
+            self.set_stat_by_name(effect, True, True)
         if effect.panel_group == 'combat' and effect in self.combat_effects:
             self.combat_effects.remove(effect)
             self.panel[effect.panel_group][effect.effect_name][effect.index] -= effect.amount
@@ -96,7 +95,7 @@ class StatPanel:
 
     # call as is for bulk damage, pass True for full details
     def return_damage(self, details=False): #TODO determine desired output format / dont use details yet
-        damage = 0
+        damage = 0                          #TODO i dont this this is hooked up at all?
         damage_detail = []
         if details:
             for mod, val in self.panel:
@@ -228,3 +227,11 @@ class StatPanel:
                 self.panel['conditions'][effect.effect_name][1] = effect.amount
 
     #def con_bonus(self):
+    #   pass
+    def get_effect_color(self, effect):
+        if effect.panel_group == 'modifier':  # this is redundant, as none is returned either way, however:
+            return None  # inject here if color is added to base stats. seems better to keep them standard to me
+        if effect.panel_group == 'combat':
+            return self.panel['combat'][effect.effect_name][2]
+        if effect.panel_group == 'conditions':
+            return self.panel['conditions'][effect.effect_name][3]

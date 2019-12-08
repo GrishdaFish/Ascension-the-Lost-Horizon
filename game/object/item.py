@@ -135,17 +135,17 @@ class Equipment:
             for i in range(num_dice):
                 total_damage += libtcod.random_get_int(0, 1, sides)
             total_damage = (total_damage * multiplier) + bonus  # + effect_damage
+        print(str(total_damage))
         return total_damage
 
     ########################################################  equip is handled by equipped panel now
-    def equip(self, target, game=None, owner=None, slot=0):  # TODO REFACTOR unnecessary arguments? this isn't marriage
+    def equip(self, target, game=None, owner=None, slot=0):  # TODO REFACTOR unnecessary arguments? this isn't marriage - find calls before deleting
         if owner is not None:
-            from pprint import pprint
-            print("OWNER:")
-            pprint(vars(owner.item.equipment))
-            print("TARGET:")
-            pprint(vars(target))
-            target.fighter.gear.quip_it(owner.item.equipment)
+            target.fighter.gear.quip_it(owner)
+
+    def un_equip(self, target, item):
+        if item is not None:
+            target.fighter.gear.unquip_it(item)
             """
 print("now you've done it: " + str(owner))
     def equip(self, target, game=None, owner=None, slot=0):
