@@ -167,6 +167,9 @@ class gEngine:
         for con in self.console_dict:
             self.console_dict[con].clear()
 
+    def console_get_console(self, con):
+        return self.console_dict[con]
+
     def console_clear(self, con):
         self.console_dict[con].clear()
 
@@ -382,25 +385,46 @@ class gEngine:
         self.image_replace(self.map_image, libtcod.image.Image.from_array(arr))
         self.image_blit(self.map_image, con, self.w / 2, self.h / 2 - 4)
 
-    def map_draw(self, con, x=0, y=0, run_fov=True):
+    def map_draw(self, con, x=0, y=0, run_fov=True, lightmask=None):
         self.image_clear(self.map_image, 0, 0, 0)
         if con == 0:
             con = self.root
         for tile in self.mMap:
             r, g, b = tile.color
-            if run_fov:
+            if run_fov and not lightmask:
                 if libtcod.map_is_in_fov(self.FOV, tile.x, tile.y):
                     brightness = self.lightmask_get_mask_value(tile.x, tile.y)
-                    new_bright = []
-                    for f in range(len(brightness)):
-                        new_bright.append(self.clamp_float(brightness[f]))
-                    brightness = new_bright
+                    # new_bright = []
+                    # for f in range(len(brightness)):
+                    #     new_bright.append(self.clamp_float(brightness[f]))
+                    # brightness = new_bright
                     # print(brightness)
                     # this is  VERY slow for some reason
                     r *= brightness[0]
                     g *= brightness[1]
                     b *= brightness[2]
                     tile.explored = True
+                else:
+                    if tile.explored:
+                        r *= self.lightmask.ambient
+                        g *= self.lightmask.ambient
+                        b *= self.lightmask.ambient
+
+                    else:
+                        r, g, b = 0, 0, 0
+            if lightmask and not run_fov:
+                brightness = lightmask.get_value(tile.x, tile.y)
+                # brightness = new_bright
+                r *= brightness[0]
+                g *= brightness[1]
+                b *= brightness[2]
+            if lightmask and run_fov:
+                if libtcod.map_is_in_fov(self.FOV, tile.x, tile.y):
+                    brightness = lightmask.get_value(tile.x, tile.y)
+                    # brightness = new_bright
+                    r *= brightness[0]
+                    g *= brightness[1]
+                    b *= brightness[2]
                 else:
                     if tile.explored:
                         r *= self.lightmask.ambient
