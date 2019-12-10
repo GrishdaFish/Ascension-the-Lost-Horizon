@@ -1,3 +1,4 @@
+__author__ = 'noobspanker'
 
 """
 [["armor"]]
@@ -73,9 +74,10 @@ class GearPanel:
         self.owner = owner
         self.light_source = None
 
+        self.weapon_panel_key =  ['Combat Type', 'Damage Type', 'Can Dual', 'Can Shield', 'Level', 'EXP']
         self.weapon_panel = {# do not change indexes of values, add new values to end of arrays, TY!
             #   Key:        [combat_type, damage_type, can_dual, can_shield, level, xp}
-            "Shield":       ['melee', 'Slash', True, True, 1, 0],
+            "Shield":       ['melee', 'Shield', False, True, 1, 0],
             "Short Sword":  ['melee', 'Slash', True, True, 1, 0],
             "Long Sword":   ['melee', 'Slash', False, False, 1, 0],
             "Great Sword":  ['melee', 'Slash', False, False, 1, 0],
@@ -158,11 +160,14 @@ class GearPanel:
         """
         #for game_obj in self.owner.inventory:
         #    print(game_obj)
-        self.owner.inventory.remove(gear)   #should only do this if equip is successful
+        self.owner.inventory.remove(gear)   # TODO should only do this if equip is successful
 
 
-        if self.is_light(gear) and self.light_source is None:
+        if self.is_light(gear):
+            if self.light_source is not None:
+                self.owner.inventory.append(self.light_source)
             self.light_source = gear
+
         elif self.is_weapon(gear):
             if self.is_two_hander(gear): #emtpy both hands and equip
                 if self.equipped['1h'] is not None:
@@ -185,16 +190,19 @@ class GearPanel:
                     else:
                         self.owner.inventory.append(self.equipped['1h'])
                 self.equipped[hand_to_equip] = gear
+
         elif self.is_shield(gear):
             if self.is_two_hander(self.equipped['1h']):
                 self.owner.inventory.append(self.equipped['1h'])
             if self.equipped['2h'] is not None:
                 self.owner.inventory.append(self.equipped['2h'])
             self.equipped['2h'] = gear
+
         elif self.is_armor(gear):       ## TODO This does not deal with rings at all
             if self.equipped[gear.item.equipment.location] is not None:
                 self.owner.inventory.append(self.equipped[gear.item.equipment.location])
             self.equipped[gear.item.equipment.location] = gear
+
         if len(gear.item.equipment.effects) > 0:
             self.activate_effects(gear)
         # self.activate_mods(gear)

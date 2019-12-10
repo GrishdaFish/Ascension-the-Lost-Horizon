@@ -204,7 +204,7 @@ class Fighter:
         self.depth = 0
         self.threat = 0.0
 
-        self.max_hp = combat.hp_bonus(Con)  # REFACTOR get hp from stats now
+        self.max_hp = self.stat.get_stat_base("HP")  # REFACTOR get hp from stats now
         hp = self.max_hp
         self.hp = hp
 
@@ -239,7 +239,7 @@ class Fighter:
                                 ############################################################
         self.skills = copy.deepcopy(combat.skill_list)  # skill list needs to have its own copies
 
-    def get_xp_tnl(self):
+    def get_xp_tnl(self):       # TODO TESTING make sure values are stable and realistic
         lv_basis = self.level*2    # ARBITRARY BASIS FOR SCALING
         log_base = 10              # JUST GO WITH BASE 10 FOR NOW
         modifier = 10000           # MODIFIER TAKES YOU FROM SINGLE DIGITS UP INTO REALISTIC VALUES
@@ -248,21 +248,23 @@ class Fighter:
         xp_tnl = (self.xp_to_next_level + int(added_xp))
         return xp_tnl
 
-    def get_lv_up_sp(self):
-        sp = self.level / 2
+    def get_lv_up_sp(self):     # TODO TESTING make sure values are stable in range 1 : 5
+        sp = int(self.level / 2)
         sp_add = 1 if sp < 1 else sp
         sp_add = 5 if sp > 5 else sp
         return sp_add
 
-    def level_up(self):
+    def level_up(self):         # TODO DEVELOP make additional stat stuff happen - level up magic
         self.xp_to_next_level = self.get_xp_tnl()
         sp = self.get_lv_up_sp()
         self.unused_skill_points += sp
         self.level += 1
         # self.stat_panel.set_stat_by_name("HP", combat.hp_bonus(self.stats[3]))
         # self.hp = self.stat_panel.get_stat_by_name("HP")
-        self.max_hp += combat.hp_bonus(self.stats[3])
-        hp = self.max_hp
+        add_hp = combat.hp_bonus(self.stat.get_stat_by_name("Constitution"))
+        self.stat.set_stat_by_name("HP", add_hp, True)
+        #self.max_hp += combat.hp_bonus(self.stats[3])
+        hp = self.stat.get_stat_by_name("HP")
         self.hp = hp
         self.current_xp = 0
 
@@ -338,7 +340,8 @@ class Fighter:
                 if dmg is None:
                     dmg = 0
                 dmg += self.gear.equipped['1h'].item.equipment.calc_damage()
-                # TODO if 2 handed get that damage calc too
+                # TODO if duals get that damage calc too
+                # TODO also, shield defense
                 dmg = int(dmg)
             else:
                 # For empty slots
@@ -347,6 +350,10 @@ class Fighter:
                 if attack_roll < 10 + self.armor_bonus:
                     dmg *= 0.25
                     dmg = int(dmg)
+                # TODO CONSIDER this is where conditions are applied currently
+                if self.stat.conditions:
+                    for fx in self.stat.conditions:
+                        fx.inflict_condition(target.fighter)
                 # make the target take some damage
                 target.fighter.take_damage(dmg, self.owner, game)
                 msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' for ' + str(dmg) + '!'
@@ -359,6 +366,7 @@ class Fighter:
                     msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' but it has no effect!'
         if game:
             game.message.message(msg, col)
+            # TODO REFACTOR isolate and build
         # expand on this for different attack patterns, right now its a 1x3 area in front of the player
         if direction and player:
             t = None
@@ -407,17 +415,17 @@ class Fighter:
             self.hp = self.max_hp
 
 
-class Torch:
+class Torch:    # TODO REFACTOR move torch to item.py
     def __init__(self, owner):
         self.owner = owner
-        #self.light_source = self.owner.fighter.light_source
+        #self.light_source = self.owner.fighter.gear.light_source
 
     def render(self, game, gEngine):
-        if self.owner.fighter.light_source:
-            if self.owner.fighter.light_source.item.equipment.fuel > 0:
+        if self.owner.fighter.gear.light_source:
+            if self.owner.fighter.gear.light_source.item.equipment.fuel > 0:
                 r = libtcod.random_get_float(0, -0.025, 0.025)
-                v = self.owner.fighter.light_source.item.equipment.torch_intensity + r
-                c = self.owner.fighter.light_source.item.equipment.torch_color
+                v = self.owner.fighter.gear.light_source.item.equipment.torch_intensity + r
+                c = self.owner.fighter.gear.light_source.item.equipment.torch_color
                 r = c[0] / 255 * v
                 g = c[1] / 255 * v
                 b = c[2] / 255 * v
@@ -426,13 +434,13 @@ class Torch:
 
     def update(self, game):
 
-        if self.owner.fighter.light_source:
-            if self.owner.fighter.light_source.item.equipment.fuel > 1:
-                self.owner.fighter.light_source.item.equipment.fuel -= 1
+        if self.owner.fighter.gear.light_source:
+            if self.owner.fighter.gear.light_source.item.equipment.fuel > 1:
+                self.owner.fighter.gear.light_source.item.equipment.fuel -= 1
             else:
-                m = "%s has burned out and is discarded!"%(self.owner.fighter.light_source.name.capitalize())
+                m = "%s has burned out and is discarded!"%(self.owner.fighter.gear.light_source.name.capitalize())
                 game.message.message(m)
-                self.owner.fighter.light_source = None
+                self.owner.fighter.gear.light_source = None
 
 
 
@@ -455,7 +463,7 @@ def get_next_to_player(mob, player, map):
     return dx, dy
 
 
-
+    ## TODO REFACTOR move AI class and functions to their own package
 
 class AI_Base:
     def __init__(self):

@@ -15,7 +15,7 @@ class StatusBar:
         maximum, value = 0, 0
         if self.type == 'hp':
             value = int(self.owner.hp)
-            maximum = int(self.owner.stat.get_stat_by_name("HP"))
+            maximum = int(self.owner.stat.get_stat_base("HP"))
         if self.type == 'mp':
             pass
         if self.type == 'xp':
@@ -25,10 +25,10 @@ class StatusBar:
             pass
 
         if self.type == 'torch':
-            if self.owner.light_source:
-                self.full = self.owner.light_source.item.equipment.torch_color
-                value = int(self.owner.light_source.item.equipment.fuel)
-                maximum = int(self.owner.light_source.item.equipment.max_fuel)
+            if self.owner.gear.light_source:
+                self.full = self.owner.gear.light_source.item.equipment.torch_color
+                value = int(self.owner.gear.light_source.item.equipment.fuel)
+                maximum = int(self.owner.gear.light_source.item.equipment.max_fuel)
             else:
                 self.full = self.empty
                 value = 0

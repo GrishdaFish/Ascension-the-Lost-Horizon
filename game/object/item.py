@@ -1,7 +1,6 @@
 import tcod as libtcod
 from gEngine.utilities.user_interface import menu
-# for test output: TODO DEPRECATE remove after debugged
-from pprint import pprint
+
 
 class Item:
     # an item that can be picked up and used.
@@ -72,7 +71,7 @@ class Item:
 
     def use(self, inventory, creature, game, player=True):
         # just call the "use_function" if it is defined
-        if player:  # TODO CONSIDER why not have mobs just behave the same by default?
+        if player:
             if self.use_function is None:
                 self.owner.message.message('The ' + self.owner.name + ' cannot be used.')
             else:
@@ -85,7 +84,6 @@ class Item:
                                 inventory.remove(self.owner)
                         else:
                             inventory.remove(self.owner)
-                        # TODO CONSIDER cant you just inventory.remove(self.owner) here and catch both elses?
                 else:  ##equip
                     self.use_function(creature, game=game, owner=self.owner)
         else:  ##so mobs can use items

@@ -1,6 +1,6 @@
 __author__ = 'noobspanker'
+
 import tcod as libtcod
-from game.object.conditions import ConditionManager
 
 
 class StatPanel:
@@ -13,19 +13,18 @@ class StatPanel:
         #             "Light-based effects" : Not sure yet #TODO  <- consider how id like to do this
         self.panel = {
             "modifiers": {
-                # [base stat value, modifier, penalty]
-                "HP": [15, 0, 0],
+                "key": ["Penalty", "Modifier", "Base"],
+                "HP": [0, 0, 15],
                 "Regen": [0, 0, 0],
-                "Defense": [1, 0, 0],
-                "Evasion": [1, 0, 0],
-                "Strength": [10, 0, ],
-                "Constitution": [10, 0, 0],
-                "Dexterity": [10, 0, 0],
-                "Intelligence": [10, 0, 0],
-                "Speed": [10, 0, 0],
+                "Defense": [0, 0, 1],
+                "Evasion": [0, 0, 1],
+                "Speed": [0, 0, 10],
+                "Strength": [0, 0, 10],
+                "Constitution": [0, 0, 10],
+                "Dexterity": [0, 0, 10],
+                "Intelligence": [0, 0, 10],
             },
-            "combat": {
-                # [elemental damage, resist, display color]
+            "elemental": {
                 "key": ["Damage", "Resistance", "Color"],
                 "Fire": [0, 0, libtcod.red],
                 "Ice": [0, 0, libtcod.light_blue],
@@ -42,7 +41,7 @@ class StatPanel:
                 # petrify ?
             },
             "conditions": {
-                # conditions the actor can cause / resist [damage, resistance, inflict_rate, display color]
+                # conditions the actor can cause / resist
                 "key": ["Damage", "Resistance", "Rate", "Color"],
                 "Burn":  [0, 0, 0, libtcod.red],
                 "Freeze":  [0, 0, 0, libtcod.light_blue],
@@ -58,68 +57,82 @@ class StatPanel:
             # dodge, armor, weapon, etc can all be stored here as well
         }
 
-        self.condition_manager = ConditionManager()    # tracks afflicted conditions
-        self.combat_effects = []                # tracks actor's equipped combat effects
-        self.modifiers = []                     # tracks actor's equipped modifiers
-        self.conditions = []                    # tracks actor's equipped inflict-able conditions
+        self.active_conditions = []     # tracks afflicted conditions
+        self.elemental_effects = []     # tracks actor's equipped elemental effects
+        self.modifiers = []             # tracks actor's equipped modifiers
+        self.conditions = []            # tracks actor's equipped inflict-able conditions
 
     def apply_effect(self, effect):
-        """
-            Called by an effect to register itself
+        """ Called by an effect object to register itself to the panel
         :param effect: the effect instance being registered
         """
         if effect.panel_group == 'modifiers':
-            self.set_stat_by_name(effect, True, True)  # add to total
+            if effect.index == 0:  # 0 is penalty index,
+                self.set_stat_base(effect.effect_name, (self.get_stat_base(effect.effect_name) - effect.amount))  # add to total
+                self.set_stat_pen(effect.effect_name, (self.get_stat_pen(effect.effect_name) + effect.amount))  # add to mod amount
+            if effect.index == 1:  # 1 is modifier index
+                self.set_stat_base(effect.effect_name, (self.get_stat_base(effect.effect_name) + effect.amount))  # add to total
+                self.set_stat_mod(effect.effect_name, (self.get_stat_mod(effect.effect_name) + effect.amount))   # add to mod amount
             self.modifiers.append(effect)
-        if effect.panel_group == 'combat':
-            self.set_combat_stat_by_name(effect, True)
-            self.combat_effects.append(effect)
+        if effect.panel_group == 'elemental':
+            if effect.index == 0:
+                self.set_elemental_damage(effect.effect_name, (self.get_elemental_damage(effect.effect_name) + effect.amount))
+            if effect.index == 1:
+                self.set_elemental_resist(effect.effect_name, (self.get_elemental_resist(effect.effect_name) + effect.amount))
+            self.elemental_effects.append(effect)
         if effect.panel_group == 'conditions':
-            self.set_condition_stat_by_name(effect, True)
+            if effect.index == 0:
+                self.set_condition_damage(effect.effect_name, (self.get_condition_damage(effect.effect_name) + effect.amount))
+                self.set_condition_rate(effect.effect_name, (self.get_condition_rate(effect.effect_name) + effect.amount))
+            if effect.index == 1:
+                self.set_condition_resist(effect.effect_name, (self.get_condition_resist(effect.effect_name) + effect.amount))
             self.conditions.append(effect)
 
     def remove_effect(self, effect):
+        """ Called by an effect object to deactivate from the panel
+        :param effect: the effect instance to deactivate
         """
-            Called by an effect to be de activated
-        :param effect: the effect instance to de activate
-        """
-        if effect.panel_group == 'modifiers' and effect in self.modifiers:
+        if effect.panel_group == 'modifiers':
+            if effect.index == 0:  # 0 is penalty index,
+                self.set_stat_base(effect.effect_name, (self.get_stat_base(effect.effect_name) + effect.amount))  # add to total
+                self.set_stat_pen(effect.effect_name, (self.get_stat_pen(effect.effect_name) - effect.amount))  # add to mod amount
+            if effect.index == 1:  # 1 is modifier index
+                self.set_stat_base(effect.effect_name, (self.get_stat_base(effect.effect_name) - effect.amount))  # add to total
+                self.set_stat_mod(effect.effect_name, (self.get_stat_mod(effect.effect_name) - effect.amount))   # add to mod amount
             self.modifiers.remove(effect)
-            self.set_stat_by_name(effect, True, True)
-        if effect.panel_group == 'combat' and effect in self.combat_effects:
-            self.combat_effects.remove(effect)
-            self.panel[effect.panel_group][effect.effect_name][effect.index] -= effect.amount
-        if effect.panel_group == 'conditions' and effect in self.conditions:
+        if effect.panel_group == 'elemental':
+            if effect.index == 0:
+                self.set_elemental_damage(effect.effect_name, (self.get_elemental_damage(effect.effect_name) - effect.amount))
+            if effect.index == 1:
+                self.set_elemental_resist(effect.effect_name, (self.get_elemental_resist(effect.effect_name) - effect.amount))
+            self.elemental_effects.remove(effect)
+        if effect.panel_group == 'conditions':
+            if effect.index == 0:
+                self.set_condition_damage(effect.effect_name, (self.get_condition_damage(effect.effect_name) - effect.amount))
+                self.set_condition_rate(effect.effect_name, (self.get_condition_rate(effect.effect_name) - effect.amount))
+            if effect.index == 1:
+                self.set_condition_resist(effect.effect_name, (self.get_condition_resist(effect.effect_name) - effect.amount))
             self.conditions.remove(effect)
-            self.panel[effect.panel_group][effect.effect_name][effect.index] -= effect.amount
+        #if effect.panel_group == 'modifiers' and effect in self.modifiers:
+        #    self.modifiers.remove(effect)
+        #    self.set_stat_base()
+        #if effect.panel_group == 'elemental' and effect in self.elemental_effects:
+        #    self.elemental_effects.remove(effect)
+        #    self.panel[effect.panel_group][effect.effect_name][effect.index] -= effect.amount
+        #if effect.panel_group == 'conditions' and effect in self.conditions:
+        #    self.conditions.remove(effect)
+        #    self.panel[effect.panel_group][effect.effect_name][effect.index] -= effect.amount
 
-    # call as is for bulk damage, pass True for full details
-    def return_damage(self, details=False): #TODO determine desired output format / dont use details yet
-        damage = 0                          #TODO i dont this this is hooked up at all?
-        damage_detail = []
-        if details:
-            for mod, val in self.panel:
-                if "Damage" in mod:
-                    damage_detail.append( [mod, val] )
-        else:
-            group = list(self.panel['combat'])
-            group.pop(0)  # pop out the key
-            for value in group:
-                # print(self.panel['combat'][value][0])
-                damage += self.panel['combat'][value][0]
-        return damage
-
-    # stupid display assist function called by character.py
-    def get_category_count(self, category):
-        return len(self.panel[category])
-
-    # determines if an effect is currently activated for use on this stat_panel
     def effect_is_active(self, effect):
+        """ Determines if an effect is currently activated for use on this stat_panel
+        :param effect: the effect instance to compare
+        :return: True if active, duh
+        """
         if effect.panel_group == 'modifiers':
             if effect in self.modifiers:
                 return True
-        elif effect.panel_group == 'combat':
-            if effect in self.combat_effects:
+        elif effect.panel_group == 'elemental':
+            if effect in self.elemental_effects:
                 return True
         elif effect.panel_group == 'conditions':
             if effect in self.conditions:
@@ -127,111 +140,131 @@ class StatPanel:
         else:
             return False
 
-    ####
-    # get set radio future
-    ####
-    def set_stat(self, name, add=True):
-        """
+    def apply_condition(self, effect):
+        # TODO check for max stack after conditions are working
+        # for fx in self.active_conditions:
+        #    if fx.name == effect.name and max_stack blahc blah blah:
+        self.active_conditions.append(effect)
+        effect.add_turn()
+        effect.actor.game
 
-        :param name: name of the stat to change
-        :param add: Optional parameter, set to false will overwrite instead of adding
-        :return:
+    def remove_condition(self, effect):
+        if effect in self.active_conditions:
+            self.active_conditions.remove(effect)
+
+    ###################################################################################################################
+    # self.panel.modifiers access #####################################################################################
+    ###################################################################################################################
+    def get_stat(self, name):
+        """     Calculates the total value of the stat ( Base + Mods - Pens = this )
+        :param name:  the stat you want
+        :return: also, the stat you want
+        """
+        total_stat = self.get_stat_base(name)
+        total_stat += self.get_stat_mod(name)
+        total_stat -= self.get_stat_pen(name)
+        return total_stat
+
+    def set_stat_base(self, name, amount):
+        """     If you want to add to the value, feel free to use get_stat first
+        :param name: name of the base stat in self.panel['modifiers'] to change
+        :param amount: amount to set it to
         """
         if name in self.panel['modifiers'].keys():
-            if add:  # add to stat
-                self.panel['modifiers'][name][0] = 0
-            else:  # overwrite stat
-                return self.panel['modifiers'][name][0]
-    """    get_stat
-        set_stat_mod
-        get_stat_mod
-        set_stat_pen
-        get_stat_pen
-        set_elemental_damage
-        get_elemental_damage
-        set_elemental_resist
-        get_elemental_resist
-        set_condition_damage
-        get_condition_damage
-        set_condition_resist
-        get_condition_resist
-        set_condition_rate
-        get_condition_rate """
-    # call (name) for stat, (name, True) for bonus amount only
-    def get_stat_by_name(self, effect_name, mod_info=False):
-        if mod_info:    # this returns the mod bonus only
-            return self.panel['modifiers'][effect_name][1]
-        else:           # this returns the total stat value
-            return self.panel['modifiers'][effect_name][0]
+            self.panel['modifiers'][name][2] = amount
 
-    # call (name) for dam, (name, True) for res
-    def get_combat_stat_by_name(self, effect_name, resistance=False):
-        if resistance:    # this returns the elemental resistance
-            return self.panel['combat'][effect_name][0]
-        else:           # this returns the elemental damage
-            return self.panel['combat'][effect_name][1]
-
-    # call (name) for dam, (name, True) for res, (name, False, True) for rate
-    def get_condition_stat_by_name(self, effect_name, resistance=False, probability=False):
-        if resistance:    # this returns the condition resistance only
-            return self.panel['conditions'][effect_name][1]
-        else:
-            if probability:  # this returns the rate of infliction
-                return self.panel['conditions'][effect_name][2]
-            else:            # this returns the condition damage
-                return self.panel['conditions'][effect_name][0]
-
-    def set_stat_by_name(self, effect, add_instead_of_set=False, change_mod=False):
+    def get_stat_base(self, name):
         """
-            :param effect -- name of the stat you want from self.panel['modifiers']
-            :param add_instead_of_set -- set to true if you dont want to overwrite
-            :param change_mod -- change the modifier AND the base stat
+        :param name: name of the base stat in self.panel['modifiers'] to get
+        :return: current value of 'name' stat
         """
-        # this changes the modifier amount
-        if add_instead_of_set:     # add to modifier
-            self.panel['modifiers'][effect.effect_name][0] += effect.amount
-            if change_mod:
-                self.panel['modifiers'][effect.effect_name][1] += effect.amount
-        else:
-            self.panel['modifiers'][effect.effect_name][0] = effect.amount
-            if change_mod:
-                self.panel['modifiers'][effect.effect_name][1] = effect.amount
+        if name in self.panel['modifiers'].keys():
+            return self.panel['modifiers'][name][2]
 
+    def set_stat_mod(self, name, amount):
+        if name in self.panel['modifiers'].keys():
+            self.panel['modifiers'][name][1] = amount
 
-    def set_combat_stat_by_name(self, effect, add_instead_of_set=False):
-        """
-            :param effect -- name of the stat you want from self.panel['combat']
-            :param add_instead_of_set -- set to true if you dont want to overwrite
-        """
-        if add_instead_of_set:
-            self.panel['combat'][effect.effect_name][effect.index] += effect.amount
-        else:         # overwrite resistance
-            self.panel['combat'][effect.effect_name][effect.index] = effect.amount
+    def get_stat_mod(self, name):
+        if name in self.panel['modifiers'].keys():
+            return self.panel['modifiers'][name][1]
 
-    def set_condition_stat_by_name(self, effect, add_instead_of_set=False):
-        """
-            :param effect -- name of the stat you want from self.panel['conditions']
-            :param add_instead_of_set -- set to true if you dont want to overwrite
-        """
-        if effect.index == 0:
-            if add_instead_of_set:
-                self.panel['conditions'][effect.effect_name][0] += effect.amount
-                self.panel['conditions'][effect.effect_name][2] += effect.probability
-            else:
-                self.panel['conditions'][effect.effect_name][0] = effect.amount
-                self.panel['conditions'][effect.effect_name][2] = effect.probability
-        if effect.index == 1:
-            if add_instead_of_set:
-                self.panel['conditions'][effect.effect_name][1] += effect.amount
-            else:
-                self.panel['conditions'][effect.effect_name][1] = effect.amount
+    def set_stat_pen(self, name, amount):
+        if name in self.panel['modifiers'].keys():
+            self.panel['modifiers'][name][0] = amount
 
-    #def con_bonus(self):
-    #   pass
+    def get_stat_pen(self, name):
+        if name in self.panel['modifiers'].keys():
+            return self.panel['modifiers'][name][0]
+
+    ###################################################################################################################
+    # self.panel.elemental access ########################################################################################
+    ###################################################################################################################
+    def get_total_elemental_damage(self):
+        total_damage = 0
+        for key, val in self.panel['elemental']:
+            if key != "key" and isinstance(val[0], int):
+                total_damage += val[0]
+
+    def set_elemental_damage(self, name, amount):
+        if name in self.panel['elemental'].keys():
+            self.panel['elemental'][name][0] = amount
+
+    def get_elemental_damage(self, name):
+        if name in self.panel['elemental'].keys():
+            return self.panel['elemental'][name][0]
+
+    def set_elemental_resist(self, name, amount):
+        if name in self.panel['elemental'].keys():
+            self.panel['elemental'][name][0] = amount
+
+    def get_elemental_resist(self, name):
+        if name in self.panel['elemental'].keys():
+            return self.panel['elemental'][name][1]
+
+    ###################################################################################################################
+    # self.panel.conditions access ####################################################################################
+    ###################################################################################################################
+    def set_condition_damage(self, name, amount):
+        if name in self.panel['conditions'].keys():
+            self.panel['conditions'][name][0] = amount
+
+    def get_condition_damage(self, name):
+        if name in self.panel['conditions'].keys():
+            return self.panel['conditions'][name][0]
+
+    def set_condition_resist(self, name, amount):
+        if name in self.panel['conditions'].keys():
+            self.panel['conditions'][name][1] = amount
+
+    def get_condition_resist(self, name):
+        if name in self.panel['conditions'].keys():
+            return self.panel['conditions'][name][1]
+
+    def set_condition_rate(self, name, amount):
+        if name in self.panel['conditions'].keys():
+            self.panel['conditions'][name][2] = amount
+
+    def get_condition_rate(self, name):
+        if name in self.panel['conditions'].keys():
+            return self.panel['conditions'][name][2]
+
+    ###################################################################################################################
+    # utility functions ###############################################################################################
+    ###################################################################################################################
+
     def get_effect_color(self, effect):
+        """
+        :param effect: an effect object instance
+        :return: libtcod.color associated with the effect
+        """
         if effect.panel_group == 'modifier':  # this is redundant, as none is returned either way, however:
-            return None  # inject here if color is added to base stats. seems better to keep them standard to me
-        if effect.panel_group == 'combat':
-            return self.panel['combat'][effect.effect_name][2]
+            return None  # inject here if color is added to base stats. seems better to keep them white to me
+        if effect.panel_group == 'elemental':
+            return self.panel['elemental'][effect.effect_name][2]
         if effect.panel_group == 'conditions':
             return self.panel['conditions'][effect.effect_name][3]
+
+    # stupid display assist function called by character.py
+    def get_category_count(self, category):
+        return len(self.panel[category])

@@ -185,11 +185,11 @@ def inventory(con, player, game, width=80, height=43):
         index += 1
         game.gEngine.console_print(wielded_window, 1, 3, text)
 
-        if player.fighter.light_source is None:
+        if player.fighter.gear.light_source is None:
             text = '(' + chr(index) + ') ' + 'Light Source : ' + color_text('Empty', libtcod.darker_gray)
         else:
-            t = color_text(player.fighter.light_source.name.capitalize(), player.fighter.light_source.color)
-            text = '(' + chr(index) + ') ' + 'Light Source: ' + t + " " + str(player.fighter.light_source.item.equipment.fuel)
+            t = color_text(player.fighter.gear.light_source.name.capitalize(), player.fighter.gear.light_source.color)
+            text = '(' + chr(index) + ') ' + 'Light Source: ' + t + " " + str(player.fighter.gear.light_source.item.equipment.fuel)
         index += 1
         game.gEngine.console_print(wielded_window, 1, 6, text)
 
@@ -314,30 +314,31 @@ def inventory(con, player, game, width=80, height=43):
                     else:
                         d_box.destroy_box()
                 if mouse.lbutton and item.item.equipment:
-                    if player.fighter.light_source:
-                        if player.fighter.light_source.name == "magical light":
+                    if player.fighter.gear.light_source:
+                        if player.fighter.gear.light_source.name == "magical light":
                             message = "You cannot remove this magical light!"
                             w = len(message) + 2
                             d_box = DialogBox(game, w, 10, width / 4, height / 2, message, con=inventory_window)
                             confirm = d_box.display_box()
-                    else:
-                        i_n = color_text(item.name.capitalize(), item.color)
-                        message = 'Do you want to put %s on?' % i_n
-                        w = len(message) + 2
-                        d_box = DialogBox(game, w, 10, width / 4, height / 2, message, type='option', con=inventory_window)
-                        confirm = d_box.display_box()
-                        if confirm == 1:
-                            item.item.use(game.player.fighter.inventory, game.player, game)
-                            d_box.destroy_box()
-                            inventory_items = []
-                            check_boxes = []
-                            for x in range(len(player.fighter.inventory)):
-                                check_boxes.append(CheckBox(x=1, y=x + 3))
-                                i = color_text(player.fighter.inventory[x].name.capitalize(),
-                                               player.fighter.inventory[x].color)
-                                if player.fighter.inventory[x].item.check_stackable:
-                                    i += ' (%d)' % player.fighter.inventory[x].item.qty
-                                inventory_items.append(i)
+
+
+                    i_n = color_text(item.name.capitalize(), item.color)
+                    message = 'Do you want to put %s on?' % i_n
+                    w = len(message) + 2
+                    d_box = DialogBox(game, w, 10, width / 4, height / 2, message, type='option', con=inventory_window)
+                    confirm = d_box.display_box()
+                    if confirm == 1:
+                        item.item.use(game.player.fighter.inventory, game.player, game)
+                        d_box.destroy_box()
+                        inventory_items = []
+                        check_boxes = []
+                        for x in range(len(player.fighter.inventory)):
+                            check_boxes.append(CheckBox(x=1, y=x + 3))
+                            i = color_text(player.fighter.inventory[x].name.capitalize(),
+                                           player.fighter.inventory[x].color)
+                            if player.fighter.inventory[x].item.check_stackable:
+                                i += ' (%d)' % player.fighter.inventory[x].item.qty
+                            inventory_items.append(i)
             else:
                 current_selection = None
         # game.gEngine.console_set_default_background(inventory_window, 0, 0, 0)
@@ -368,7 +369,7 @@ def inventory(con, player, game, width=80, height=43):
                             if len(item.item.equipment.effects) != 0:
                                 show_effects(item, game, compare_window)
             elif (mouse.cy -2) > len(player.fighter.wielded)+1 and (mouse.cy -2 ) < len(player.fighter.wielded)+3 :
-                item = player.fighter.light_source
+                item = player.fighter.gear.light_source
                 if item is not None:
                     i = item.item.equipment.type.replace('_', ' ')
                     game.gEngine.console_print(compare_window, 1, 2,
@@ -419,7 +420,7 @@ def inventory(con, player, game, width=80, height=43):
                         inventory_items = []
                         check_boxes = []
                         if item.item.equipment.type == 'light_source':
-                            player.fighter.light_source = None
+                            player.fighter.gear.light_source = None
                         for x in range(len(player.fighter.inventory)):
                             check_boxes.append(CheckBox(x=1, y=x + 3))
                             i = color_text(player.fighter.inventory[x].name.capitalize(), player.fighter.inventory[x].color)
