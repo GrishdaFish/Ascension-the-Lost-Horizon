@@ -2,7 +2,7 @@ from game.object.object import *
 from game.object.item import *
 from game.spells import spells
 from game.object.misc import *
-from game.spells.spells import *
+#from game.spells.spells import *
 from game import combat
 from game import content_parser
 from gEngine import gEngine
