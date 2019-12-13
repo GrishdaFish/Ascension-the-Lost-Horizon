@@ -53,7 +53,7 @@ skill_list = [
     Skill('Weapon', 'Curvesword', 'Mastery in the use of swords with curved edges.'),
     Skill('Weapon', 'Axe', 'Mastery in the use of axes.'),
 ]
-basic_levels = [  # Total xp: Skill Points
+basic_levels = [  # Total xp: Skill Points ## TODO DEPRECATE: now handled by fighter
     (1000,   2),
     (3000,   2),
     (6000,   3),
@@ -81,7 +81,7 @@ def hp_bonus(con):
     return 15 + (get_stat_bonus(con) * 2)
 
 
-def next_level(level):
+def next_level(level):      ## TODO DEPRECATE: now handled by fighter
     return basic_levels[level]
 
 
@@ -98,8 +98,8 @@ def get_armor_class(creature):
 
 
 def get_blocking_class(creature):
-    if creature.fighter.wielded[1] is not None:
-        if creature.fighter.wielded[1].item.equipment.type == 'shield':
+    if creature.fighter.gear.equipped['2h'] is not None:
+        if creature.fighter.gear.equipped['2h'].item.equipment.type == 'shield':
             roll = libtcod.random_get_int(0, 1, 20)
             roll += get_stat_bonus(creature.fighter.stats[0])
             roll += creature.fighter.get_skill('Shield').get_bonus()
@@ -109,7 +109,7 @@ def get_blocking_class(creature):
 
 
 def get_deflection_class(creature):
-    hands = creature.fighter.wielded
+    hands = [creature.fighter.gear.equipped['1h'], creature.fighter.gear.equipped['2h']]
     roll = 0
     if hands[1] is not None:
         if hands[1].item.equipment.type != 'melee':

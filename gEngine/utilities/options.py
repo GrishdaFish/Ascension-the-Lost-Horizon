@@ -28,6 +28,7 @@ class GameOptions:
         self.key_help = None
         self.key_drop = None
         self.key_character = None
+        self.key_char_stat = None
 
         self.load_options()
 
@@ -72,4 +73,5 @@ class GameOptions:
         self.key_help = keys.get('key_help')
         self.key_drop = keys.get('key_drop')
         self.key_character = keys.get('key_character')
+        self.key_char_stat = keys.get('key_char_stat')
 

@@ -6,10 +6,71 @@
     name = "plate"
     cell = ']'
     type = "armor"
-    location = "torso"
+    location = "Torso"
     base_value = 75
-    description = ""
+    description = "Hard to eat off of"
     threat_level = 0.5
     allowed_materials = 3 #1 for cloth, 2 for metal, 3 for both
     bonus = 3
     penalty = 3
+
+[["armor"]]
+    name = "plate helm"
+    cell = '^'
+    type = "armor"
+    location = "Head"
+    base_value = 50
+    description = "Low visibility"
+    threat_level = 0.5
+    allowed_materials = 3 #1 for cloth, 2 for metal, 3 for both
+    bonus = 1
+    penalty = 1
+
+[["armor"]]
+    name = "plate gloves"
+    cell = '!'
+    type = "armor"
+    location = "Hands"
+    base_value = 75
+    description = "Hard to eat off of"
+    threat_level = 0.5
+    allowed_materials = 3 #1 for cloth, 2 for metal, 3 for both
+    bonus = 3
+    penalty = 3
+
+[["armor"]]
+    name = "plate greaves"
+    cell = 'W'
+    type = "armor"
+    location = "Legs"
+    base_value = 65
+    description = "Low visibility"
+    threat_level = 0.5
+    allowed_materials = 3 #1 for cloth, 2 for metal, 3 for both
+    bonus = 2
+    penalty = 2
+
+[["armor"]]
+    name = "plate boots"
+    cell = 'L'
+    type = "armor"
+    location = "Feet"
+    base_value = 50
+    description = "Sounds cool when you walk"
+    threat_level = 0.5
+    allowed_materials = 3 #1 for cloth, 2 for metal, 3 for both
+    bonus = 1
+    penalty = 1
+
+[["armor"]]
+    name = "plate bracers"
+    cell = '='
+    type = "armor"
+    location = "Arms"
+    base_value = 50
+    description = "Forearms look buff"
+    threat_level = 0.5
+    allowed_materials = 3 #1 for cloth, 2 for metal, 3 for both
+    bonus = 1
+    penalty = 1
+

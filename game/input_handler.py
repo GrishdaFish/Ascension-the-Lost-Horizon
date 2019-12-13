@@ -13,6 +13,7 @@ def handle_keys(key, game):
         turn = handle_movement(key, game, turn)
         turn = handle_pickup(key, game, turn)
         turn = handle_character(key, game, turn)
+        turn = handle_char_stats(key, game, turn)
         turn = handle_inventory(key, game, turn)
         turn = handle_drop(key, game, turn)
         turn = handle_stairs(key, game, turn)
@@ -75,6 +76,10 @@ def handle_character(key, game, turn):
         character.character_info(0, game.screen_width, game.screen_height, game)
     return turn
 
+def handle_char_stats(key, game, turn):
+    if key.c is ord(game.keys.key_char_stat):
+        character.stat_panel_info(0, game.screen_width, game.screen_height, game)
+    return turn
 
 def handle_inventory(key, game, turn):
     if key.c is ord(game.keys.key_inventory):

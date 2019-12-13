@@ -92,7 +92,7 @@ class Item:
 
 class Equipment:
     def __init__(self, min_power=0, max_power=0, crit_bonus=0, defense=0,
-                 type='', location='', best_defense_type='', worst_defense_type='',
+                 type='', subtype=None, location='', best_defense_type='', worst_defense_type='',
                  handed=0, dual_wield=None, damage_type='', threat_level=0,
                  allowed_materials=0, bonus=0, penalty=0, description='', accuracy=0, damage=None,
                  fuel=0, color=None, intensity=0.0):
@@ -101,6 +101,7 @@ class Equipment:
         self.crit_bonus = crit_bonus
         self.defense = defense
         self.type = type
+        self.subtype = subtype
         self.location = location
         self.best_defense_type = best_defense_type
         self.worst_defense_type = worst_defense_type
@@ -120,6 +121,8 @@ class Equipment:
         self.torch_color = color
         self.torch_intensity = intensity
 
+        self.effects = []
+
     def calc_damage(self):
         total_damage = 0
         if self.damage is not None:
@@ -129,9 +132,20 @@ class Equipment:
             bonus = self.damage[3]  # bonus damages
             for i in range(num_dice):
                 total_damage += libtcod.random_get_int(0, 1, sides)
-            total_damage = (total_damage * multiplier) + bonus
+            total_damage = (total_damage * multiplier) + bonus  # + effect_damage
+        print(str(total_damage))
         return total_damage
 
+    ########################################################  equip is handled by equipped panel now
+    def equip(self, target, game=None, owner=None, slot=0):  # TODO REFACTOR unnecessary arguments? this isn't marriage - find calls before deleting
+        if owner is not None:
+            target.fighter.gear.quip_it(owner)
+
+    def un_equip(self, target, item):
+        if item is not None:
+            target.fighter.gear.unquip_it(item)
+            """
+print("now you've done it: " + str(owner))
     def equip(self, target, game=None, owner=None, slot=0):
         locations = {
             'torso': 0,
@@ -150,6 +164,8 @@ class Equipment:
                 if game:
                     game.message.message(owner.name + " equipped.", 1)
                     target.fighter.inventory.remove(owner)
+                    for effect in self.effects:
+                        effect.activate_effect(target.fighter)
                 # target.fighter.defense+=self.defense
                 target.fighter.set_armor_bonus()
                 target.fighter.set_armor_penalty()
@@ -233,4 +249,4 @@ class Equipment:
                 game.message.message(owner.name + " equipped.", 1)
 
     def un_equip(self, target, item):
-        target.fighter.inventory.append(item)
+        target.fighter.inventory.append(item)"""

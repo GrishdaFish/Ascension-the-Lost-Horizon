@@ -295,6 +295,8 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                                                   'Radius: ' + str(item.item.spell.radius))
                     game.gEngine.console_print_ex(compare_window, 1, 7, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Value : ' + str(item.item.value))
+                if item.item.equipment and len(item.item.equipment.effects) != 0:   # REFACTOR added to show effects
+                    show_effects(item, game, compare_window)
 
                 if mouse.lbutton:
                     i_n = color_text(item.name.capitalize(), item.color)
@@ -346,6 +348,9 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                                                       'Location: ' + item.item.equipment.location.capitalize())
                     game.gEngine.console_print_ex(compare_window, 1, 6, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Value   : ' + str(item.item.value))
+                if item.item.equipment is not None:   # REFACTOR added to show effects
+                    if len(item.item.equipment.effects) != 0:
+                        show_effects(item, game, compare_window)
 
                 if item.item.spell:
                     game.gEngine.console_print_ex(compare_window, 1, 2, libtcod.BKGND_SET, libtcod.LEFT,
@@ -576,3 +581,15 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
     game.gEngine.console_remove_console(inventory_window)
 
     return
+
+
+def show_effects(item, game, compare_window):
+    if len(item.item.equipment.effects) != 0:
+        game.gEngine.console_print_ex(compare_window, 1, 8, libtcod.BKGND_SET, libtcod.LEFT,
+                                      'Effects : ')
+        y = 8
+        x = 11
+        for fx in item.item.equipment.effects:
+            game.gEngine.console_print_ex(compare_window, x, y, libtcod.BKGND_SET, libtcod.LEFT,
+                                          str(fx.effect_name) + " " + str(fx.amount) + " " + fx.effect_real_name)
+            y += 1

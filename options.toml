@@ -16,6 +16,7 @@
         key_help = "?"
         key_drop = "f"
         key_character = "c"
+        key_char_stat = "x"
 
     [keys.arrows]
         key_north = "KEY_UP"

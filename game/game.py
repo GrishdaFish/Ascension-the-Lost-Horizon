@@ -5,7 +5,7 @@ from dungeon import prefab_dungeon
 from dungeon.prefabs import prefabs
 import tcod as libtcod
 import esper
-from game.ecs import systems
+#from game.ecs import systems
 from gEngine.utilities.timing import ticker
 from gEngine.utilities import console
 from gEngine.utilities import status_bar
@@ -44,7 +44,7 @@ class Game:
         self.dungeon_generators = []
         self.objects = []
         self.player = None
-        self.world = esper.World()
+    #    self.world = esper.World()
         self.ticker = ticker.Ticker()
         self.is_player_turn = False
         self.game_state = None
@@ -102,6 +102,7 @@ class Game:
         self.player_action = None
         self.bark_manager = bark.BarkManager()
         self.ambient = 0.15
+
         self.dev_console = console.Console(self, self.dungeon_width, self.dungeon_height, 'debug')
         self.monster_force_display = [False, 0]
         self.loot_force_display = [False, 0]
@@ -230,10 +231,11 @@ class Game:
 
     def setup_player(self):
         fighter_component = object.Fighter(hp=90, defense=2, power=5, death_function=self.player_death, money=800,
-                                           speed=10)
+                                           speed=10, ticker=self.ticker)
+        fighter_component.game = self
         self.player = object.Object(self.dungeon_console, 0, 0, '@', 'player',
                                     libtcod.white, blocks=True, fighter=fighter_component)
-
+        self.player.game = self
         self.player_hp_bar = status_bar.StatusBar(self.player.fighter, self.bar_width, libtcod.light_red,
                                                   libtcod.darker_red, self.panel, type='hp', gEngine=self.gEngine)
 
@@ -252,8 +254,9 @@ class Game:
         self.game_state = 'playing'
 
     def setup_world(self):
-        self.world.add_processor(systems.DisplayProcessor())
-        self.world.add_processor(systems.MovementProcessor())
+        pass
+        #self.world.add_processor(systems.DisplayProcessor())
+        #self.world.add_processor(systems.MovementProcessor())
 
         # self.ticker.get_next_tick()
     def go_to_town(self, first_visit=False):
@@ -339,9 +342,7 @@ class Game:
     def prev_level(self):
         self.objects = []
         self.ticker.clear_ticker()
-        print(self.depth)
         self.depth -= 1
-        print(self.depth)
         self.level = None
         self.level = self.levels[self.depth-1]
         self.level.new_level()

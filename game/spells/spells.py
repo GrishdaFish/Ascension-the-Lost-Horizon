@@ -31,7 +31,7 @@ class Spell:
 def heal(min, max, range, radius, targets, target, player, game, effect_color):
     # heal the player
     if target == game.player:
-        if target.fighter.hp == target.fighter.max_hp:
+        if target.fighter.hp == target.fighter.stat.get_stat_base("HP"):
             game.message.message('You are already at full health.', libtcod.cyan)
             return 'cancelled'
         l = lights.Light(target.x, target.y, game.light_handler, decay=0.025, flicker=True, intensity=1.0, color=libtcod.lime)
@@ -149,13 +149,45 @@ def light(min, max, range, radius, targets, target, player, game, effect_color):
     equip.objects = game.objects
     if target == game.player:
         game.message.message("You are surrounded by a glowing magical light!", libtcod.light_cyan)
-        if target.fighter.light_source:
-            if target.fighter.light_source.name == "magical light":
+        if target.fighter.gear.light_source:
+            if target.fighter.gear.light_source.name == "magical light":
                 game.message.message("You cannot cast magical light while under the effects of another magical light!", libtcod.flame)
                 return "cancelled"
             else:
-                target.fighter.inventory.append(target.fighter.light_source)
-        target.fighter.light_source = equip
+                target.fighter.inventory.append(target.fighter.gear.light_source)
+        target.fighter.gear.light_source = equip
+
+
+def detect_monsters(min, max, range, radius, targets, target, player, game, effect_color):
+    num_turns = libtcod.random_get_int(0, min, max)
+    if game.monster_force_display[0]:
+        game.monster_force_display[1] += num_turns
+        game.message.message("You've extended your ability to see all monsters around you by " + str(num_turns) +
+                             " turns!", libtcod.light_cyan)
+    else:
+        game.monster_force_display[0] = True
+        game.monster_force_display[1] = num_turns
+        game.message.message("You can now see all monsters around you for " + str(num_turns) +
+                             " turns!", libtcod.light_cyan)
+
+
+def detect_loot(min, max, range, radius, targets, target, player, game, effect_color):
+    num_turns = libtcod.random_get_int(0, min, max)
+    if game.loot_force_display[0]:
+        game.loot_force_display[1] += num_turns
+        game.message.message("You've extended your ability to see all items around you by " + str(num_turns) +
+                             " turns!", libtcod.light_cyan)
+    else:
+        game.loot_force_display[0] = True
+        game.loot_force_display[1] = num_turns
+        game.message.message("You can now see all items around you for " + str(num_turns) +
+                             " turns!", libtcod.light_cyan)
+
+
+def magical_mapping(min, max, range, radius, targets, tile, player, game, effect_color):
+    for tile in game.level.dungeon:
+        tile.explored = True
+
 
 
 def detect_monsters(min, max, range, radius, targets, target, player, game, effect_color):

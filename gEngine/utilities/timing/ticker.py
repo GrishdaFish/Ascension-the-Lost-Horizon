@@ -1,5 +1,5 @@
 from gEngine import lights
-
+from game.object import object
 
 class Ticker:
     def __init__(self):
@@ -28,12 +28,15 @@ class Ticker:
                 obj.update()
                 obj.add_turn(self)
             elif obj != game.player:
-                if obj.ai:
-                    ##Simulate monsters until the players turn
-                    obj.ai.take_turn(game)
+                if isinstance(obj, object.Object):
+                    if obj.ai:
+                        ##Simulate monsters until the players turn
+                        obj.ai.take_turn(game)
+                    else:
+                        obj.use(game)
                 else:
                     obj.use(game)
-                pass
+                    #pass
 
             else:
                 ##when its the players turn, confirm,

@@ -1,11 +1,12 @@
 from game.object.object import *
 from game.object.item import *
 from game.spells import spells
-# import actor
+from game.object.misc import *
+#from game.spells.spells import *
 from game import combat
 from game import content_parser
-from game.object.actor import entity
 from gEngine import gEngine
+from game.object.effects import Effect
 
 
 class GameObjects:
@@ -298,6 +299,13 @@ class GameObjects:
         equip.message = game.message
         equip.objects = game.objects
 
+        # lets check out some enchants motherf^(!%3r!!!  ## TODO: REFACTOR currently all items get an effect while testing
+        effect = Effect(equip.item)                  # generate 2 effects randomly, linking them to the item
+        effect_two = Effect(equip.item)
+        equip.item.equipment.effects.append(effect)
+        equip.item.equipment.effects.append(effect_two)
+
+        # equip.send_to_back(game.objects)
         return equip
 
     def create_monster(self, game, x, y, threat_level=None, mob_name=None):
@@ -334,16 +342,16 @@ class GameObjects:
 
         monster = Object(game.dungeon_console, x, y, mob.cell, mob.name, mob.color,
                          blocks=True, fighter=fighter_component, ai=ai_component)
-
+        monster.game = game
         monster.fighter.ticker.schedule_turn(monster.fighter.speed, monster)
 
         # todo fix when either AI director is ready to spawn mobs, or when effects system is enabled
+        monster.fighter.gear.equipped['1h'] = self.build_equipment(game, x, y, type="monster_melee")
         if mob.can_equip_gear:
             r = libtcod.random_get_int(0, 0, 100)
             if r > 85:  # 15 % chance the mob will have a weapon
-                monster.fighter.wielded[0] = self.build_equipment(game, x, y, type="melee")
-            else:
-                monster.fighter.wielded[0] = self.build_equipment(game, x, y, type="monster_melee")
+                monster.fighter.gear.equipped['1h'] = self.build_equipment(game, x, y, type="melee")
+
 
         for skill in monster.fighter.skills:
             skill.set_bonus(mob.defense_bonus)

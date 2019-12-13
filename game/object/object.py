@@ -4,6 +4,9 @@ import math
 import copy
 import logging
 
+from game.object.gear_panel import GearPanel
+from game.object.stat_panel import StatPanel
+
 sys.path.append(sys.path[0])
 import tcod as libtcod
 from game import combat
@@ -178,26 +181,32 @@ class Fighter:
     # combat-related properties and methods (monster, player, NPC).
     def __init__(self, hp, defense, power, death_function=None, Con=10, Str=10, Dex=10, Int=10, money=0, ticker=None,
                  speed=0, xp_value=0):
+
+        self.stat = StatPanel()   # damage, resistance, effects and conditions
+        self.gear = GearPanel(self)         # equipped items and related controls
+        # Achievement tracker will go here if implemented
+
         self.death_function = death_function
         self.type = 'melee'
         self.money = money
         self.speed = speed
         self.level = 1
         self.current_xp = xp_value
-        self.xp_to_next_level = 1000
+        self.xp_to_next_level = 1 # if you don't set this to something before you use log, you gonna die.
+        self.xp_to_next_level = self.get_xp_tnl()
         self.inventory = []
         self.owner = None
         self.ticker = ticker
-        self.stats = [Str, Dex, Int, Con]
+        self.stats = [Str, Dex, Int, Con]   # REFACTOR this is in skill panel now
         self.unused_skill_points = 2
-        self.defense = 0
+        self.defense = 0    # REFACTOR in skill panel, not implemented
 
         self.depth = 0
         self.threat = 0.0
 
-        self.max_hp = combat.hp_bonus(Con)
-        hp = self.max_hp
-        self.hp = hp
+        self.max_hp = self.stat.get_stat_base("HP")  # REFACTOR get hp from stats now
+        self.hp = self.stat.get_stat_base("HP")
+        # self.hp = hp
 
         self.armor_bonus = 0
         self.armor_penalty = 0
@@ -207,24 +216,58 @@ class Fighter:
         mp = self.max_mp
         self.mp = mp'''
 
-        self.equipment = [None, None, None, None, None, None, None, None]
-
-        self.light_source = None
-        # accessories
-        self.accessories = [None, None, None]
-
-        # weapons/shield
-        self.wielded = [None, None]
+        # TODO  CONSIDER / REFACTOR replacing this requires a lot of changes in calls to
+        # TODO fighter.equipment, .light_source, .accessories, and .wielded throughout
+        # logically linked to self.gear.equipped
+        self.equipment = [ self.gear.equipped['Head'],
+                           self.gear.equipped['Shoulders'],
+                           self.gear.equipped['Arms'],
+                           self.gear.equipped['Hands'],
+                           self.gear.equipped['Torso'],
+                           self.gear.equipped['Legs'],
+                           self.gear.equipped['Feet'],
+                           self.gear.equipped['Cloak']
+                           ]
+        # logically linked to self.gear.light_source
+        self.light_source = self.gear.light_source
+        # logically linked to self.gear.equipped
+        self.accessories = [self.gear.equipped['Neck'],
+                            self.gear.equipped['Ring']
+                            ]
+        # logically linked to self.gear.equipped
+        self.wielded = [self.gear.equipped['1h'], self.gear.equipped['2h']]
+                                ############################################################
         self.skills = copy.deepcopy(combat.skill_list)  # skill list needs to have its own copies
 
-    def level_up(self):
-        self.xp_to_next_level, sp = combat.next_level(self.level)
+    def get_xp_tnl(self):       # TODO TESTING make sure values are stable and realistic
+        lv_basis = self.level*2    # ARBITRARY BASIS FOR SCALING
+        log_base = 10              # JUST GO WITH BASE 10 FOR NOW
+        modifier = 10000           # MODIFIER TAKES YOU FROM SINGLE DIGITS UP INTO REALISTIC VALUES
+        added_xp = math.log(lv_basis, log_base)
+        added_xp *= modifier
+        xp_to_next_level = (self.xp_to_next_level + int(added_xp))
+        return xp_to_next_level
+
+    def get_lv_up_sp(self):     # TODO TESTING make sure values are stable in range 1 : 5
+        sp = int(self.level / 2)
+        sp_add = 1 if sp < 1 else sp
+        sp_add = 5 if sp > 5 else sp
+        return sp_add
+
+    def level_up(self):         # TODO DEVELOP make additional stat stuff happen - level up magic
+        self.current_xp -= self.xp_to_next_level
+        self.xp_to_next_level = self.get_xp_tnl()
+        sp = self.get_lv_up_sp()
         self.unused_skill_points += sp
         self.level += 1
-        self.max_hp += combat.hp_bonus(self.stats[3])
-        hp = self.max_hp
-        self.hp = hp
-        self.current_xp = 0
+        # self.stat_panel.set_stat_by_name("HP", combat.hp_bonus(self.stats[3]))
+        # self.hp = self.stat_panel.get_stat_by_name("HP")
+        add_hp = combat.hp_bonus(self.stat.get_stat_base("Constitution"))
+        add_hp += self.stat.get_stat_base("HP")
+        self.stat.set_stat_base("HP", add_hp)
+        #self.max_hp += combat.hp_bonus(self.stats[3])
+        self.hp = self.stat.get_stat_base("HP")
+        #self.hp = hp
 
     def apply_skill_points(self, skill):
         if isinstance(skill, str):
@@ -291,14 +334,31 @@ class Fighter:
             msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' but the attack was blocked!'
         else:
             dmg = 0
-            if self.wielded[0] is not None:
-                skill = self.get_skill(self.wielded[0].item.equipment.damage_type)
+            if self.gear.equipped['1h'] is not None:
+                skill = self.get_skill(self.gear.equipped['1h'].item.equipment.damage_type)
                 if skill is not None:
                     dmg = skill.get_bonus()
                 if dmg is None:
                     dmg = 0
-                dmg += self.wielded[0].item.equipment.calc_damage()
-                dmg = int(dmg)
+                dmg += self.gear.equipped['1h'].item.equipment.calc_damage()
+                if self == game.player.fighter: # TODO this should apply to mobs, but for now just player
+                    self.gear.add_w_xp(self.gear.equipped['1h'].item.equipment.subtype, 1)  # TODO 1 xp per strike for now
+                # TODO if duals get that damage calc too
+                dmg2 = None
+                if self.gear.equipped['2h'] is not None:
+                    skill = self.get_skill(self.gear.equipped['2h'].item.equipment.damage_type)
+                    if skill is not None:
+                        dmg2 = skill.get_bonus()
+                    if dmg2 is None:
+                        dmg2 = 0
+                    dmg2 += self.gear.equipped['2h'].item.equipment.calc_damage()
+                    if self == game.player.fighter:  # TODO this should apply to mobs, but for now just player
+                        self.gear.add_w_xp(self.gear.get_quipped_weapon_type(off_hand=True), 1)
+                # TODO also, shield defense, the above makes shiedls do damage, WOOT !
+                if dmg2: # if dealing 2h damage
+                    dmg = int(dmg + dmg2)
+                else:
+                    dmg = int(dmg)
             else:
                 # For empty slots
                 pass
@@ -306,6 +366,10 @@ class Fighter:
                 if attack_roll < 10 + self.armor_bonus:
                     dmg *= 0.25
                     dmg = int(dmg)
+                # TODO CONSIDER this is where conditions are applied currently
+                if self.stat.conditions:
+                    for fx in self.stat.conditions:
+                        fx.inflict_condition(target.fighter)
                 # make the target take some damage
                 target.fighter.take_damage(dmg, self.owner, game)
                 msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' for ' + str(dmg) + '!'
@@ -318,6 +382,7 @@ class Fighter:
                     msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' but it has no effect!'
         if game:
             game.message.message(msg, col)
+            # TODO REFACTOR isolate and build
         # expand on this for different attack patterns, right now its a 1x3 area in front of the player
         if direction and player:
             t = None
@@ -357,26 +422,26 @@ class Fighter:
                 if function is not None:
                     function(self.owner)
             else:
-                pass  # flash
+                pass  # flash  \ (. )( .) /
 
     def heal(self, amount):
         # heal by the given amount, without going over the maximum
         self.hp += amount
-        if self.hp > self.max_hp:
-            self.hp = self.max_hp
+        if self.hp > self.stat.get_stat_base("HP"):
+            self.hp = self.stat.get_stat_base("HP")
 
 
-class Torch:
+class Torch:    # TODO REFACTOR move torch to item.py
     def __init__(self, owner):
         self.owner = owner
-        #self.light_source = self.owner.fighter.light_source
+        #self.light_source = self.owner.fighter.gear.light_source
 
     def render(self, game, gEngine):
-        if self.owner.fighter.light_source:
-            if self.owner.fighter.light_source.item.equipment.fuel > 0:
+        if self.owner.fighter.gear.light_source:
+            if self.owner.fighter.gear.light_source.item.equipment.fuel > 0:
                 r = libtcod.random_get_float(0, -0.025, 0.025)
-                v = self.owner.fighter.light_source.item.equipment.torch_intensity + r
-                c = self.owner.fighter.light_source.item.equipment.torch_color
+                v = self.owner.fighter.gear.light_source.item.equipment.torch_intensity + r
+                c = self.owner.fighter.gear.light_source.item.equipment.torch_color
                 r = c[0] / 255 * v
                 g = c[1] / 255 * v
                 b = c[2] / 255 * v
@@ -385,13 +450,13 @@ class Torch:
 
     def update(self, game):
 
-        if self.owner.fighter.light_source:
-            if self.owner.fighter.light_source.item.equipment.fuel > 1:
-                self.owner.fighter.light_source.item.equipment.fuel -= 1
+        if self.owner.fighter.gear.light_source:
+            if self.owner.fighter.gear.light_source.item.equipment.fuel > 1:
+                self.owner.fighter.gear.light_source.item.equipment.fuel -= 1
             else:
-                m = "%s has burned out and is discarded!"%(self.owner.fighter.light_source.name.capitalize())
+                m = "%s has burned out and is discarded!"%(self.owner.fighter.gear.light_source.name.capitalize())
                 game.message.message(m)
-                self.owner.fighter.light_source = None
+                self.owner.fighter.gear.light_source = None
 
 
 
@@ -414,7 +479,7 @@ def get_next_to_player(mob, player, map):
     return dx, dy
 
 
-
+    ## TODO REFACTOR move AI class and functions to their own package
 
 class AI_Base:
     def __init__(self):
