@@ -26,6 +26,10 @@ def inventory(con, player, game, width=80, height=43):
     :param height: height of the inventory screen
     :return: An item that has been used (potion, scroll, etc..)
     """
+
+    gear_list = player.fighter.gear.gimmie_da_armors() # REPLACING player.fighter.equipment
+
+
     equip_height = 14
     wield_height = 8
     compare_height = height - (equip_height - wield_height) - (wield_height * 2)
@@ -320,25 +324,43 @@ def inventory(con, player, game, width=80, height=43):
                             w = len(message) + 2
                             d_box = DialogBox(game, w, 10, width / 4, height / 2, message, con=inventory_window)
                             confirm = d_box.display_box()
-
-
-                    i_n = color_text(item.name.capitalize(), item.color)
-                    message = 'Do you want to put %s on?' % i_n
-                    w = len(message) + 2
-                    d_box = DialogBox(game, w, 10, width / 4, height / 2, message, type='option', con=inventory_window)
-                    confirm = d_box.display_box()
-                    if confirm == 1:
-                        item.item.use(game.player.fighter.inventory, game.player, game)
-                        d_box.destroy_box()
-                        inventory_items = []
-                        check_boxes = []
-                        for x in range(len(player.fighter.inventory)):
-                            check_boxes.append(CheckBox(x=1, y=x + 3))
-                            i = color_text(player.fighter.inventory[x].name.capitalize(),
-                                           player.fighter.inventory[x].color)
-                            if player.fighter.inventory[x].item.check_stackable:
-                                i += ' (%d)' % player.fighter.inventory[x].item.qty
-                            inventory_items.append(i)
+                        else: ###### TODO FIX THE REPEATING LOGIC :)
+                            i_n = color_text(item.name.capitalize(), item.color)
+                            message = 'Do you want to put %s on?' % i_n
+                            w = len(message) + 2
+                            d_box = DialogBox(game, w, 10, width / 4, height / 2, message, type='option', con=inventory_window)
+                            confirm = d_box.display_box()
+                            if confirm == 1:
+                                item.item.use(game.player.fighter.inventory, game.player, game)
+                                d_box.destroy_box()
+                                inventory_items = []
+                                check_boxes = []
+                                for x in range(len(player.fighter.inventory)):
+                                    check_boxes.append(CheckBox(x=1, y=x + 3))
+                                    i = color_text(player.fighter.inventory[x].name.capitalize(),
+                                                   player.fighter.inventory[x].color)
+                                    if player.fighter.inventory[x].item.check_stackable:
+                                        i += ' (%d)' % player.fighter.inventory[x].item.qty
+                                    inventory_items.append(i)
+                    else:
+                        i_n = color_text(item.name.capitalize(), item.color)
+                        message = 'Do you want to put %s on?' % i_n
+                        w = len(message) + 2
+                        d_box = DialogBox(game, w, 10, width / 4, height / 2, message, type='option',
+                                          con=inventory_window)
+                        confirm = d_box.display_box()
+                        if confirm == 1:
+                            item.item.use(game.player.fighter.inventory, game.player, game)
+                            d_box.destroy_box()
+                            inventory_items = []
+                            check_boxes = []
+                            for x in range(len(player.fighter.inventory)):
+                                check_boxes.append(CheckBox(x=1, y=x + 3))
+                                i = color_text(player.fighter.inventory[x].name.capitalize(),
+                                               player.fighter.inventory[x].color)
+                                if player.fighter.inventory[x].item.check_stackable:
+                                    i += ' (%d)' % player.fighter.inventory[x].item.qty
+                                inventory_items.append(i)
             else:
                 current_selection = None
         # game.gEngine.console_set_default_background(inventory_window, 0, 0, 0)
@@ -384,8 +406,8 @@ def inventory(con, player, game, width=80, height=43):
                         if len(item.item.equipment.effects) != 0:
                             show_effects(item, game, compare_window)
             # Equipment
-            elif (mouse.cy - 2) - equip_y < len(player.fighter.equipment):
-                item = player.fighter.equipment[mouse.cy - 2 - equip_y]
+            elif (mouse.cy - 2) - equip_y < len(gear_list):
+                item = gear_list[mouse.cy - 2 - equip_y]
                 if item is not None:
                     if item.item.equipment:
                         game.gEngine.console_print(compare_window, 1, 2,
@@ -397,7 +419,7 @@ def inventory(con, player, game, width=80, height=43):
                         game.gEngine.console_print(compare_window, 1, 5,
                                                    'Penalty : ' + str(item.item.equipment.penalty))
                         game.gEngine.console_print(compare_window, 1, 6, 'Value   : ' + str(item.item.value))
-                        if item.item.equipment.effects is not None: ## REFACTOR added to show gear effects
+                        if item.item.equipment.effects is not None: ## TODO REFACTOR added to show gear effects
                             if len(item.item.equipment.effects) != 0:
                                 show_effects(item, game, compare_window)
 
@@ -461,7 +483,8 @@ def inventory(con, player, game, width=80, height=43):
                 return_item = player.fighter.wielded[index]
                 break
             elif 2 <= index <= 10:
-                return_item = player.fighter.equipment[index - 2]
+                gears = player.fighter.gear.gimmie_da_armors()
+                return_item = gears[index - 2]
                 break
             if key.vk == libtcod.KEY_DOWN:
                 if current_selection is None:

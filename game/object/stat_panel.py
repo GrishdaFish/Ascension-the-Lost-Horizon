@@ -66,12 +66,13 @@ class StatPanel:
         """ Called by an effect object to register itself to the panel
         :param effect: the effect instance being registered
         """
+
         if effect.panel_group == 'modifiers':
             if effect.index == 0:  # 0 is penalty index,
-                self.set_stat_base(effect.effect_name, (self.get_stat_base(effect.effect_name) - effect.amount))  # add to total
+                #self.set_stat_base(effect.effect_name, (self.get_stat_base(effect.effect_name) - effect.amount))  # add to total
                 self.set_stat_pen(effect.effect_name, (self.get_stat_pen(effect.effect_name) + effect.amount))  # add to mod amount
             if effect.index == 1:  # 1 is modifier index
-                self.set_stat_base(effect.effect_name, (self.get_stat_base(effect.effect_name) + effect.amount))  # add to total
+                #self.set_stat_base(effect.effect_name, (self.get_stat_base(effect.effect_name) + effect.amount))  # add to total
                 self.set_stat_mod(effect.effect_name, (self.get_stat_mod(effect.effect_name) + effect.amount))   # add to mod amount
             self.modifiers.append(effect)
         if effect.panel_group == 'elemental':
@@ -83,11 +84,11 @@ class StatPanel:
         if effect.panel_group == 'conditions':
             if effect.index == 0:
                 self.set_condition_damage(effect.effect_name, (self.get_condition_damage(effect.effect_name) + effect.amount))
-                self.set_condition_rate(effect.effect_name, (self.get_condition_rate(effect.effect_name) + effect.amount))
+                self.set_condition_rate(effect.effect_name, (self.get_condition_rate(effect.effect_name) + effect.probability))
             if effect.index == 1:
                 self.set_condition_resist(effect.effect_name, (self.get_condition_resist(effect.effect_name) + effect.amount))
             self.conditions.append(effect)
-
+        print(self.panel)
     def remove_effect(self, effect):
         """ Called by an effect object to deactivate from the panel
         :param effect: the effect instance to deactivate
@@ -216,7 +217,7 @@ class StatPanel:
 
     def set_elemental_resist(self, name, amount):
         if name in self.panel['elemental'].keys():
-            self.panel['elemental'][name][0] = amount
+            self.panel['elemental'][name][1] = amount
 
     def get_elemental_resist(self, name):
         if name in self.panel['elemental'].keys():

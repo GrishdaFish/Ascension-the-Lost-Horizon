@@ -227,10 +227,11 @@ class Game:
 
     def setup_player(self):
         fighter_component = object.Fighter(hp=90, defense=2, power=5, death_function=self.player_death, money=800,
-                                           speed=10)
+                                           speed=10, ticker=self.ticker)
+        fighter_component.game = self
         self.player = object.Object(self.dungeon_console, 0, 0, '@', 'player',
                                     libtcod.white, blocks=True, fighter=fighter_component)
-
+        self.player.game = self
         self.player_hp_bar = status_bar.StatusBar(self.player.fighter, self.bar_width, libtcod.light_red,
                                                   libtcod.darker_red, self.panel, type='hp', gEngine=self.gEngine)
 

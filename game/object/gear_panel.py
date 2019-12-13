@@ -132,7 +132,19 @@ class GearPanel:
         """
         return list(self.equipped.values())
 
+    def gimmie_da_weapon(self, off_hand=False):
+        """
+        :return:  da weapon, pick a hand!
+        """
+        if off_hand and self.equipped['2h'] is not None:
+            return self.equipped['2h']
+        elif self.equipped['1h'] is not None:
+            return self.equipped['1h']
+
     def gimmie_da_armors(self):
+        """
+        :return:  you guessed it
+        """
         da_armors = []
         for slot_location in self.armor_panel.keys():
             da_armors.append(self.equipped[slot_location])
@@ -146,12 +158,12 @@ class GearPanel:
 
     def get_quipped_weapon_type(self, off_hand=False):
         """
-        :return:  the type of weapon the fighter has gear or false if None
+        :return:  the type of weapon the fighter has
         """
         if off_hand and self.equipped['2h'] is not None:
-            return self.equipped['2h'].subtype
+            return self.equipped['2h'].item.equipment.subtype
         elif self.equipped['1h'] is not None:
-            return self.equipped['1h'].subtype
+            return self.equipped['1h'].item.equipment.subtype
 
     def quip_it(self, gear):
         """
@@ -242,7 +254,7 @@ class GearPanel:
 
     def deactivate_effects(self, gear):
         for effect in gear.item.equipment.effects:
-            effect.deactivate_effect(self.owner)
+            effect.deactivate_effect()
 
     # JUST TELL ME IF ITS A FUCKING WEAPON PLX
     def is_weapon(self, gear):
@@ -287,19 +299,20 @@ class GearPanel:
 
     # GET WEAPON EXP TO NEXT LEVEL
     def get_w_xptnl(self, wep_type):
-        return (self.get_w_lvl(wep_type) * 3000)
+        return (self.get_w_lvl(wep_type) * 500)
 
     # GET WEAPON CURRENT XP AMOUNT
     def get_w_xp(self, wep_type):
-        return self.weapon_panel[wep_type][6]
+        return self.weapon_panel[wep_type][5]
 
     # GET WEAPON TYPE LEVEL
     def get_w_lvl(self, wep_type):
-        return self.weapon_panel[wep_type][5]
+        return self.weapon_panel[wep_type][4]
 
     # ADD XP TO WEAPON
     def add_w_xp(self, wep_type, amount):
-        self.weapon_panel[wep_type][6] += amount
+        print(wep_type)
+        self.weapon_panel[wep_type][5] += amount
 
-    def compare_gear(self, gear_mine, gear_to_compare):
+    def compare_gear(self, gear_to_compare):
         pass

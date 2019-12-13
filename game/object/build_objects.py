@@ -326,7 +326,7 @@ class GameObjects:
 
         monster = Object(game.dungeon_console, x, y, mob.cell, mob.name, mob.color,
                          blocks=True, fighter=fighter_component, ai=ai_component)
-
+        monster.game = game
         monster.fighter.ticker.schedule_turn(monster.fighter.speed, monster)
 
         monster.fighter.gear.equipped['1h'] = self.build_equipment(game, x, y, type="monster_melee")

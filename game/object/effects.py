@@ -25,7 +25,7 @@ class Effect:
         self.panel_group = None    # combat modifiers or conditions, relating to stat panel.panel[panel_group]
         self.effect_name = effect  # name relating to stat_panel.panel[panel_group][name]
         self.effect_real_name = None  # name relating to stat_panel.panel[panel_group]['key'][effect_real_name] (output)
-        self.index = None          # logical storage index for ease of reference
+        self.index = None          # logical storage index of stat for ease of reference
         # linked objects
         self.item = item           # the item that instantiated this effect, used to reference @ on_unequip
                                    # in case 2 items with same effect etc.
@@ -83,8 +83,9 @@ class Effect:
     def deactivate_condition(self):
         self.target.stat.remove_condition(self)
 
-    #####################################################COMBAT#########################################################
-
+    ##################################################################
+    # COMBAT #########################################################
+    ##################################################################
     def trigger_probability(self):
         triggered = False
         if libtcod.random_get_int(0, 0, 100) <= self.probability:
@@ -112,7 +113,7 @@ class Effect:
     # CONDITIONS ###################################################
     # ##############################################################
     def use(self, game=None):
-        test_out = self.effect_name + " is taking a turn. Damage:" + self.amount + " To:" + self.target.owner.name
+        test_out = self.effect_name + " is taking a turn. Damage:" + str(self.amount) + " To:" + self.target.owner.name
         print(test_out)
         if self.duration == 0:            # if effect is expired kill it
             self.deactivate_condition()
@@ -126,7 +127,7 @@ class Effect:
         # game.game.message stuff
 
     def add_turn(self):
-        self.actor.ticker.schedule_turn(self.speed, self)
+        self.actor.game.ticker.schedule_turn(self.speed, self)
 
     #########################################################################
     # UTILITY ###############################################################
@@ -153,7 +154,7 @@ class Effect:
             # current condition type: base : pen / mod
             #                         elem : dam / res
             #                         cond : dam+% / res
-            #if self.panel_group == 'modifiers': # TODO I am not generating penalties yet until more info is shown in game
+            #if self.panel_group == 'modifiers':
             #    self.index = None
             #if self.panel_group == 'elemental' or self.panel_group == 'conditions':
             self.index = libtcod.random_get_int(0, 0, 1)

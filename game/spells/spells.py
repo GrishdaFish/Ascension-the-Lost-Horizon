@@ -31,7 +31,7 @@ class Spell:
 def heal(min, max, range, radius, targets, target, player, game, effect_color):
     # heal the player
     if target == game.player:
-        if target.fighter.hp == target.fighter.max_hp:
+        if target.fighter.hp == target.fighter.stat.get_stat_base("HP"):
             game.message.message('You are already at full health.', libtcod.cyan)
             return 'cancelled'
         l = lights.Light(target.x, target.y, game.light_handler, decay=0.025, flicker=True, intensity=1.0, color=libtcod.lime)

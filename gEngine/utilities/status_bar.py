@@ -11,33 +11,39 @@ class StatusBar:
         self.con = con
         self.type = type
 
-    def render(self, px, py, gEngine=None):
-        maximum, value = 0, 0
-        if self.type == 'hp':
-            value = int(self.owner.hp)
-            maximum = int(self.owner.stat.get_stat_base("HP"))
-        if self.type == 'mp':
-            pass
-        if self.type == 'xp':
-            value = self.owner.current_xp
-            maximum = int(self.owner.get_xp_tnl())
-        if self.type == 'status':  # for status ailments or buffs like poison, stun or regen
-            pass
+    def render(self, px, py, gEngine=None, values=None, name=None):
+        if values:
+            value = values[0]
+            maximum = values[1]
+            msg = name.capitalize() + ': ' + str(value) + '/' + str(int(maximum))
+        else:
+            maximum, value = 0, 0
+            if self.type == 'hp':
+                value = int(self.owner.hp)
+                maximum = int(self.owner.stat.get_stat_base("HP"))
+            if self.type == 'mp':
+                pass
+            if self.type == 'xp':
+                value = self.owner.current_xp
+                if self.owner.xp_to_next_level:
+                    maximum = int(self.owner.xp_to_next_level)
+            if self.type == 'status':  # for status ailments or buffs like poison, stun or regen
+                pass
 
-        if self.type == 'torch':
-            if self.owner.gear.light_source:
-                self.full = self.owner.gear.light_source.item.equipment.torch_color
-                value = int(self.owner.gear.light_source.item.equipment.fuel)
-                maximum = int(self.owner.gear.light_source.item.equipment.max_fuel)
-            else:
-                self.full = self.empty
-                value = 0
-                maximum = 0
+            if self.type == 'torch':
+                if self.owner.gear.light_source:
+                    self.full = self.owner.gear.light_source.item.equipment.torch_color
+                    value = int(self.owner.gear.light_source.item.equipment.fuel)
+                    maximum = int(self.owner.gear.light_source.item.equipment.max_fuel)
+                else:
+                    self.full = self.empty
+                    value = 0
+                    maximum = 0
 
-        if maximum <= 0:
-            maximum = 0.1
+            if maximum <= 0:
+                maximum = 0.1
 
-        msg = self.type.capitalize() + ': ' + str(value) + '/' + str(int(maximum))
+            msg = self.type.capitalize() + ': ' + str(value) + '/' + str(int(maximum))
 
         if value <= 0:
             bar = int(float(self.size) / (maximum / 0.1))

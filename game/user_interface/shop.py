@@ -295,7 +295,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                                                   'Radius: ' + str(item.item.spell.radius))
                     game.gEngine.console_print_ex(compare_window, 1, 7, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Value : ' + str(item.item.value))
-                if len(item.item.equipment.effects) != 0:   # REFACTOR added to show effects
+                if item.item.equipment and len(item.item.equipment.effects) != 0:   # REFACTOR added to show effects
                     show_effects(item, game, compare_window)
 
                 if mouse.lbutton:

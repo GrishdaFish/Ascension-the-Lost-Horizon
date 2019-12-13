@@ -192,8 +192,8 @@ class Fighter:
         self.speed = speed
         self.level = 1
         self.current_xp = xp_value
-        self.xp_to_next_level = 1
-        self.get_xp_tnl()
+        self.xp_to_next_level = 1 # if you don't set this to something before you use log, you gonna die.
+        self.xp_to_next_level = self.get_xp_tnl()
         self.inventory = []
         self.owner = None
         self.ticker = ticker
@@ -205,8 +205,8 @@ class Fighter:
         self.threat = 0.0
 
         self.max_hp = self.stat.get_stat_base("HP")  # REFACTOR get hp from stats now
-        hp = self.max_hp
-        self.hp = hp
+        self.hp = self.stat.get_stat_base("HP")
+        # self.hp = hp
 
         self.armor_bonus = 0
         self.armor_penalty = 0
@@ -245,8 +245,8 @@ class Fighter:
         modifier = 10000           # MODIFIER TAKES YOU FROM SINGLE DIGITS UP INTO REALISTIC VALUES
         added_xp = math.log(lv_basis, log_base)
         added_xp *= modifier
-        xp_tnl = (self.xp_to_next_level + int(added_xp))
-        return xp_tnl
+        xp_to_next_level = (self.xp_to_next_level + int(added_xp))
+        return xp_to_next_level
 
     def get_lv_up_sp(self):     # TODO TESTING make sure values are stable in range 1 : 5
         sp = int(self.level / 2)
@@ -255,18 +255,19 @@ class Fighter:
         return sp_add
 
     def level_up(self):         # TODO DEVELOP make additional stat stuff happen - level up magic
+        self.current_xp -= self.xp_to_next_level
         self.xp_to_next_level = self.get_xp_tnl()
         sp = self.get_lv_up_sp()
         self.unused_skill_points += sp
         self.level += 1
         # self.stat_panel.set_stat_by_name("HP", combat.hp_bonus(self.stats[3]))
         # self.hp = self.stat_panel.get_stat_by_name("HP")
-        add_hp = combat.hp_bonus(self.stat.get_stat_by_name("Constitution"))
-        self.stat.set_stat_by_name("HP", add_hp, True)
+        add_hp = combat.hp_bonus(self.stat.get_stat_base("Constitution"))
+        add_hp += self.stat.get_stat_base("HP")
+        self.stat.set_stat_base("HP", add_hp)
         #self.max_hp += combat.hp_bonus(self.stats[3])
-        hp = self.stat.get_stat_by_name("HP")
-        self.hp = hp
-        self.current_xp = 0
+        self.hp = self.stat.get_stat_base("HP")
+        #self.hp = hp
 
     def apply_skill_points(self, skill):
         if isinstance(skill, str):
@@ -340,9 +341,24 @@ class Fighter:
                 if dmg is None:
                     dmg = 0
                 dmg += self.gear.equipped['1h'].item.equipment.calc_damage()
+                if self == game.player.fighter: # TODO this should apply to mobs, but for now just player
+                    self.gear.add_w_xp(self.gear.equipped['1h'].item.equipment.subtype, 1)  # TODO 1 xp per strike for now
                 # TODO if duals get that damage calc too
-                # TODO also, shield defense
-                dmg = int(dmg)
+                dmg2 = None
+                if self.gear.equipped['2h'] is not None:
+                    skill = self.get_skill(self.gear.equipped['2h'].item.equipment.damage_type)
+                    if skill is not None:
+                        dmg2 = skill.get_bonus()
+                    if dmg2 is None:
+                        dmg2 = 0
+                    dmg2 += self.gear.equipped['2h'].item.equipment.calc_damage()
+                    if self == game.player.fighter:  # TODO this should apply to mobs, but for now just player
+                        self.gear.add_w_xp(self.gear.get_quipped_weapon_type(off_hand=True), 1)
+                # TODO also, shield defense, the above makes shiedls do damage, WOOT !
+                if dmg2: # if dealing 2h damage
+                    dmg = int(dmg + dmg2)
+                else:
+                    dmg = int(dmg)
             else:
                 # For empty slots
                 pass
@@ -411,8 +427,8 @@ class Fighter:
     def heal(self, amount):
         # heal by the given amount, without going over the maximum
         self.hp += amount
-        if self.hp > self.max_hp:
-            self.hp = self.max_hp
+        if self.hp > self.stat.get_stat_base("HP"):
+            self.hp = self.stat.get_stat_base("HP")
 
 
 class Torch:    # TODO REFACTOR move torch to item.py
