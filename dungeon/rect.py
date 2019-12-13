@@ -25,6 +25,7 @@ class Rect:
 
     def center(self):
         """
+
         :return: returns the center point of the room in (x, y) format
         """
         center_x = (self.x1 + self.x2) / 2

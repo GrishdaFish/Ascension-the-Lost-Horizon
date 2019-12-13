@@ -189,6 +189,38 @@ def magical_mapping(min, max, range, radius, targets, tile, player, game, effect
         tile.explored = True
 
 
+
+def detect_monsters(min, max, range, radius, targets, target, player, game, effect_color):
+    num_turns = libtcod.random_get_int(0, min, max)
+    if game.monster_force_display[0]:
+        game.monster_force_display[1] += num_turns
+        game.message.message("You've extended your ability to see all monsters around you by " + str(num_turns) +
+                             " turns!", libtcod.light_cyan)
+    else:
+        game.monster_force_display[0] = True
+        game.monster_force_display[1] = num_turns
+        game.message.message("You can now see all monsters around you for " + str(num_turns) +
+                             " turns!", libtcod.light_cyan)
+
+
+def detect_loot(min, max, range, radius, targets, target, player, game, effect_color):
+    num_turns = libtcod.random_get_int(0, min, max)
+    if game.loot_force_display[0]:
+        game.loot_force_display[1] += num_turns
+        game.message.message("You've extended your ability to see all items around you by " + str(num_turns) +
+                             " turns!", libtcod.light_cyan)
+    else:
+        game.loot_force_display[0] = True
+        game.loot_force_display[1] = num_turns
+        game.message.message("You can now see all items around you for " + str(num_turns) +
+                             " turns!", libtcod.light_cyan)
+
+
+def magical_mapping(min, max, range, radius, targets, tile, player, game, effect_color):
+    for tile in game.level.dungeon:
+        tile.explored = True
+
+
 spells = {
     'heal': heal,
     'fireball': fireball,
@@ -200,6 +232,8 @@ spells = {
     'detect monster': detect_monsters,
     'detect items': detect_loot,
     'none': None,
+    '': None,
+    None: None,
 }
 
 

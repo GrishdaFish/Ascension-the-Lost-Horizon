@@ -82,7 +82,7 @@ def draw_user_interface(game):
     game.gEngine.console_set_alignment(game.panel, libtcod.LEFT)
     game.gEngine.console_set_default_background(0, r, g, b)
     game.gEngine.console_print(game.panel, 1, 5, "(%dfps) Depth: %d" % (libtcod.sys_get_fps(), game.level.depth))
-    game.gEngine.console_print(game.panel, 1, 0, game.get_names_under_mouse())
+    #game.gEngine.console_print(game.panel, 1, 0, game.get_names_under_mouse())
 
 
 def render_consoles(game):

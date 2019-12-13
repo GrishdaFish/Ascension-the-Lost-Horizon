@@ -166,6 +166,8 @@ class gEngine:
     def console_clear_all(self):
         for con in self.console_dict:
             self.console_dict[con].clear()
+    def console_get_console(self, con):
+        return self.console_dict[con]
 
     def console_clear(self, con):
         self.console_dict[con].clear()

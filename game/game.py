@@ -22,6 +22,7 @@ from game.user_interface import inventory
 from game.user_interface import character
 from game import main_menu
 from game.user_interface import menus
+from game.user_interface import hover_description
 from game import ranged_combat
 from game import input_handler
 from game import render
@@ -101,9 +102,11 @@ class Game:
         self.player_action = None
         self.bark_manager = bark.BarkManager()
         self.ambient = 0.15
+
         self.dev_console = console.Console(self, self.dungeon_width, self.dungeon_height, 'debug')
         self.monster_force_display = [False, 0]
         self.loot_force_display = [False, 0]
+        self.hover_description = hover_description.HoverDescription(self.dungeon_console, self.gEngine, True)
 
     def activate(self):
         self.active = True
@@ -160,7 +163,8 @@ class Game:
                     key = libtcod.Key()
                     mouse = libtcod.Mouse()
                     libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
-
+                    self.hover_description.reset()
+                    self.hover_description.update(mouse, self.get_names_under_mouse(), self.dungeon_height)
                     self.player_action = input_handler.handle_keys(key, self)#self.handle_keys(key)
                     if self.player_action == 'exit' or libtcod.console_is_window_closed():
                         # self.logger.log.info('Exiting and saving game..')
@@ -212,7 +216,7 @@ class Game:
                             else:
                                 self.loot_force_display[1] -= 1
 
-                    render.render_all(self)# self.render_all()
+                    render.render_all(self, self.hover_description.render(self, True))# self.render_all()
                     self.gEngine.console_flush()
                 #if self.player_action == 'turn-used' or self.player_action == 'player-moved':
                 #    self.ticker.schedule_turn(self.player.fighter.speed, self.player)
@@ -338,9 +342,7 @@ class Game:
     def prev_level(self):
         self.objects = []
         self.ticker.clear_ticker()
-        print(self.depth)
         self.depth -= 1
-        print(self.depth)
         self.level = None
         self.level = self.levels[self.depth-1]
         self.level.new_level()
@@ -385,8 +387,7 @@ class Game:
         names = [obj.name for obj in self.objects
                  if obj.x == x and obj.y == y and libtcod.map_is_in_fov(self.fov, obj.x, obj.y)]
 
-        names = ', '.join(names)  # join the names, separated by commas
-        return names.capitalize()
+        return names
 
     def get_names_under_player(self):
         if self.player_moved:
