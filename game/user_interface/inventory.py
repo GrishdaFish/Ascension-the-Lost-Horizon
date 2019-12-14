@@ -366,7 +366,7 @@ def inventory(con, player, game, width=80, height=43):
         # game.gEngine.console_set_default_background(inventory_window, 0, 0, 0)
         # Wielded
         elif 0 <= mouse.cx <= ((width / 2) - 2):  # inventory screen dims
-            if (mouse.cy - 2) < len(player.fighter.wielded):
+            if (mouse.cy - 2) < 2:  # wielded gone, magic #2 = # of hands(always)-old ver.=len(player.fighter.wielded)
                 mouse_grabbed_index = mouse.cy - 2
                 if mouse_grabbed_index == 0:
                     item =player.fighter.gear.equipped['1h']
@@ -390,7 +390,10 @@ def inventory(con, player, game, width=80, height=43):
                         if item.item.equipment.effects is not None: ## REFACTOR added to show gear effects
                             if len(item.item.equipment.effects) != 0:
                                 show_effects(item, game, compare_window)
-            elif (mouse.cy -2) > len(player.fighter.wielded)+1 and (mouse.cy -2 ) < len(player.fighter.wielded)+3 :
+            # What in the son of a fuck is this about :-{>
+            # elif (mouse.cy -2) > len(player.fighter.wielded)+1 and (mouse.cy -2 ) < len(player.fighter.wielded)+3 :
+            # wielded no longer, exists so now its el magicka noir
+            elif 3 > (mouse.cy - 2) > 5:
                 item = player.fighter.gear.light_source
                 if item is not None:
                     i = item.item.equipment.type.replace('_', ' ')
@@ -479,8 +482,11 @@ def inventory(con, player, game, width=80, height=43):
                 return_item = player.fighter.inventory[index]
                 break
             index = key.c - ord('1')
-            if 0 <= index <= 1:
-                return_item = player.fighter.wielded[index]
+            if index == 0:
+                return_item = player.figher.gear.gimmie_da_weapon()
+                break
+            elif index == 1:
+                return_item = player.fighter.gear.gimmie_da_weapon(off_hand=True)
                 break
             elif 2 <= index <= 10:
                 gears = player.fighter.gear.gimmie_da_armors()

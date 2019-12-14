@@ -135,7 +135,7 @@ def get_evasion_class(creature):
 
 def get_melee_bonus(creature):
     roll = 0
-    for weapon in creature.fighter.wielded:
+    for weapon in [creature.fighter.gear.gimmie_da_weapon(), creature.fighter.gear.gimmie_da_weapon(off_hand=True)]:
         if weapon is not None:
             roll += weapon.item.equipment.accuracy
             if weapon.item.equipment.handed == 2:

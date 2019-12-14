@@ -23,22 +23,22 @@
     color=[159, 159, 159]
     armor_bonus = 2
     armor_penalty = 2
-    weight = 2
-    sharpness = 3
-    durability = 4
-    modifier = 5
+    weight = 1
+    sharpness = 2
+    durability = 3
+    modifier = 4
 
 [["material"]]
     name = "Chocolate"
-    price_mod = 12.0
+    price_mod = 6
     rarity = 1.0#0.03125
     type = 2 #1 for cloth, 2 for metal
     can_be_made_from = 3 # for weapons only, 2 armor only, 3 both
     description=""
     color=[159, 159, 159]
-    armor_bonus = 10
-    armor_penalty = 8
-    weight = 2
-    sharpness = 3
-    durability = 4
-    modifier = 5
+    armor_bonus = 6
+    armor_penalty = 4
+    weight = 3
+    sharpness = 5
+    durability = 7
+    modifier = 6

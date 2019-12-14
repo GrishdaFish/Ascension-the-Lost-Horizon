@@ -277,6 +277,7 @@ class GameObjects:
             equip_component.accuracy = eq.accuracy
             equip_component.damage = eq.damage
             equip_component.damage_type = eq.damage_type
+        if equip_component.type == 'melee':
             equip_component.subtype = eq.subtype
         elif equip_component.type == 'armor':
             eq.bonus += mat.armor_bonus

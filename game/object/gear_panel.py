@@ -75,7 +75,7 @@ class GearPanel:
         self.light_source = None
 
         self.weapon_panel_key =  ['Combat Type', 'Damage Type', 'Can Dual', 'Can Shield', 'Level', 'EXP']
-        self.weapon_panel = {# do not change indexes of values, add new values to end of arrays, TY!
+        self.weapon_panel = { # do not change indexes of values, add new values to end of arrays, TY!
             #   Key:        [combat_type, damage_type, can_dual, can_shield, level, xp}
             "Shield":       ['melee', 'Shield', False, True, 1, 0],
             "Short Sword":  ['melee', 'Slash', True, True, 1, 0],
@@ -313,6 +313,12 @@ class GearPanel:
     def add_w_xp(self, wep_type, amount):
         print(wep_type)
         self.weapon_panel[wep_type][5] += amount
+        if self.weapon_panel[wep_type][5] > self.get_w_xptnl(wep_type):
+            self.w_lvl_up(wep_type)
+
+    def w_lvl_up(self, wep_type):
+        self.weapon_panel[wep_type][4] += 1
+
 
     def compare_gear(self, gear_to_compare):
         pass

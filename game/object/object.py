@@ -211,33 +211,35 @@ class Fighter:
         self.armor_bonus = 0
         self.armor_penalty = 0
 
+        self.skills = copy.deepcopy(combat.skill_list)  # skill list needs to have its own copies
 
         '''self.max_mp = 1 + (2*self.stats[2])
         mp = self.max_mp
         self.mp = mp'''
-
+        ################################################################################################################
         # TODO  CONSIDER / REFACTOR replacing this requires a lot of changes in calls to
-        # TODO fighter.equipment, .light_source, .accessories, and .wielded throughout
+        #           fighter.equipment, .light_source, .accessories, and .wielded throughout
+        #      .UPDATE. this should all be done now If no relics found in play test
+        #               then all this can safely be deleted
         # logically linked to self.gear.equipped
-        self.equipment = [ self.gear.equipped['Head'],
-                           self.gear.equipped['Shoulders'],
-                           self.gear.equipped['Arms'],
-                           self.gear.equipped['Hands'],
-                           self.gear.equipped['Torso'],
-                           self.gear.equipped['Legs'],
-                           self.gear.equipped['Feet'],
-                           self.gear.equipped['Cloak']
-                           ]
+        #self.equipment = [ self.gear.equipped['Head'],
+        #                   self.gear.equipped['Shoulders'],
+        #                   self.gear.equipped['Arms'],
+        #                   self.gear.equipped['Hands'],
+        #                   self.gear.equipped['Torso'],
+        #                   self.gear.equipped['Legs'],
+        #                   self.gear.equipped['Feet'],
+        #                   self.gear.equipped['Cloak']
+        #                    ]
         # logically linked to self.gear.light_source
-        self.light_source = self.gear.light_source
+        #self.light_source = self.gear.light_source
         # logically linked to self.gear.equipped
-        self.accessories = [self.gear.equipped['Neck'],
-                            self.gear.equipped['Ring']
-                            ]
+        #self.accessories = [self.gear.equipped['Neck'],
+        #                    self.gear.equipped['Ring']
+        #                    ]
         # logically linked to self.gear.equipped
-        self.wielded = [self.gear.equipped['1h'], self.gear.equipped['2h']]
-                                ############################################################
-        self.skills = copy.deepcopy(combat.skill_list)  # skill list needs to have its own copies
+        #self.wielded = [self.gear.equipped['1h'], self.gear.equipped['2h']]
+        ################################################################################################################
 
     def get_xp_tnl(self):       # TODO TESTING make sure values are stable and realistic
         lv_basis = self.level*2    # ARBITRARY BASIS FOR SCALING
@@ -341,9 +343,9 @@ class Fighter:
                 if dmg is None:
                     dmg = 0
                 dmg += self.gear.equipped['1h'].item.equipment.calc_damage()
-                if self == game.player.fighter: # TODO this should apply to mobs, but for now just player
-                    self.gear.add_w_xp(self.gear.equipped['1h'].item.equipment.subtype, 1)  # TODO 1 xp per strike for now
-                # TODO if duals get that damage calc too
+                if self == game.player.fighter: # TODO this should apply to mobs, but for now just player because monster melee doesnt level
+                    self.gear.add_w_xp(self.gear.equipped['1h'].item.equipment.subtype, 100)  # TODO 100 xp per strike for now
+                # TODO if duals get that damage calc too, quick and dirty below:
                 dmg2 = None
                 if self.gear.equipped['2h'] is not None:
                     skill = self.get_skill(self.gear.equipped['2h'].item.equipment.damage_type)
@@ -353,7 +355,7 @@ class Fighter:
                         dmg2 = 0
                     dmg2 += self.gear.equipped['2h'].item.equipment.calc_damage()
                     if self == game.player.fighter:  # TODO this should apply to mobs, but for now just player
-                        self.gear.add_w_xp(self.gear.get_quipped_weapon_type(off_hand=True), 1)
+                        self.gear.add_w_xp(self.gear.get_quipped_weapon_type(off_hand=True), 100)
                 # TODO also, shield defense, the above makes shiedls do damage, WOOT !
                 if dmg2: # if dealing 2h damage
                     dmg = int(dmg + dmg2)
@@ -632,11 +634,11 @@ def monster_death(monster):
     if monster.ai.node:
         monster.ai.remove_from_node()
     # drop all of equipped gear from monsters
-    for item in monster.fighter.wielded:
+    for item in [monster.fighter.gear.gimmie_da_weapon(), monster.fighter.gear.gimmie_da_weapon(off_hand=True)]:
         if item:
             if item.item.equipment.type != 'monster_melee':
                 monster.fighter.inventory.append(item)
-    for item in monster.fighter.equipment:
+    for item in monster.fighter.gear.gimmie_da_armors():
         if item:
             monster.fighter.inventory.append(item)
     for item in monster.fighter.inventory:
