@@ -189,7 +189,7 @@ class Fighter:
         self.death_function = death_function
         self.type = 'melee'
         self.money = money
-        self.speed = speed
+        # self.speed = speed
         self.level = 1
         self.current_xp = xp_value
         self.xp_to_next_level = 1 # if you don't set this to something before you use log, you gonna die.
@@ -197,9 +197,9 @@ class Fighter:
         self.inventory = []
         self.owner = None
         self.ticker = ticker
-        self.stats = [Str, Dex, Int, Con]   # REFACTOR this is in skill panel now
+        # self.stats = [Str, Dex, Int, Con]   # TODO REFACTOR this is in skill panel now
         self.unused_skill_points = 2
-        self.defense = 0    # REFACTOR in skill panel, not implemented
+        # self.defense = 0    # TODO REFACTOR in skill panel, not implemented
 
         self.depth = 0
         self.threat = 0.0
@@ -500,7 +500,7 @@ class BasicMonster(AI_Base):
     # AI for a basic monster.
     def take_turn(self, game):
         # a basic monster takes its turn. if you can see it, it can see you
-        self.owner.fighter.ticker.schedule_turn(self.owner.fighter.speed, self.owner)
+        self.owner.fighter.ticker.schedule_turn(self.owner.fighter.stat.get_stat("Speed"), self.owner)
         if libtcod.map_is_in_fov(game.fov, self.owner.x, self.owner.y):
             # move towards player if far away
             if self.owner.distance_to(game.player) >= 2:
@@ -530,7 +530,7 @@ class WanderingMonster(AI_Base):
         AI_Base.__init__(self)
 
     def take_turn(self, game):
-        self.owner.fighter.ticker.schedule_turn(self.owner.fighter.speed, self.owner)
+        self.owner.fighter.ticker.schedule_turn(self.owner.fighter.stat.get_stat("Speed"), self.owner)
 
         if self.dest and self.owner.distance(self.dest_x, self.dest_y) <= 0:
             self.dest = False
@@ -595,7 +595,7 @@ class ConfusedMonster(AI_Base):
         AI_Base.__init__(self)
 
     def take_turn(self, game):
-        self.owner.fighter.ticker.schedule_turn(self.owner.fighter.speed, self.owner)
+        self.owner.fighter.ticker.schedule_turn(self.owner.fighter.stat.get_stat("Speed"), self.owner)
         if self.num_turns > 0:  # still confused...
             # move in a random direction, and decrease the number of turns confused
             self.owner.move(libtcod.random_get_int(0, -1, 1), libtcod.random_get_int(0, -1, 1), game.level.dungeon,

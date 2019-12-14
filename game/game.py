@@ -199,7 +199,7 @@ class Game:
                         object.clear(self.gEngine)
 
                     if self.player_action == 'turn-used' or self.player_action == 'player-moved':
-                        self.ticker.schedule_turn(self.player.fighter.speed, self.player)
+                        self.ticker.schedule_turn(self.player.fighter.stat.get_stat("Speed"), self.player)
                         self.player.torch.update(self)
 
                         if self.monster_force_display[0]:

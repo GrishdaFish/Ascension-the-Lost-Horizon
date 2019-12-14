@@ -85,7 +85,7 @@ def character_info(con, width, height, game, x=0, y=0):
         penalty2 = color_text('1d20 -%d' % game.player.fighter.armor_penalty, libtcod.red)
         game.gEngine.console_print(char_window, 1, 11, 'Penalty to Dodge Roll: [%s](%s)' % (penalty, penalty2))
 
-        speed = color_text(str(game.player.fighter.speed), libtcod.light_gray)
+        speed = color_text(str(game.player.fighter.stat.get_stat("Speed")), libtcod.light_gray)
         game.gEngine.console_print(char_window, 1, 13, 'Turn Speed: [%s]' % speed)
 
         r, g, b = libtcod.white

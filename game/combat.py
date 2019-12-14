@@ -99,9 +99,9 @@ def get_armor_class(creature):
 
 def get_blocking_class(creature):
     if creature.fighter.gear.equipped['2h'] is not None:
-        if creature.fighter.gear.equipped['2h'].item.equipment.type == 'shield':
+        if creature.fighter.gear.equipped['2h'].item.equipment.subtype == 'shield':
             roll = libtcod.random_get_int(0, 1, 20)
-            roll += get_stat_bonus(creature.fighter.stats[0])
+            roll += get_stat_bonus(creature.fighter.stat.get_stat("Strength"))
             roll += creature.fighter.get_skill('Shield').get_bonus()
             roll -= get_armor_penalty(creature)*2
             return roll
@@ -118,7 +118,7 @@ def get_deflection_class(creature):
         if hands[0].item.equipment.type == 'melee':
             if hands[0] != hands[1]:  # make sure its not a 2-h weap
                 roll = libtcod.random_get_int(0, 1, 20)
-                roll += get_stat_bonus(creature.fighter.stats[1])
+                roll += get_stat_bonus(creature.fighter.stat.get_stat("Dexterity"))
                 roll += creature.fighter.get_skill('Parry').get_bonus()
                 roll -= get_armor_penalty(creature)*2
                 return roll
@@ -127,7 +127,7 @@ def get_deflection_class(creature):
 
 def get_evasion_class(creature):
     roll = libtcod.random_get_int(0, 1, 20)
-    roll += get_stat_bonus(creature.fighter.stats[2])
+    roll += get_stat_bonus(creature.fighter.stat.get_stat("Intelligence"))
     roll += creature.fighter.get_skill('Dodge').get_bonus()
     roll -= get_armor_penalty(creature)*2
     return roll

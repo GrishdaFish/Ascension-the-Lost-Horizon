@@ -393,7 +393,7 @@ def inventory(con, player, game, width=80, height=43):
             # What in the son of a fuck is this about :-{>
             # elif (mouse.cy -2) > len(player.fighter.wielded)+1 and (mouse.cy -2 ) < len(player.fighter.wielded)+3 :
             # wielded no longer, exists so now its el magicka noir
-            elif 3 > (mouse.cy - 2) > 5:
+            elif 1 > (mouse.cy) > 3:
                 item = player.fighter.gear.light_source
                 if item is not None:
                     i = item.item.equipment.type.replace('_', ' ')
