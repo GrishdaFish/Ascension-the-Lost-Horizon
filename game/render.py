@@ -5,7 +5,7 @@ def render_all(game, injected_render_list=None):  # break this up to render ui a
     game.gEngine.console_clear(game.dungeon_console)
     if game.fov_recompute:
         game.fov_recompute = False
-        libtcod.map_compute_fov(game.fov, game.player.x, game.player.y)
+        game.gEngine.map_compute_fov(game.player.x, game.player.y)
     update_lighting(game)
 
     # self.gEngine.map_draw_fast(self.dungeon_console, self.player.x, self.player.y)
@@ -81,7 +81,7 @@ def draw_user_interface(game):
     game.gEngine.console_set_default_foreground(game.panel, r, g, b)
     game.gEngine.console_set_alignment(game.panel, libtcod.LEFT)
     game.gEngine.console_set_default_background(0, r, g, b)
-    game.gEngine.console_print(game.panel, 1, 5, "(%dfps) Depth: %d" % (libtcod.sys_get_fps(), game.level.depth))
+    game.gEngine.console_print(game.panel, 1, 5, "(%dfps) Depth: %d" % (game.gEngine.sys_get_fps(), game.level.depth))
     #game.gEngine.console_print(game.panel, 1, 0, game.get_names_under_mouse())
 
 

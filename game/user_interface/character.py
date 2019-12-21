@@ -33,9 +33,10 @@ def character_info(con, width, height, game, x=0, y=0):
     while key.vk != libtcod.KEY_ESCAPE:
         game.gEngine.console_flush()
         # get input just after flush
-        key = libtcod.Key()
-        mouse = libtcod.Mouse()
-        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+        # key = libtcod.Key()
+        # mouse = libtcod.Mouse()
+        # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+        key, mouse = game.gEngine.handle_input()
         exit_input = exit_button.display()
 
         game.gEngine.console_blit(char_window, 0, 0, width/2, height/2, 0, 0, 0, 1.0, 1.0)
@@ -219,9 +220,10 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
     while key.vk != libtcod.KEY_ESCAPE:
         game.gEngine.console_flush()
         # get input just after flush
-        key = libtcod.Key()
-        mouse = libtcod.Mouse()
-        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+        # key = libtcod.Key()
+        # mouse = libtcod.Mouse()
+        # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+        key, mouse = game.gEngine.handle_input()
         exit_input = exit_button.display()
 
         game.gEngine.console_blit(condition_window, 0, 0, width/2, height/2, 0, 0, 0, 1.0, 1.0)

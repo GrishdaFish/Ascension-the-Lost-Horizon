@@ -129,10 +129,10 @@ def inventory(con, player, game, width=80, height=43):
         game.gEngine.console_clear(wielded_window)
         game.gEngine.console_clear(equipment_window)
         game.gEngine.console_clear(compare_window)
-        key = libtcod.Key()
-        mouse = libtcod.Mouse()
-        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
-
+        # key = libtcod.Key()
+        # mouse = libtcod.Mouse()
+        # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+        key, mouse = game.gEngine.handle_input()
         # set up draw screen
         r, g, b = libtcod.white
         game.gEngine.console_set_default_foreground(inventory_window, r, g, b)

@@ -388,7 +388,7 @@ class PrefabGenerator:
         return (origin_door, dest_door)
 
     def level_from_prefabs(self, max_rooms=15, max_trys=50, max_room_items=3, max_level_items=15,
-                           light_handler=None, light_spawn_chance=100):
+                           light_handler=None, light_spawn_chance=70):
         self.dungeon = [[tile.Tile(True)
                          for y in range(self.height)]
                         for x in range(self.width)]
@@ -440,6 +440,8 @@ class PrefabGenerator:
             for object in self.game.objects:
                 object.message = self.game.message
                 object.objects = self.game.objects
+
+        self.gEngine.map_new(self.width*2, self.height*2)
         self.gEngine.map_clear()
         self.set_draw_map(self.dungeon)
         fov_map = self.gEngine.get_fov_map()
@@ -490,9 +492,9 @@ class PrefabGenerator:
                     r = libtcod.random_get_int(0, 0, len(ground_color)-1)
                     r = deepcopy(ground_color[r])
                     # print(r)
-                    r[0] += max(0, min(255, (r[0]*value)))
-                    r[1] += max(0, min(255, (r[1]*value)))
-                    r[2] += max(0, min(255, (r[2]*value)))
+                    # r[0] += max(0, min(255, (r[0]*value)))
+                    # r[1] += max(0, min(255, (r[1]*value)))
+                    # r[2] += max(0, min(255, (r[2]*value)))
                     # print(r)
                     self.dungeon[x][y].color = r
                 if h[y][x] == 'f':
@@ -585,6 +587,7 @@ class PrefabGenerator:
                     self.game.player.y = y
         # populate the level class with mandatory data
         if self.gEngine:
+            self.gEngine.map_new(self.width*2, self.height*2)
             self.gEngine.map_clear()
             self.set_draw_map(self.dungeon)
             fov_map = self.gEngine.get_fov_map()
@@ -613,6 +616,7 @@ class PrefabGenerator:
                 self.gEngine.lightmask_set_opacity_value(x, y, c.opacity)
                 self.gEngine.map_add_tile(x, y, c.tile, c.blocked, c.block_sight, c.explored, c.spawn_node, c.color,
                                           c.opacity)
+
         self.gEngine.map_init_level(self.width, self.height)
 
     def spawn_ground_items(self, room, max_room_items, max_level_items):

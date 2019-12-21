@@ -76,7 +76,7 @@ class MainMenu:
                 #    continue
                 # self.play_game()
                 # self.main_menu()
-            if choice == 3 or choice is None:  # quit. TODO fix for new engine
+            if choice == 3:# or choice is None:  # quit. TODO fix for new engine
                 self.gEngine.log_message('Quitting game')
                 self.gEngine.remove_module(self)
 

@@ -128,11 +128,12 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                 else:
                     fade = 0
         game.gEngine.console_flush()
-        libtcod.console_flush()
+        #libtcod.console_flush()
         # get input just after flush
-        key = libtcod.Key()
-        mouse = libtcod.Mouse()
-        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY, key, mouse)
+        #key = libtcod.Key()
+        #mouse = libtcod.Mouse()
+        #libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY, key, mouse)
+        key, mouse = game.gEngine.handle_input()
 
         exit_input = exit_button.display()
         sell_input = sell_button.display()

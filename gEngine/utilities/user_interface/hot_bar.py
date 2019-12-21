@@ -183,9 +183,9 @@ class HotBarSlot():
                 self.gEngine.console_print(self.owner.window, p, 0, t)
                 if mouse.lbutton:
                     r, g, b = libtcod.red
-                if mouse.lbutton_pressed:
+                if mouse.lbutton:
                     self.use(game)
-                if mouse.rbutton_pressed:
+                if mouse.rbutton:
                     self.remove_object()
 
         self.gEngine.console_set_default_foreground(self.window, r, g, b)

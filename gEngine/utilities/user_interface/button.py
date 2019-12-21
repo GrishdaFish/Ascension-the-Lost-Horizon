@@ -33,7 +33,7 @@ class Button:
 
         self.parent.game.gEngine.console_print_frame(self.window, 0, 0,
                                                      self.width, self.height, False)
-
+        self.parent.game.gEngine.console_set_alignment(self.window, libtcod.CENTER)
         self.parent.game.gEngine.console_print(self.window, self.width / 2,
                                                self.height / 2, self.label)
         #self.parent.game.gEngine.console_flush()
@@ -51,27 +51,15 @@ class Button:
         key = libtcod.Key()
         if not mouse:
             mouse = libtcod.Mouse()
-        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE, key, mouse)
+        #libtcod.sys_check_for_event(libtcod.EVENT_MOUSE, key, mouse)
+        key, mouse = self.parent.game.gEngine.handle_input()
         mx = mouse.cx - (self.x_pos + self.dest_x)
         my = mouse.cy - (self.y_pos + self.dest_y)
 
         if 0 <= mx <= self.width and 0 <= my <= self.height:
             self.label = menu.color_text(self.label_o, libtcod.red)
-            if mouse.lbutton:
-                down = True
-                while down:
-                    self.label = menu.color_text(self.label_o, libtcod.green)
-                    if mouse.lbutton_pressed:
-                        if self.type is True:
-                            return 1
-                        else:
-                            return 0
-                    mouse = libtcod.Mouse()
-                    libtcod.sys_check_for_event(libtcod.EVENT_MOUSE, key, mouse)
-                    if not mouse.lbutton:
-                        down = False
 
-            if mouse.lbutton_pressed:
+            if mouse.lbutton:
                 if self.type is True:
                     return 1
                 else:
@@ -82,10 +70,10 @@ class Button:
         return -1
 
     def key_input(self):
-        key = libtcod.Key()
-        mouse = libtcod.Mouse()
-        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
-
+        # key = libtcod.Key()
+        # mouse = libtcod.Mouse()
+        # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+        key, mouse = self.parent.game.gEngine.handle_input()
         if key.vk == libtcod.KEY_ENTER or key.vk == libtcod.KEY_SPACE:
             libtcod.console_check_for_keypress()
             return 1

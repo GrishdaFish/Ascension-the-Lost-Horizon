@@ -105,7 +105,7 @@ def handle_drop(key, game, turn):
 
 
 def handle_stairs(key, game, turn):
-    if key.text == '<':
+    if chr(key.c) == '<':
         for object in game.objects:
             if object.x == game.player.x and object.y == game.player.y and object.misc:
                 if object.misc.type == 'up':
@@ -118,7 +118,7 @@ def handle_stairs(key, game, turn):
 
                         turn = 'turn-used'
 
-    if key.text == '>':
+    if chr(key.c) == '>':
         for object in game.objects:
             if object.x == game.player.x and object.y == game.player.y and object.misc:
                 if object.misc.type == 'down':

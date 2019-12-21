@@ -134,9 +134,9 @@ class Game:
             #self.render_all()
             self.player_moved = False
             #self.gEngine.console_flush()
-            key = libtcod.Key()
-            mouse = libtcod.Mouse()
-            libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+            # key = libtcod.Key()
+            # mouse = libtcod.Mouse()
+            # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
 
             # erase all objects at their old locations, before they move
             for object in self.objects:
@@ -160,9 +160,10 @@ class Game:
                 ##inventory actions depend on what was done
                 while self.player_action == 'didnt-take-turn':
 
-                    key = libtcod.Key()
-                    mouse = libtcod.Mouse()
-                    libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+                    # key = libtcod.Key()
+                    # mouse = libtcod.Mouse()
+                    # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+                    key, mouse = self.gEngine.handle_input()
                     self.hover_description.reset()
                     self.hover_description.update(mouse, self.get_names_under_mouse(), self.dungeon_height)
                     self.player_action = input_handler.handle_keys(key, self)#self.handle_keys(key)
@@ -338,6 +339,7 @@ class Game:
                 if object.misc.type == 'up':  # place the player at the down stairs on the previous level
                     self.player.x = object.x
                     self.player.y = object.y
+        #self.objects = []
 
     def prev_level(self):
         self.objects = []
@@ -380,7 +382,8 @@ class Game:
 
     def get_names_under_mouse(self):
         # return a string with the names of all objects under the mouse
-        mouse = libtcod.mouse_get_status()
+        #mouse = libtcod.mouse_get_status()
+        key, mouse = self.gEngine.handle_input()
         (x, y) = (mouse.cx, mouse.cy)
 
         # create a list with the names of all objects at the mouse's coordinates and in FOV

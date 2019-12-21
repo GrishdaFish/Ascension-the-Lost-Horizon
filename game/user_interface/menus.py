@@ -8,7 +8,7 @@ import tcod as libtcod
 import os
 import sys
 from gEngine import gEngine as _gEngine
-
+# TODO DEPRECATE This may not be used anymore.
 def equipment_menu(equipment ,screen_height ,screen_width ,game):
     slots = ['torso',
              'head',

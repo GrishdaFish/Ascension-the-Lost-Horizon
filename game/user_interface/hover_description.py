@@ -91,11 +91,12 @@ class HoverDescription:
         :param game:
         :return:
         """
-        r, g, b = libtcod.white
+        r, g, b = libtcod.black
         game.gEngine.console_set_default_background(self.display_console, r, g, b)
+        game.gEngine.console_set_alignment(self.display_console, libtcod.LEFT)
         offset = 0
         if self.border:
-            game.gEngine.console_print_frame(self.display_console, 0, 0, self.width, self.height, True)
+            game.gEngine.console_print_frame(self.display_console, 0, 0, self.width, self.height, False)
             offset += 1
         if len(self.content) > 1:
             for y in range(len(self.content)):

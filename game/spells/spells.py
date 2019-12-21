@@ -6,7 +6,7 @@ from game.object import object
 from game.object import item
 from game import render
 from game.spells import spell_effects
-
+import time
 
 class Spell:
     def __init__(self, min=0, max=0, range=0, radius=0, targets=0, ef_type=None, ad_eff=None, spel_eff=None,
@@ -282,19 +282,23 @@ def target_tile(game, max_range=None, radius=None):
         radius = 1
     targeting_window = TargetRender(radius, game.dungeon_console, game)
     renderers = [targeting_window.render]
+    game.gEngine.handle_input(clear=True)
+    time.sleep(0.5)
     while True:
 
         render.render_all(game, renderers)
-        libtcod.console_flush()
-        key = libtcod.Key()
-        mouse = libtcod.Mouse()
-        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+        game.gEngine.console_flush()
+        key, mouse = game.gEngine.handle_input()
+        # libtcod.console_flush()
+        # key = libtcod.Key()
+        # mouse = libtcod.Mouse()
+        # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
         x, y = (mouse.cx-int(radius/2)-1, mouse.cy-int(radius/2)-1)
         if mouse.rbutton or key.vk == libtcod.KEY_ESCAPE:
             return None, None  # cancel if the player right-clicked or pressed Escape
 
         # accept the target if the player clicked in FOV, and in case a range is specified, if it's in that range
-        if (mouse.lbutton and libtcod.map_is_in_fov(game.fov, x, y) and
+        if (mouse.lbutton and game.gEngine.map_is_in_fov(x, y) and
                 (max_range is None or game.player.distance(x, y) <= max_range)):
             return x, y
 
@@ -306,9 +310,10 @@ class TargetRender:
         self.targeting_window = game.gEngine.console_new(radius + 2, radius + 2)
 
     def render(self, game):
-        key = libtcod.Key()
-        mouse = libtcod.Mouse()
-        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+        # key = libtcod.Key()
+        #         # mouse = libtcod.Mouse()
+        #         # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+        key, mouse = game.gEngine.handle_input()
         x, y = (mouse.cx, mouse.cy)
         r, g, b = libtcod.white
         game.gEngine.console_set_default_background(self.targeting_window, r, g, b)

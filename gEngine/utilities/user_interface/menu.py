@@ -83,9 +83,9 @@ class Menus:
             letter_index = ord('a')
             r, g, b = libtcod.white
 
-            if self.img:
-                self.gEngine.image_blit_2x(self.img, 0, 0, 0)
-
+            # if self.img:
+            #     self.gEngine.image_blit_2x(self.img, 0, 0, 0)
+            self.gEngine.console_set_alignment(self.window, libtcod.LEFT)
             self.gEngine.console_set_default_foreground(self.window, r, g, b)
             self.gEngine.console_blit(self.window, 0, 0, self.width,
                                       self.height, 0, self.w_pos, self.h_pos, 1.0, 1.0)
@@ -101,7 +101,7 @@ class Menus:
 
             for i in range(len(self.options)):
                 text = '(' + chr(letter_index) + ') ' + self.options[i]
-                self.gEngine.console_print(self.window, self.width / 2, y + 1, text)
+                self.gEngine.console_print(self.window, 1, y + 1, text)
                 y += 1
                 letter_index += 1
 
@@ -130,7 +130,9 @@ class Menus:
     def mouse_input(self):
         # Menu Mouse Input
         mouse_choice = None
-        mouse = libtcod.mouse_get_status()
+        mouse = libtcod.Mouse()
+        key, mouse = self.gEngine.handle_input(mouse=mouse)#libtcod.mouse_get_status()
+        #print(mouse.cx, mouse.cy)
         mx = mouse.cx - self.w_pos
         my = mouse.cy - self.h_pos
 
@@ -175,7 +177,7 @@ class Menus:
                     else:
                         t = '(' + chr(letter_index + i) + ') ' + self.options[i].capitalize()
                     text = color_text(t, color_f=libtcod.red)
-                    self.gEngine.console_print(self.window, self.width / 2, i + 1, text)
+                    self.gEngine.console_print(self.window, 1, i + 1, text)
                     self.mouse_highlight = True
                     mouse_choice = i
                     break
@@ -185,15 +187,15 @@ class Menus:
         # bug here, after selecting a choice, the next menu gets "clicked" as well.
         # FIXED. Just called mouse_get_status() on __init__ and before a return
         # to pick up unwanted input
-        if mouse.lbutton_pressed and self.mouse_highlight and not self.is_dragging:
+        if mouse.lbutton and self.mouse_highlight and not self.is_dragging:
             if not mouse.lbutton:
                 libtcod.mouse_get_status()
-                return mouse_choice
+            return mouse_choice
         return -1
 
     def key_input(self):
         # Menu Keyboard Input
-        key = libtcod.console_check_for_keypress()
+        key, mouse = self.gEngine.handle_input()# libtcod.console_check_for_keypress()
 
         index = key.c - ord('a')
 

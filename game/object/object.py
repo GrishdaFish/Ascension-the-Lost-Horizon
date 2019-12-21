@@ -113,19 +113,27 @@ class Object:
     def draw(self, fov_map, gEngine, is_player=False, force_display=False):
         # only show if it's visible to the player
         if force_display:
-            h, s, v = gEngine.console_get_char_background(self.con, self.x, self.y)
             # print gEngine.return_color_background(self.con,self.x,self.y)
-            col = libtcod.Color(0, 0, 0)
-            libtcod.color_set_hsv(col, h, s, v)
+            col = gEngine.get_map_tile_color(int(self.x), int(self.y))
+            brightness = gEngine.lightmask_get_mask_value(self.x, self.y)
             fr, fg, fb = self.color
             br, bg, bb = col
-            gEngine.console_put_char_ex(self.con, int(self.x), int(self.y), self.char, fr, fg, fb, br, bg,
-                                        bb)  # self.char,self.color,col)
-        elif libtcod.map_is_in_fov(fov_map, int(self.x), int(self.y)):
+            br *= brightness[0]
+            bg *= brightness[1]
+            bb *= brightness[2]
+            br = min(255, br)
+            bg = min(255, bg)
+            bb = min(255, bb)
+            gEngine.console_put_char_ex(self.con, int(self.x), int(self.y), self.char, fr, fg, fb,
+                                        int(br), int(bg), int(bb))  # self.char,self.color,col)
+
+        elif gEngine.map_is_in_fov(int(self.x), int(self.y)):
             # set the color and then draw the character that represents this object at its position
-            h, s, v = gEngine.console_get_char_background(self.con, int(self.x), int(self.y))
-            col = libtcod.Color(0, 0, 0)
-            libtcod.color_set_hsv(col, h, s, v)
+            # h, s, v = gEngine.console_get_char_background(self.con, int(self.x), int(self.y))
+            # col = libtcod.Color(int(h), int(s), int(v))
+            # libtcod.color_set_hsv(col, h, s, v)
+            col = gEngine.get_map_tile_color(int(self.x), int(self.y))
+            br, bg, bb = col
             fr, fg, fb = 0, 0, 0
             if self.flashing:
                 if self.flash_duration == 1:
@@ -134,26 +142,32 @@ class Object:
                     fr, rg, rb = c2
                     self.flash_duration = 0
                     self.flashing = False
-            else:
+            else:  # TODO CONSIDER calculate final colors in a separate function? This may be the only spot to do this
                 fr, fg, fb = self.color
                 brightness = gEngine.lightmask_get_mask_value(self.x, self.y)
                 fr *= brightness[0]
                 fg *= brightness[1]
                 fb *= brightness[2]
-            br, bg, bb = col
+                br *= brightness[0]
+                bg *= brightness[1]
+                bb *= brightness[2]
             fr = min(255, fr)
             fg = min(255, fg)
             fb = min(255, fb)
-            if is_player:
+            br = min(255, br)
+            bg = min(255, bg)
+            bb = min(255, bb)
+
+            if is_player:  # TODO NOTE This  will be needed if we do a scrolling map
                 gEngine.console_put_char_ex(self.con, gEngine.w / 2, gEngine.h / 2 - 6, self.char, int(fr), int(fg),
-                                            int(fb), br, bg, bb)
+                                            int(fb), int(br), int(bg), int(bb))
             else:
-                gEngine.console_put_char_ex(self.con, int(self.x), int(self.y), self.char, int(fr), int(fg), int(fb), br, bg,
-                                            bb)  # self.char,self.color,col)
+                gEngine.console_put_char_ex(self.con, int(self.x), int(self.y), self.char, int(fr), int(fg), int(fb),
+                                            int(br), int(bg), int(bb))  # self.char,self.color,col)
 
     def clear(self, gEngine):
         # erase the character that represents this object
-        gEngine.console_set_char(self.con, self.x, self.y, ' ')
+        gEngine.console_set_char(self.con, self.x, self.y, " ")
 
     def is_blocked(self, x, y, map, objects):
         # first test the map tile
