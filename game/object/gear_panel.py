@@ -395,9 +395,14 @@ class GearPanel:
             min_damage = self.equipped['1h'].item.equipment.damage[0] + self.get_w_lvl(self.get_quipped_weapon_type())  # adds w_lvl to damage
             max_damage = self.equipped['1h'].item.equipment.damage[1] + self.get_w_lvl(self.get_quipped_weapon_type())  # adds w_lvl to damage
             # TODO factor in weapon bonuses ( perks / skills / w.lvls )
-        if self.equipped['2h'] is not None and self.is_weapon(self.equipped['2h']) and not self.is_shield(self.equipped['2h']):
+        elif self.equipped['2h'] is not None and self.is_weapon(self.equipped['2h']) and not self.is_shield(self.equipped['2h']):
             min_damage += self.equipped['2h'].item.equipment.damage[0] + self.get_w_lvl(self.get_quipped_weapon_type(off_hand=True))  # adds w_lvl to damage
             max_damage += self.equipped['2h'].item.equipment.damage[1] + self.get_w_lvl(self.get_quipped_weapon_type(off_hand=True))  # adds w_lvl to damage
+            # TODO factor in weapon bonuses ( perks / skills / w.lvls )
+        else:  # deal with monster_melee
+            min_damage = self.equipped['1h'].item.equipment.damage[0]
+            max_damage = self.equipped['1h'].item.equipment.damage[1]
+
             # TODO factor in weapon bonuses ( perks / skills / w.lvls )
         final_damage = libtcod.random_get_int(0, min_damage, max_damage)
         return final_damage

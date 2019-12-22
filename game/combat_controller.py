@@ -84,7 +84,7 @@ def try_to_block(creature):
     if creature.gear.equipped['2h'] is not None:
         if creature.gear.equipped['2h'].item.equipment.subtype == 'Shield':
             roll = libtcod.random_get_int(0, 1, 10)  # half of to hit roll
-            roll += creature.get_stat("Block")
+            roll += creature.stat.get_stat("Block")
             #roll += creature.fighter.stat.get_stat("Strength")
             #roll += creature.fighter.get_skill('Shield').get_bonus()
             #roll -= get_armor_penalty(creature) * 2
