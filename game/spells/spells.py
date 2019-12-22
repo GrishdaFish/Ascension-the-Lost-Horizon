@@ -283,7 +283,7 @@ def target_tile(game, max_range=None, radius=None):
     targeting_window = TargetRender(radius, game.dungeon_console, game)
     renderers = [targeting_window.render]
     game.gEngine.handle_input(clear=True)
-    time.sleep(0.5)
+    time.sleep(0.1)
     while True:
 
         render.render_all(game, renderers)

@@ -155,7 +155,7 @@ class gEngine:
             if not key:
                 key = libtcod.Key()
             if not mouse or clear:
-                self.mouse = libtcod.Mouse()
+                mouse = libtcod.Mouse()
 
             for event in tcod_event.get():
                 if event.type == 'MOUSEMOTION':
@@ -207,6 +207,7 @@ class gEngine:
     def console_set_key_color(self, con, r, g, b):
         col = libtcod.Color(r, g, b)
         libtcod.console_set_key_color(self.console_dict[con], col)
+
     def sys_get_fps(self):
         if cEngine:
             return self.engine.mSysGetFPS()
