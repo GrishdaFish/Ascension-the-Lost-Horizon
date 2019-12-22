@@ -74,3 +74,50 @@
     bonus = 1
     penalty = 1
 
+[["armor"]]
+    name = "death spaulders"
+    cell = '='
+    type = "armor"
+    location = "Shoulders"
+    base_value = 40
+    description = "Ironically, Looks better on the living"
+    threat_level = 0.2
+    allowed_materials = 3 #1 for cloth, 2 for metal, 3 for both
+    bonus = 1
+    penalty = 1
+
+[["armor"]]
+    name = "magic cloak"
+    cell = '='
+    type = "armor"
+    location = "Cloak"
+    base_value = 20
+    description = "The name is rather misleading"
+    threat_level = 0.1
+    allowed_materials = 1 #1 for cloth, 2 for metal, 3 for both
+    bonus = 1
+    penalty = 1
+
+[["armor"]]
+    name = "endless ring"
+    cell = '='
+    type = "armor"
+    location = "Ring"
+    base_value = 10
+    description = "Feels like Pewter..."
+    threat_level = 0.01
+    allowed_materials = 2 #1 for cloth, 2 for metal, 3 for both
+    bonus = 0
+    penalty = 0
+
+[["armor"]]
+    name = "choker of destiny"
+    cell = '='
+    type = "armor"
+    location = "Neck"
+    base_value = 50
+    description = "Sad fate ahead"
+    threat_level = 0.01
+    allowed_materials = 3 #1 for cloth, 2 for metal, 3 for both
+    bonus = 0
+    penalty = 0

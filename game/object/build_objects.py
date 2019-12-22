@@ -328,23 +328,36 @@ class GameObjects:
                 mob = self.monsters[libtcod.random_get_int(0, 0, len(self.monsters) - 1)]
 
         fighter_component = Fighter(0, 0, 0)  # todo remove calls from fighter() later?
-        fighter_component.max_hp = mob.hp
-        fighter_component.hp = mob.hp
+        #fighter_component.max_hp = mob.hp                   # TODO REFACTOR
+        #fighter_component.hp = mob.hp                       # TODO REFACTOR
         fighter_component.death_function = monster_death  # function pointer
         fighter_component.ticker = game.ticker
-        fighter_component.speed = mob.speed
-        fighter_component.stats[0] = mob.strength
-        fighter_component.stats[1] = mob.dexterity
-        fighter_component.stats[2] = mob.intelligence
-        fighter_component.stats[3] = 10  # todo need this stat to be added to toml and file parser
+        #fighter_component.speed = mob.speed                 # TODO REFACTOR
+        #fighter_component.stats[0] = mob.strength           # TODO REFACTOR
+        #fighter_component.stats[1] = mob.dexterity          # TODO REFACTOR
+        #fighter_component.stats[2] = mob.intelligence       # TODO REFACTOR
+        #fighter_component.stats[3] = 10                     # TODO REFACTOR
         fighter_component.current_xp = mob.xp_value
+
+        fighter_component.game = game
 
         ai_component = WanderingMonster(x=x, y=y)  # BasicMonster()
 
         monster = Object(game.dungeon_console, x, y, mob.cell, mob.name, mob.color,
                          blocks=True, fighter=fighter_component, ai=ai_component)
         monster.game = game
-        monster.fighter.ticker.schedule_turn(monster.fighter.speed, monster)
+        #monster.fighter.ticker.schedule_turn(monster.fighter.speed, monster)  # TODO REFACTOR
+
+        monster.fighter.stat.set_stat_base("HP", mob.hp)
+        monster.fighter.hp = mob.hp             #TODO UNCOMMENT AFTER REFACTOR
+        monster.fighter.stat.set_stat_base("Speed", mob.speed)
+        monster.fighter.stat.set_stat_base("Strength", mob.strength)
+        monster.fighter.stat.set_stat_base("Dexterity", mob.dexterity)
+        monster.fighter.stat.set_stat_base("Intelligence", mob.intelligence)
+        monster.fighter.stat.set_stat_base("Constitution",
+                                           10)  # todo need this stat to be added to toml and file parser
+
+        monster.fighter.ticker.schedule_turn(monster.fighter.stat.get_stat("Speed"), monster) #TODO UNCOMMENT AFTER REFACTOR
 
         # todo fix when either AI director is ready to spawn mobs, or when effects system is enabled
         monster.fighter.gear.equipped['1h'] = self.build_equipment(game, x, y, type="monster_melee")

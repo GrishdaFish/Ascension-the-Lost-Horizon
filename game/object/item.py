@@ -96,18 +96,18 @@ class Equipment:
                  handed=0, dual_wield=None, damage_type='', threat_level=0,
                  allowed_materials=0, bonus=0, penalty=0, description='', accuracy=0, damage=None,
                  fuel=0, color=None, intensity=0.0):
-        self.min_power = min_power
-        self.max_power = max_power
-        self.crit_bonus = crit_bonus
+        self.min_power = min_power                      # TODO this is never used
+        self.max_power = max_power                      # TODO this is never used
+        self.crit_bonus = crit_bonus                    # TODO this is never used
         self.defense = defense
         self.type = type
         self.subtype = subtype
         self.location = location
-        self.best_defense_type = best_defense_type
-        self.worst_defense_type = worst_defense_type
+        self.best_defense_type = best_defense_type      # TODO this is never used
+        self.worst_defense_type = worst_defense_type    # TODO this is never used
         self.handed = handed
-        self.dual_wield = dual_wield
-        self.damage_type = damage_type
+        self.dual_wield = dual_wield                    # TODO this is obsolete now
+        self.damage_type = damage_type              # TODO this is obsolete, but used heavily throughout
         self.threat_level = threat_level
         self.allowed_materials = allowed_materials
         self.bonus = bonus
@@ -123,7 +123,7 @@ class Equipment:
 
         self.effects = []
 
-    def calc_damage(self):
+    """def calc_damage(self):
         total_damage = 0
         if self.damage is not None:
             num_dice = self.damage[0]  # num dice
@@ -134,7 +134,7 @@ class Equipment:
                 total_damage += libtcod.random_get_int(0, 1, sides)
             total_damage = (total_damage * multiplier) + bonus  # + effect_damage
         print(str(total_damage))
-        return total_damage
+        return total_damage"""
 
     ########################################################  equip is handled by equipped panel now
     def equip(self, target, game=None, owner=None, slot=0):  # TODO REFACTOR unnecessary arguments? this isn't marriage - find calls before deleting

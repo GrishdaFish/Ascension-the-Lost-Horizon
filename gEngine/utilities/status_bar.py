@@ -67,3 +67,15 @@ class StatusBar:
 
     def remove_bar(self, bars):
         pass
+
+    def hover_description(self):
+        names = [self.type.capitalize()]
+        if 'hp':
+            names.append(str(self.owner.hp) + " / " + str(self.owner.stat.get_stat_base("HP")))
+            names.append("Regen rate: " + str(self.owner.stat.get_stat("Regen")))
+        if 'mp':
+            pass
+        if 'xp':
+            pass
+        if 'torch':
+            pass

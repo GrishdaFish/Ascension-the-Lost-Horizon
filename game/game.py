@@ -200,7 +200,7 @@ class Game:
                         object.clear(self.gEngine)
 
                     if self.player_action == 'turn-used' or self.player_action == 'player-moved':
-                        self.ticker.schedule_turn(self.player.fighter.speed, self.player)
+                        self.ticker.schedule_turn(self.player.fighter.stat.get_stat("Speed"), self.player)
                         self.player.torch.update(self)
 
                         if self.monster_force_display[0]:
@@ -385,11 +385,15 @@ class Game:
         #mouse = libtcod.mouse_get_status()
         key, mouse = self.gEngine.handle_input()
         (x, y) = (mouse.cx, mouse.cy)
-
+        names = []
         # create a list with the names of all objects at the mouse's coordinates and in FOV
-        names = [obj.name for obj in self.objects
-                 if obj.x == x and obj.y == y and libtcod.map_is_in_fov(self.fov, obj.x, obj.y)]
-
+        #names = [obj.name for obj in self.objects
+        #         if obj.x == x and obj.y == y and libtcod.map_is_in_fov(self.fov, obj.x, obj.y)]
+        for obj in self.objects:
+            if obj.x == x and obj.y == y and libtcod.map_is_in_fov(self.fov, obj.x, obj.y):
+                names = obj.hover_description()
+            if obj.x == x and obj.y == y and not names:
+                names = [obj.name]
         return names
 
     def get_names_under_player(self):

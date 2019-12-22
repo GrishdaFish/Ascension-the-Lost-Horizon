@@ -5,11 +5,12 @@ import copy
 import logging
 
 from game.object.gear_panel import GearPanel
+from game.object.item import Equipment, Item
 from game.object.stat_panel import StatPanel
 
 sys.path.append(sys.path[0])
 import tcod as libtcod
-from game import combat
+from game import combat, combat_controller
 from game import bark
 from gEngine import lights
 
@@ -190,6 +191,34 @@ class Object:
     def blink(self):
         pass
 
+    def hover_description(self):
+        names = []
+        if self.fighter is not None:
+            names = [self.name, "HP: " + str(self.fighter.hp) + "/" + str(self.fighter.stat.get_stat("HP")), "Gear: "]
+            for each_gear in self.fighter.gear.gimmie_da_quips():
+                if each_gear is not None:
+                    names.append(each_gear.item.owner.name)
+                    if len(each_gear.item.equipment.effects) > 0:
+                        for each_effect in each_gear.item.equipment.effects:
+                            line = "%s: %d %s" % (each_effect.effect_name, each_effect.amount, each_effect.effect_real_name)
+                            names.append(line)
+
+        if self.item is not None:
+            names = [self.name, "Value: " + str(self.item.value)]
+            if self.item.equipment is not None:
+                if self.item.equipment is not None:
+                    names.append(self.item.equipment.description)
+                    if self.item.equipment.defense == 0:
+                        names.append("Defense: " + str(self.item.equipment.defense))
+                    if self.item.equipment.damage is not None:
+                        names.append("Damage: " + str(self.item.equipment.damage))
+                    if len(self.item.equipment.effects) > 0:
+                        for each_effect in self.item.equipment.effects:
+                            line = "%s: %d %s" % (each_effect.effect_name, each_effect.amount, each_effect.effect_real_name)
+                            names.append(line)
+            if self.item.spell is not None:
+                names.append(self.item.spell.type)
+        return names
 
 class Fighter:
     # combat-related properties and methods (monster, player, NPC).
@@ -203,55 +232,56 @@ class Fighter:
         self.death_function = death_function
         self.type = 'melee'
         self.money = money
-        self.speed = speed
+        # self.speed = speed  # TODO REFACTOR this is in skill panel now
         self.level = 1
         self.current_xp = xp_value
-        self.xp_to_next_level = 1 # if you don't set this to something before you use log, you gonna die.
+        self.xp_to_next_level = 1  # if you don't set this to something before you use log, you gonna die.
         self.xp_to_next_level = self.get_xp_tnl()
         self.inventory = []
         self.owner = None
         self.ticker = ticker
-        self.stats = [Str, Dex, Int, Con]   # REFACTOR this is in skill panel now
+        # self.stats = [Str, Dex, Int, Con]   # TODO REFACTOR this is in skill panel now
         self.unused_skill_points = 2
-        self.defense = 0    # REFACTOR in skill panel, not implemented
+        # self.defense = 0    # TODO REFACTOR in skill panel, not implemented
 
         self.depth = 0
         self.threat = 0.0
 
-        self.max_hp = self.stat.get_stat_base("HP")  # REFACTOR get hp from stats now
-        self.hp = self.stat.get_stat_base("HP")
+        self.max_hp = self.stat.get_stat("HP")  # REFACTOR get hp from stats now
+        self.hp = self.max_hp
         # self.hp = hp
 
-        self.armor_bonus = 0
-        self.armor_penalty = 0
+        # self.armor_bonus = 0  is now "Defense modifier" in stat panel
+        # self.armor_penalty = 0 is now "Evasion penalty" in stat panel
 
+        self.skills = copy.deepcopy(combat.skill_list)  # skill list needs to have its own copies
 
         '''self.max_mp = 1 + (2*self.stats[2])
         mp = self.max_mp
         self.mp = mp'''
-
-        # TODO  CONSIDER / REFACTOR replacing this requires a lot of changes in calls to
-        # TODO fighter.equipment, .light_source, .accessories, and .wielded throughout
+        ################################################################################################################
+        # TODO
+        #      .UPDATE. this should all be done now If no relics found in play test
+        #               then all this can safely be deleted
         # logically linked to self.gear.equipped
-        self.equipment = [ self.gear.equipped['Head'],
-                           self.gear.equipped['Shoulders'],
-                           self.gear.equipped['Arms'],
-                           self.gear.equipped['Hands'],
-                           self.gear.equipped['Torso'],
-                           self.gear.equipped['Legs'],
-                           self.gear.equipped['Feet'],
-                           self.gear.equipped['Cloak']
-                           ]
+        #self.equipment = [ self.gear.equipped['Head'],
+        #                   self.gear.equipped['Shoulders'],
+        #                   self.gear.equipped['Arms'],
+        #                   self.gear.equipped['Hands'],
+        #                   self.gear.equipped['Torso'],
+        #                   self.gear.equipped['Legs'],
+        #                   self.gear.equipped['Feet'],
+        #                   self.gear.equipped['Cloak']
+        #                    ]
         # logically linked to self.gear.light_source
-        self.light_source = self.gear.light_source
+        #self.light_source = self.gear.light_source
         # logically linked to self.gear.equipped
-        self.accessories = [self.gear.equipped['Neck'],
-                            self.gear.equipped['Ring']
-                            ]
+        #self.accessories = [self.gear.equipped['Neck'],
+        #                    self.gear.equipped['Ring']
+        #                    ]
         # logically linked to self.gear.equipped
-        self.wielded = [self.gear.equipped['1h'], self.gear.equipped['2h']]
-                                ############################################################
-        self.skills = copy.deepcopy(combat.skill_list)  # skill list needs to have its own copies
+        #self.wielded = [self.gear.equipped['1h'], self.gear.equipped['2h']]
+        ################################################################################################################
 
     def get_xp_tnl(self):       # TODO TESTING make sure values are stable and realistic
         lv_basis = self.level*2    # ARBITRARY BASIS FOR SCALING
@@ -276,7 +306,7 @@ class Fighter:
         self.level += 1
         # self.stat_panel.set_stat_by_name("HP", combat.hp_bonus(self.stats[3]))
         # self.hp = self.stat_panel.get_stat_by_name("HP")
-        add_hp = combat.hp_bonus(self.stat.get_stat_base("Constitution"))
+        add_hp = self.stat.get_stat_base("Constitution") / 4
         add_hp += self.stat.get_stat_base("HP")
         self.stat.set_stat_base("HP", add_hp)
         #self.max_hp += combat.hp_bonus(self.stats[3])
@@ -288,6 +318,7 @@ class Fighter:
             skill = self.get_skill(skill)
         self.unused_skill_points = skill.increase_level(self.unused_skill_points)
 
+    """
     def set_armor_bonus(self):
         bonus = 0
         for item in self.equipment:
@@ -308,7 +339,7 @@ class Fighter:
                 penalty += item.item.equipment.penalty
         penalty -= self.get_skill('Armor').get_bonus()
         self.armor_penalty = penalty
-
+    """
     def get_skill(self, name):
         for skill in self.skills:
             if skill.get_name() == name:
@@ -316,6 +347,7 @@ class Fighter:
         return None
 
     def ranged_targeted_attack(self, target, player=False, game=None):
+        # wehen you click a mob with a ranged weapon equipped it should pop up a menu to select from available projectiles for current weapon
         if not player:
             col = 2
         else:
@@ -325,7 +357,10 @@ class Fighter:
             game.message.message(msg, col)
 
     def attack(self, target, player=False, direction=None, game=None):
-        if not player:
+        print("Attacking")
+        combat_controller.attack(self, direction)
+
+        """if not player:
             col = 2
         else:
             col = 5
@@ -355,9 +390,9 @@ class Fighter:
                 if dmg is None:
                     dmg = 0
                 dmg += self.gear.equipped['1h'].item.equipment.calc_damage()
-                if self == game.player.fighter: # TODO this should apply to mobs, but for now just player
-                    self.gear.add_w_xp(self.gear.equipped['1h'].item.equipment.subtype, 1)  # TODO 1 xp per strike for now
-                # TODO if duals get that damage calc too
+                if self == game.player.fighter: # TODO this should apply to mobs, but for now just player because monster melee doesnt level
+                    self.gear.add_w_xp(self.gear.equipped['1h'].item.equipment.subtype, 100)  # TODO 100 xp per strike for now
+                # TODO if duals get that damage calc too, quick and dirty below:
                 dmg2 = None
                 if self.gear.equipped['2h'] is not None:
                     skill = self.get_skill(self.gear.equipped['2h'].item.equipment.damage_type)
@@ -367,7 +402,7 @@ class Fighter:
                         dmg2 = 0
                     dmg2 += self.gear.equipped['2h'].item.equipment.calc_damage()
                     if self == game.player.fighter:  # TODO this should apply to mobs, but for now just player
-                        self.gear.add_w_xp(self.gear.get_quipped_weapon_type(off_hand=True), 1)
+                        self.gear.add_w_xp(self.gear.get_quipped_weapon_type(off_hand=True), 100)
                 # TODO also, shield defense, the above makes shiedls do damage, WOOT !
                 if dmg2: # if dealing 2h damage
                     dmg = int(dmg + dmg2)
@@ -377,7 +412,7 @@ class Fighter:
                 # For empty slots
                 pass
             if dmg > 0:
-                if attack_roll < 10 + self.armor_bonus:
+                if attack_roll < 10 + self.gear.get_stat("Defense"):  # armor_bonus:
                     dmg *= 0.25
                     dmg = int(dmg)
                 # TODO CONSIDER this is where conditions are applied currently
@@ -415,7 +450,7 @@ class Fighter:
                     t = None
                 t = game.check_for_target(target.x - 1, target.y - 1)
                 if t:
-                    game.player.fighter.attack(t, player=True, game=game)
+                    game.player.fighter.attack(t, player=True, game=game)"""
 
     def take_damage(self, damage, attacker, game):
         # apply damage if possible
@@ -443,7 +478,6 @@ class Fighter:
         self.hp += amount
         if self.hp > self.stat.get_stat_base("HP"):
             self.hp = self.stat.get_stat_base("HP")
-
 
 class Torch:    # TODO REFACTOR move torch to item.py
     def __init__(self, owner):
@@ -512,7 +546,7 @@ class BasicMonster(AI_Base):
     # AI for a basic monster.
     def take_turn(self, game):
         # a basic monster takes its turn. if you can see it, it can see you
-        self.owner.fighter.ticker.schedule_turn(self.owner.fighter.speed, self.owner)
+        self.owner.fighter.ticker.schedule_turn(self.owner.fighter.stat.get_stat("Speed"), self.owner)
         if libtcod.map_is_in_fov(game.fov, self.owner.x, self.owner.y):
             # move towards player if far away
             if self.owner.distance_to(game.player) >= 2:
@@ -525,7 +559,17 @@ class BasicMonster(AI_Base):
                     self.owner.y = y
                     # close enough, attack! (if the player is still alive.)
             elif game.player.fighter.hp > 0:
-                self.owner.fighter.attack(game.player, game=game)
+                direction = None
+                if self.owner.x < game.player.x and self.owner.y == game.player.y:
+                    direction = 'east'
+                elif self.owner.x > game.player.x and self.owner.y == game.player.y:
+                    direction = 'west'
+                elif self.owner.y < game.player.y and self.owner.x == game.player.x:
+                    direction = 'south'
+                elif self.owner.y > game.player.y and self.owner.x == game.player.x:
+                    direction = 'north'
+                if direction:
+                    self.owner.fighter.attack(game.player, direction=direction, game=game)
         else:  # start wandering
             self.owner.ai = WanderingMonster(x=self.owner.x, y=self.owner.y)
             self.owner.ai.owner = self.owner
@@ -542,7 +586,7 @@ class WanderingMonster(AI_Base):
         AI_Base.__init__(self)
 
     def take_turn(self, game):
-        self.owner.fighter.ticker.schedule_turn(self.owner.fighter.speed, self.owner)
+        self.owner.fighter.ticker.schedule_turn(self.owner.fighter.stat.get_stat("Speed"), self.owner)
 
         if self.dest and self.owner.distance(self.dest_x, self.dest_y) <= 0:
             self.dest = False
@@ -607,7 +651,7 @@ class ConfusedMonster(AI_Base):
         AI_Base.__init__(self)
 
     def take_turn(self, game):
-        self.owner.fighter.ticker.schedule_turn(self.owner.fighter.speed, self.owner)
+        self.owner.fighter.ticker.schedule_turn(self.owner.fighter.stat.get_stat("Speed"), self.owner)
         if self.num_turns > 0:  # still confused...
             # move in a random direction, and decrease the number of turns confused
             self.owner.move(libtcod.random_get_int(0, -1, 1), libtcod.random_get_int(0, -1, 1), game.level.dungeon,
@@ -646,11 +690,11 @@ def monster_death(monster):
     if monster.ai.node:
         monster.ai.remove_from_node()
     # drop all of equipped gear from monsters
-    for item in monster.fighter.wielded:
+    for item in [monster.fighter.gear.gimmie_da_weapon(), monster.fighter.gear.gimmie_da_weapon(off_hand=True)]:
         if item:
             if item.item.equipment.type != 'monster_melee':
                 monster.fighter.inventory.append(item)
-    for item in monster.fighter.equipment:
+    for item in monster.fighter.gear.gimmie_da_armors():
         if item:
             monster.fighter.inventory.append(item)
     for item in monster.fighter.inventory:
