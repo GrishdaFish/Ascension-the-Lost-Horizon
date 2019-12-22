@@ -2,10 +2,13 @@ __author__ = ['Grishnak', 'noobspanker']
 import tcod as libtcod
 
 
-def attack(attacker, direction):
+def attack(attacker, direction, force_attack_target=None):
     # TODO need to add an attack type in the weapon that correlates to our attack patterns dict
-    targets = get_attack_pattern(attacker, direction)
-    multi_target(attacker, targets)
+    if force_attack_target:
+        single_target(attacker, force_attack_target.fighter)
+    else:
+        targets = get_attack_pattern(attacker, direction)
+        multi_target(attacker, targets)
 
 
 def multi_target(attacker, targets):

@@ -356,9 +356,12 @@ class Fighter:
         if game:
             game.message.message(msg, col)
 
-    def attack(self, target, player=False, direction=None, game=None):
+    def attack(self, target, player=False, direction=None, game=None, force_attack=False):
         print("Attacking")
-        combat_controller.attack(self, direction)
+        if force_attack:
+            combat_controller.attack(self, direction=None, force_attack_target=target)
+        else:
+            combat_controller.attack(self, direction)
 
         """if not player:
             col = 2
@@ -557,19 +560,21 @@ class BasicMonster(AI_Base):
                     x, y = libtcod.path_walk(game.path, True)
                     self.owner.x = x
                     self.owner.y = y
+
                     # close enough, attack! (if the player is still alive.)
             elif game.player.fighter.hp > 0:
-                direction = None
-                if self.owner.x < game.player.x and self.owner.y == game.player.y:
-                    direction = 'east'
-                elif self.owner.x > game.player.x and self.owner.y == game.player.y:
-                    direction = 'west'
-                elif self.owner.y < game.player.y and self.owner.x == game.player.x:
-                    direction = 'south'
-                elif self.owner.y > game.player.y and self.owner.x == game.player.x:
-                    direction = 'north'
-                if direction:
-                    self.owner.fighter.attack(game.player, direction=direction, game=game)
+                self.owner.fighter.attack(game.player, force_attack=True)
+            #     direction = None
+            #     if self.owner.x < game.player.x and self.owner.y == game.player.y:
+            #         direction = 'east'
+            #     elif self.owner.x > game.player.x and self.owner.y == game.player.y:
+            #         direction = 'west'
+            #     elif self.owner.y < game.player.y and self.owner.x == game.player.x:
+            #         direction = 'south'
+            #     elif self.owner.y > game.player.y and self.owner.x == game.player.x:
+            #         direction = 'north'
+            #     if direction:
+            #         self.owner.fighter.attack(game.player, direction=direction, game=game)
         else:  # start wandering
             self.owner.ai = WanderingMonster(x=self.owner.x, y=self.owner.y)
             self.owner.ai.owner = self.owner

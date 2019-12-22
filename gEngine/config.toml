@@ -5,7 +5,7 @@ screen_height = 55
 #font = 'terminal10x10_gs_tc.png'
 font = 'dejavu_wide16x16_gs_tc.png'
 name = 'Ascension, the Lost Horizon'
-version = '0.0.1a'
+version = '0.0.1b'
 font_layout = 8 #TCOD layout
 font_type = 4 #GREYSCALE type
 

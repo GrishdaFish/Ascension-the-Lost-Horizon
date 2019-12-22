@@ -1,2 +1,2 @@
-[2019-12-22 14:06:31,904] - main.INFO - [gEngine.log_message():134] - Starting new game
-[2019-12-22 14:06:32,053] - main.INFO - [gEngine.log_message():134] - Map made
+[2019-12-22 14:44:50,683] - main.INFO - [gEngine.log_message():134] - Starting new game
+[2019-12-22 14:44:50,823] - main.INFO - [gEngine.log_message():134] - Map made
