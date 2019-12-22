@@ -210,14 +210,9 @@ class Fighter:
     # combat-related properties and methods (monster, player, NPC).
     def __init__(self, hp, defense, power, death_function=None, Con=10, Str=10, Dex=10, Int=10, money=0, ticker=None,
                  speed=0, xp_value=0):
-        fist = Equipment(min_power=0, max_power=1, crit_bonus=0, defense=0,
-                  type='melee', subtype='Fist', handed=1, dual_wield=True, damage_type='Smash', threat_level=0,
-                  description='God-given Weapon', damage=[0, 1, 0, 0])
-        item_component = Item(equipment=fist)
-        fist_object = Object(None, 0, 0, ' ', 'Fist', (0, 0, 0), item=item_component)
 
         self.stat = StatPanel()   # damage, resistance, effects and conditions
-        self.gear = GearPanel(self, fist_object)         # equipped items and related controls
+        self.gear = GearPanel(self)         # equipped items and related controls
         # Achievement tracker will go here if implemented
 
         self.death_function = death_function
@@ -550,7 +545,17 @@ class BasicMonster(AI_Base):
                     self.owner.y = y
                     # close enough, attack! (if the player is still alive.)
             elif game.player.fighter.hp > 0:
-                self.owner.fighter.attack(game.player, game=game)
+                direction = None
+                if self.owner.x < game.player.x and self.owner.y == game.player.y:
+                    direction = 'east'
+                elif self.owner.x > game.player.x and self.owner.y == game.player.y:
+                    direction = 'west'
+                elif self.owner.y < game.player.y and self.owner.x == game.player.x:
+                    direction = 'south'
+                elif self.owner.y > game.player.y and self.owner.x == game.player.x:
+                    direction = 'north'
+                if direction:
+                    self.owner.fighter.attack(game.player, direction=direction, game=game)
         else:  # start wandering
             self.owner.ai = WanderingMonster(x=self.owner.x, y=self.owner.y)
             self.owner.ai.owner = self.owner

@@ -4,7 +4,7 @@ import tcod as libtcod
 
 def attack(attacker, direction):
     # TODO need to add an attack type in the weapon that correlates to our attack patterns dict
-    targets = get_attack_pattern(direction, attacker.game)
+    targets = get_attack_pattern(attacker, direction)
     multi_target(attacker, targets)
 
 
@@ -33,7 +33,7 @@ def single_target(attacker, target):
         # TODO when weapon crits are added they will get checked at the same time as conditions:
         if attacker.stat.conditions:
             for fx in attacker.stat.conditions:
-                fx.inflict_condition(target.fighter)
+                fx.inflict_condition(target)
 
         weapon_damage = attacker.gear.get_weapon_damage() - try_to_defend(target)
         if weapon_damage < 0:
@@ -51,7 +51,7 @@ def single_target(attacker, target):
         final_damage = weapon_damage + elemental_damage - mitigated_damage
         print("Damage" + str(final_damage))
         target.take_damage(final_damage, attacker.owner, attacker.game)
-        msg = attacker.owner.name.capitalize() + ' attacks ' + target.name + ' for ' + str(final_damage) + '!'
+        msg = attacker.owner.name.capitalize() + ' attacks ' + target.owner.name + ' for ' + str(final_damage) + '!'
 
         attacker.gear.add_w_xp(100)
 
@@ -62,16 +62,17 @@ def single_target(attacker, target):
 def check_elemental_dam_res(attacker, target):
     final_damage = 0
     damages = attacker.stat.get_elem_array()
-    resists = target.stat.get_elem_array(damage=False)
+    resists = target.stat.get_elem_array(resist=True)
     for dmg in damages:
-        final_damage += dmg - resists[damages.index(dmg)]
+        final_damage += int(dmg)
+        final_damage -= int(resists[damages.index(dmg)])
     return final_damage
 
 
 def try_to_defend(target):
     defense = target.stat.get_stat("Defense")
-    min_dam_mitigate = defense / 10
-    max_dam_mitigate = defense / 5
+    min_dam_mitigate = int(defense / 10)
+    max_dam_mitigate = int(defense / 5)
     damage_mitigated = libtcod.random_get_int(0, min_dam_mitigate, max_dam_mitigate)
     return damage_mitigated
 
@@ -138,38 +139,40 @@ attack_patterns = {
     }
 
 
-def get_attack_pattern(direction, game, pattern="default"):
+def get_attack_pattern(attacker, direction, pattern="default"):
     """
     Returns direction normalized attack patterns
     :param direction: the cardinal direction of the attack
     :param pattern:  the requested pattern
     :return: the normalized array of attacks
     """
-    attacks = attack_patterns[pattern]
-    if not attacks:  # if we fail to get a proper attack pattern, we'll default to, well, "default"
-        attacks = attack_patterns['default']
+    # attacks = attack_patterns[pattern]
+    # if not attacks:  # if we fail to get a proper attack pattern, we'll default to, well, "default"
+    #    attacks = attack_patterns['default']
+    target_locs = attack_patterns[pattern]
+    altered_locs = []
     if direction == "north":
-        return attacks
-    pattern = []
-    if direction == "south":
-        for cell in attacks:
-            pattern.append((cell[0], -cell[1]))  # just negate the second value ( y direction)
+        for cell in target_locs:
+            altered_locs.append(cell)
+    elif direction == "south":
+        for cell in target_locs:
+            altered_locs.append((cell[0], -cell[1]))  # just negate the second value ( y direction)
         # return p
-    if direction == "east":
-        for cell in attacks:  # we may need to negate cell[0], need to test
-            pattern.append((-cell[1], cell[0]))  # we swap the x and y then negate the new x
+    elif direction == "east":
+        for cell in target_locs:  # we may need to negate cell[0], need to test
+            altered_locs.append((-cell[1], cell[0]))  # we swap the x and y then negate the new x
         # return attacks
-    if direction == "west":  # we may have to do some negating here, testing required
-        for cell in attacks:
-            pattern.append((cell[1], cell[0]))  # we swap x and y directions
+    elif direction == "west":  # we may have to do some negating here, testing required
+        for cell in target_locs:
+            altered_locs.append((cell[1], cell[0]))  # we swap x and y directions
         # return attacks
 
     targets = []
-    for target in pattern:
-        if game.check_for_target(game.player.x + target[0], game.player.y + target[1]):
-            targets.append(game.check_for_target(game.player.x + target[0], game.player.y + target[1]))
-    for target in targets:
-        print("attack pattern returning targets: " + str(target))
+    for target in altered_locs:
+        if attacker.game.check_for_target(attacker.owner.x + target[0], attacker.owner.y + target[1]):
+            targets.append(attacker.game.check_for_target(attacker.owner.x + target[0], attacker.owner.y + target[1]))
+
+    print("attack pattern returning targets: " + str(targets))
     return targets
 
 # # below is semi psuedocode implementation

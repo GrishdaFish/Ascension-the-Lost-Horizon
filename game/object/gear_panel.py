@@ -1,5 +1,3 @@
-from game.object.item import Equipment, Item
-
 __author__ = 'noobspanker'
 import tcod as libtcod
 """
@@ -71,16 +69,14 @@ class GearPanel:
     """
         Will hold and manage all gear equipped on a figher
     """
-    def __init__(self, owner, fist):
+    def __init__(self, owner):
 
         self.owner = owner
         self.light_source = None
-        self.fist = fist
 
         self.weapon_panel_key = ['Combat Type', 'Damage Type', 'Can Dual', 'Can Shield', 'Level', 'EXP']
         self.weapon_panel = { # do not change indexes of values, add new values to end of arrays, TY!
             #   Key:        [combat_type, damage_type, can_dual, can_shield, level, xp, can_parry}
-            "Fist":         ['melee', 'Smash', True, True, 1, 0, False],
             "Shield":       ['melee', 'Shield', False, True, 1, 0, True],     #
             "Short Sword":  ['melee', 'Slash', True, True, 1, 0, False],       #
             "Long Sword":   ['melee', 'Slash', False, False, 1, 0, False],     #
@@ -103,8 +99,8 @@ class GearPanel:
         }
 
         self.equipped = {  # Key: 'location' : item     # placed here so you can compare to weapons ^ / armor V
-            '1h': self.fist,
-            '2h': self.fist,
+            '1h': None,
+            '2h': None,
             'Head': None,
             'Shoulders': None,
             'Arms': None,
@@ -196,16 +192,12 @@ class GearPanel:
             self.equipped['2h'] = gear
             self.activate_shield(gear)
 
-        elif self.is_armor(gear):       # TODO This does not deal with rings?
+        elif self.is_armor(gear):
             if self.equipped[gear.item.equipment.location] is not None:
                 self.unquip_it(self.equipped[gear.item.equipment.location])
             self.equipped[gear.item.equipment.location] = gear
             self.activate_armor(gear)
 
-        if self.equipped['1h'] is None:
-            self.equipped['1h'] = self.fist
-        if self.equipped['2h'] is None and not self.is_two_hander(self.equipped['1h']):
-            self.equipped['2h'] = self.fist
         if len(gear.item.equipment.effects) > 0:
             self.activate_effects(gear)
         # self.activate_mods(gear)
@@ -239,8 +231,7 @@ class GearPanel:
 
         # self.deactivate_mods(gear)
         # self.deactivate_perks(gear)
-        if gear.item.equipment.description != 'God-given Weapon':  # Don't unequip your own fists. Ouch
-            self.owner.inventory.append(gear)
+        self.owner.inventory.append(gear)
         self.owner.game.message.message(gear.name + " unequipped.", 1) # this is getting sent to flavor_country
 
     def activate_effects(self, gear):
@@ -339,11 +330,14 @@ class GearPanel:
     # WEAPON CAN BE DUAL EQUIPPED
     def can_dual(self, gear):
         if gear:
-            return self.weapon_panel[gear.item.equipment.subtype][3]
+            if hasattr(gear.item.equipment, 'subtype'):
+                return self.weapon_panel[gear.item.equipment.subtype][3]
 
     # IS THIS ACTOR ABLE TO PARRY WITH THIS WEAPON
     def can_parry(self, gear):
-        return self.weapon_panel[gear.item.equipment.subtype][6]
+        if gear:
+            if hasattr(gear.item.equipment, 'subtype') and gear.item.equipment.type != 'monster_melee':
+                return self.weapon_panel[gear.item.equipment.subtype][6]
 
     # TELLS ME IF ITS AN ARMOR TYPE
     def is_armor(self, gear):
@@ -367,23 +361,25 @@ class GearPanel:
 
     # GET WEAPON TYPE LEVEL
     def get_w_lvl(self, wep_type):
-        return self.weapon_panel[wep_type][4]
+        if wep_type in self.weapon_panel:
+            return self.weapon_panel[wep_type][4]
 
     # ADD XP TO WEAPON
     def add_w_xp(self, amount):
         # This is probably gonna need to do something about monster melee
-        if self.equipped['2h'] is None or self.is_shield(self.equipped['2h']):  # 1h or 1h+shield = full exp
-            self.weapon_panel[self.get_quipped_weapon_type()][5] += amount
-            if self.is_shield(self.equipped['2h']):
-                self.weapon_panel[self.get_quipped_weapon_type(off_hand=True)][5] += amount
-        elif self.equipped['2h'] is not None:                                   # duals split exp to each hand
-            self.weapon_panel[self.get_quipped_weapon_type()][5] += (amount / 2)
-            self.weapon_panel[self.get_quipped_weapon_type(off_hand=True)][5] += (amount / 2)
+        if self.is_weapon(self.equipped['1h']):
+            if self.equipped['2h'] is None or self.is_shield(self.equipped['2h']):  # 1h or 1h+shield = full exp
+                self.weapon_panel[self.get_quipped_weapon_type()][5] += amount
+                if self.is_shield(self.equipped['2h']):
+                    self.weapon_panel[self.get_quipped_weapon_type(off_hand=True)][5] += amount
+            elif self.equipped['2h'] is not None:                                   # duals split exp to each hand
+                self.weapon_panel[self.get_quipped_weapon_type()][5] += (amount / 2)
+                self.weapon_panel[self.get_quipped_weapon_type(off_hand=True)][5] += (amount / 2)
 
-        if self.weapon_panel[self.get_quipped_weapon_type()][5] > self.get_w_xptnl(self.get_quipped_weapon_type()):
-            self.w_lvl_up(self.get_quipped_weapon_type())
-        if self.weapon_panel[self.get_quipped_weapon_type(off_hand=True)][5] > self.get_w_xptnl(self.get_quipped_weapon_type(off_hand=True)):
-            self.w_lvl_up(self.get_quipped_weapon_type(off_hand=True))
+            if self.weapon_panel[self.get_quipped_weapon_type()][5] > self.get_w_xptnl(self.get_quipped_weapon_type()):
+                self.w_lvl_up(self.get_quipped_weapon_type())
+            if self.weapon_panel[self.get_quipped_weapon_type(off_hand=True)][5] > self.get_w_xptnl(self.get_quipped_weapon_type(off_hand=True)):
+                self.w_lvl_up(self.get_quipped_weapon_type(off_hand=True))
 
     def w_lvl_up(self, wep_type):
         self.weapon_panel[wep_type][4] += 1
@@ -395,13 +391,13 @@ class GearPanel:
     def get_weapon_damage(self):  # TODO consider idk if i like this here
         min_damage = 0
         max_damage = 0
-        if self.equipped['1h'] is not None:
-            min_damage = self.equipped['1h'].item.equipment.damage[0] + self.get_w_lvl(self.equipped['1h'])  # adds w_lvl to damage
-            max_damage = self.equipped['1h'].item.equipment.damage[1] + self.get_w_lvl(self.equipped['1h'])  # adds w_lvl to damage
+        if self.equipped['1h'] is not None and self.is_weapon(self.equipped['1h']):
+            min_damage = self.equipped['1h'].item.equipment.damage[0] + self.get_w_lvl(self.get_quipped_weapon_type())  # adds w_lvl to damage
+            max_damage = self.equipped['1h'].item.equipment.damage[1] + self.get_w_lvl(self.get_quipped_weapon_type())  # adds w_lvl to damage
             # TODO factor in weapon bonuses ( perks / skills / w.lvls )
-        if self.equipped['2h'] is not None and not self.is_shield(self.equipped['2h']):
-            min_damage += self.equipped['2h'].item.equipment.damage[0] + self.get_w_lvl(self.equipped['2h'])  # adds w_lvl to damage
-            max_damage += self.equipped['2h'].item.equipment.damage[1] + self.get_w_lvl(self.equipped['2h'])  # adds w_lvl to damage
+        if self.equipped['2h'] is not None and self.is_weapon(self.equipped['2h']) and not self.is_shield(self.equipped['2h']):
+            min_damage += self.equipped['2h'].item.equipment.damage[0] + self.get_w_lvl(self.get_quipped_weapon_type(off_hand=True))  # adds w_lvl to damage
+            max_damage += self.equipped['2h'].item.equipment.damage[1] + self.get_w_lvl(self.get_quipped_weapon_type(off_hand=True))  # adds w_lvl to damage
             # TODO factor in weapon bonuses ( perks / skills / w.lvls )
         final_damage = libtcod.random_get_int(0, min_damage, max_damage)
         return final_damage

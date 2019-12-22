@@ -228,11 +228,14 @@ class StatPanel:
             return self.panel['elemental'][name][1]
 
     # Damage=True to return array of elemental damages, False for resistances
-    def get_elem_array(self, damage=True):
-        val_index = 0 if damage else 1
+    def get_elem_array(self, resist=False):
+        val_index = 0
+        if resist:
+            val_index = 1
         val_array = []
-        for vals in self.panel['elements'].values:
-            val_array.append(vals[val_index])
+        for element in self.panel['elemental'].keys():
+            if element != "key":
+                val_array.append(self.panel['elemental'][element][val_index])
         return val_array
 
     ###################################################################################################################

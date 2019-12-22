@@ -88,8 +88,8 @@ class Effect:
     ##################################################################
     def trigger_probability(self, actor):
         triggered = False
-        prob = self.probability - int(self.target.stat.get_condition_resist(self.effect_name) / 4)
-        if libtcod.random_get_int(0, 0, 100) <= prob :
+        prob = self.probability - int(actor.stat.get_condition_resist(self.effect_name) / 4)
+        if libtcod.random_get_int(0, 0, 100) <= prob:
             triggered = True
         return triggered
 
