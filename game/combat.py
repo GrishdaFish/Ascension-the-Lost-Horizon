@@ -53,6 +53,8 @@ skill_list = [
     Skill('Weapon', 'Curvesword', 'Mastery in the use of swords with curved edges.'),
     Skill('Weapon', 'Axe', 'Mastery in the use of axes.'),
 ]
+
+##############################################Everything below is moving to combat controller or fighter
 basic_levels = [  # Total xp: Skill Points ## TODO DEPRECATE: now handled by fighter
     (1000,   2),
     (3000,   2),
@@ -76,13 +78,13 @@ basic_levels = [  # Total xp: Skill Points ## TODO DEPRECATE: now handled by fig
     (210000, 6)
 ]
 
-
+"""  moved to level up stuff
 def hp_bonus(con):
-    return 15 + (get_stat_bonus(con) * 2)
+    return 15 + (get_stat_bonus(con) * 2) """
 
 
-def next_level(level):      ## TODO DEPRECATE: now handled by fighter
-    return basic_levels[level]
+# def next_level(level):      ## TODO DEPRECATE: now handled by fighter
+#    return basic_levels[level]
 
 
 def get_stat_bonus(stat):
@@ -94,21 +96,21 @@ def get_armor_penalty(creature):
 
 
 def get_armor_class(creature):
-    return creature.fighter.get_armor_bonus()
+    return creature.fighter.stat.get_stat("Defense")
 
-
-def get_blocking_class(creature):
+    # try_to_block
+"""def get_blocking_class(creature):
     if creature.fighter.gear.equipped['2h'] is not None:
-        if creature.fighter.gear.equipped['2h'].item.equipment.subtype == 'shield':
+        if creature.fighter.gear.equipped['2h'].item.equipment.subtype == 'Shield':
             roll = libtcod.random_get_int(0, 1, 20)
             roll += get_stat_bonus(creature.fighter.stat.get_stat("Strength"))
             roll += creature.fighter.get_skill('Shield').get_bonus()
             roll -= get_armor_penalty(creature)*2
             return roll
-    return 0
+    return 0"""
 
-
-def get_deflection_class(creature):
+    # try_to_parry
+"""def get_deflection_class(creature):
     hands = [creature.fighter.gear.equipped['1h'], creature.fighter.gear.equipped['2h']]
     roll = 0
     if hands[1] is not None:
@@ -122,23 +124,25 @@ def get_deflection_class(creature):
                 roll += creature.fighter.get_skill('Parry').get_bonus()
                 roll -= get_armor_penalty(creature)*2
                 return roll
-    return roll
+    return roll"""
 
 
-def get_evasion_class(creature):
+    # being redefined as try_to_evade
+"""def get_evasion_class(creature):
     roll = libtcod.random_get_int(0, 1, 20)
     roll += get_stat_bonus(creature.fighter.stat.get_stat("Intelligence"))
     roll += creature.fighter.get_skill('Dodge').get_bonus()
     roll -= get_armor_penalty(creature)*2
-    return roll
+    return roll"""
 
 
-def get_melee_bonus(creature):
+    # being redefined in combat_controller as get_accuracy_bonus
+"""def get_melee_bonus(creature):
     roll = 0
     for weapon in [creature.fighter.gear.gimmie_da_weapon(), creature.fighter.gear.gimmie_da_weapon(off_hand=True)]:
         if weapon is not None:
             roll += weapon.item.equipment.accuracy
             if weapon.item.equipment.handed == 2:
                 break
-    return roll
+    return roll"""
 

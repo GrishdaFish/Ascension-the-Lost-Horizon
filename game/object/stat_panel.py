@@ -16,8 +16,11 @@ class StatPanel:
                 "key": ["Penalty", "Modifier", "Base"],
                 "HP": [0, 0, 15],
                 "Regen": [0, 0, 0],
+                "Accuracy": [0, 0, 1],
                 "Defense": [0, 0, 1],
-                "Evasion": [0, 0, 1],
+                "Block": [0, 0, 0],
+                "Parry": [0, 0, 0],
+                "Evasion": [0, 0, 0],
                 "Speed": [0, 0, 10],
                 "Strength": [0, 0, 10],
                 "Constitution": [0, 0, 10],
@@ -33,11 +36,11 @@ class StatPanel:
                 "Holy": [0, 0, libtcod.gold],
                 "Evil": [0, 0, libtcod.dark_grey],
                 # physical damage/resistance
-                "Poison": [0, 0, libtcod.green],
-                "Bleed": [0, 0, libtcod.dark_crimson],
+                #      "Poison": [0, 0, libtcod.green],
+                #      "Bleed": [0, 0, libtcod.dark_crimson],
                 # physical state rate/resistance
-                "Crit Rate": [0, 0, libtcod.light_grey],   # to crit and to evade crit rates stored here
-                "Crit Damage": [0, 0, libtcod.light_grey]  # crit damage and crit damage resist stored here
+                # "Crit Rate": [0, 0, libtcod.light_grey],   # to crit and to evade crit rates stored here
+                # "Crit Damage": [0, 0, libtcod.light_grey]  # crit damage and crit damage resist stored here
                 # petrify ?
             },
             "conditions": {
@@ -88,7 +91,8 @@ class StatPanel:
             if effect.index == 1:
                 self.set_condition_resist(effect.effect_name, (self.get_condition_resist(effect.effect_name) + effect.amount))
             self.conditions.append(effect)
-        print(self.panel)
+        #print(self.panel)
+
     def remove_effect(self, effect):
         """ Called by an effect object to deactivate from the panel
         :param effect: the effect instance to deactivate
@@ -222,6 +226,14 @@ class StatPanel:
     def get_elemental_resist(self, name):
         if name in self.panel['elemental'].keys():
             return self.panel['elemental'][name][1]
+
+    # Damage=True to return array of elemental damages, False for resistances
+    def get_elem_array(self, damage=True):
+        val_index = 0 if damage else 1
+        val_array = []
+        for vals in self.panel['elements'].values:
+            val_array.append(vals[val_index])
+        return val_array
 
     ###################################################################################################################
     # self.panel.conditions access ####################################################################################

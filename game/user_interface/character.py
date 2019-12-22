@@ -77,12 +77,12 @@ def character_info(con, width, height, game, x=0, y=0):
         game.gEngine.console_print(char_window, 1, 7, 'Stats: Str [%s], Dex [%s]' % (s, d))
         game.gEngine.console_print(char_window, 1, 8, '       Int [%s], Con [%s]' % (i, c))
 
-        bonus = color_text(str(game.player.fighter.armor_bonus), libtcod.green)
-        bonus2 = color_text('10 +%d' % game.player.fighter.armor_bonus, libtcod.green)
+        bonus = color_text(str(game.player.fighter.stat.get_stat_mod("Defense")), libtcod.green)
+        bonus2 = color_text('10 +%d' % game.player.fighter.stat.get_stat("Defense"), libtcod.green)
         game.gEngine.console_print(char_window, 1, 10, 'Bonus to Armor Roll  : [%s](%s) ' % (bonus, bonus2))
 
-        penalty = color_text(str(game.player.fighter.armor_penalty), libtcod.red)
-        penalty2 = color_text('1d20 -%d' % game.player.fighter.armor_penalty, libtcod.red)
+        penalty = color_text(str(game.player.fighter.stat.get_stat_pen("Evasion")), libtcod.red)
+        penalty2 = color_text('1d20 -%d' % game.player.fighter.stat.get_stat("Evasion"), libtcod.red)
         game.gEngine.console_print(char_window, 1, 11, 'Penalty to Dodge Roll: [%s](%s)' % (penalty, penalty2))
 
         speed = color_text(str(game.player.fighter.stat.get_stat("Speed")), libtcod.light_gray)
@@ -106,7 +106,7 @@ def character_info(con, width, height, game, x=0, y=0):
             game.gEngine.console_set_alignment(bar.con, int(libtcod.LEFT))
             y += 1
 
-        """
+        """   
         y = 2
         letter_index = ord('a')
         skill_max = 5
@@ -397,3 +397,4 @@ def do_string_output(game, stat_window, y, line):
     game.gEngine.console_print(stat_window, 2, y, line)
     y += 1
     return y
+

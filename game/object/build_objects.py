@@ -339,6 +339,8 @@ class GameObjects:
         #fighter_component.stats[3] = 10                     # TODO REFACTOR
         fighter_component.current_xp = mob.xp_value
 
+        fighter_component.game = game
+
         ai_component = WanderingMonster(x=x, y=y)  # BasicMonster()
 
         monster = Object(game.dungeon_console, x, y, mob.cell, mob.name, mob.color,

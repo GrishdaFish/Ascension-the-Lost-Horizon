@@ -38,10 +38,10 @@ class Effect:
         self.target = None         # actor receiving
         self.probability = 100     # % chance to trigger effect
         self.duration = 10         # inflicted duration in turns, passed to condition : we'll call it base 10 for now, UG w/ perks
-        self.ticker = ticker       # ***only give it a ticker if its an active condition
+        self.ticker = ticker       # ***only give it a ticker if its an active condition / persist = False
         self.can_cancel = None     # effect can be cancelled by item or spell - this variable is reserved for that if needed
         self.speed = DEFAULT_EFFECT_SPEED  # declared above ^
-        self.max_stack = 1         # max times effect can stack - we can start with base of 1
+        self.max_stack = 1         # max times effect can stack - we can start with base of 1 - not implemented
 
         if effect is None:
             self.generate_effect()
@@ -86,23 +86,24 @@ class Effect:
     ##################################################################
     # COMBAT #########################################################
     ##################################################################
-    def trigger_probability(self):
+    def trigger_probability(self, actor):
         triggered = False
-        if libtcod.random_get_int(0, 0, 100) <= self.probability:
+        prob = self.probability - int(self.target.stat.get_condition_resist(self.effect_name) / 4)
+        if libtcod.random_get_int(0, 0, 100) <= prob :
             triggered = True
         return triggered
 
     def inflict_condition(self, actor):
         print("Trying to inflict condition")
-        if self.panel_group == 'conditions' and self.trigger_probability:
+        if self.panel_group == 'conditions' and self.trigger_probability(actor):
             # check for stacking here if we allow it
             print("inflicted")
             self.activate_condition(actor)
 
     def inflict_damage(self):
         if self.panel_group != 'modifiers' and self.index == 0:  # damage is always the first stat in the index
-            #return self.amount
-            self.target.hp -= self.amount
+            damage = self.amount - self.target.stat.get_condition_resist(self.effect_name)
+            self.target.hp -= damage
 
     def get_resistance(self, effect_name):
         if self.panel_group != 'modifiers':
@@ -165,8 +166,8 @@ class Effect:
 
         if self.panel_group == 'conditions':
             self.persist = False  # is this a 1 time persistent stat modifier, like STR down or STUN?
-            self.probability = 100  # % chance to trigger effect
-            self.duration = 10  # inflicted duration in turns, passed to condition : we'll call it base 10 for now, UG w/ perks
+            self.probability = 10  # % chance to trigger effect
+            self.duration = 4  # inflicted duration in turns, passed to condition : we'll call it base 4 for now, UG w/ perks
             self.can_cancel = None  # effect can be cancelled by item or spell - this variable is reserved for that if needed
             self.speed = DEFAULT_EFFECT_SPEED  # declared above ^
             self.max_stack = 1

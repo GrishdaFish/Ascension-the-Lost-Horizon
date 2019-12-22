@@ -205,7 +205,7 @@ def inventory(con, player, game, width=80, height=43):
             text = 'Damage   (total): ' + color_text(damage, libtcod.green)
             game.gEngine.console_print(wielded_window, 1, 4, text)
             accuracy = item.item.equipment.accuracy
-            accuracy += game.player.fighter.get_skill(item.item.equipment.damage_type).get_bonus()
+            # accuracy += game.player.fighter.get_skill(item.item.equipment.damage_type).get_bonus()
             text = 'Accuracy (total): ' + color_text(str(accuracy), libtcod.green)
             game.gEngine.console_print(wielded_window, 1, 5, text)
 
@@ -369,7 +369,7 @@ def inventory(con, player, game, width=80, height=43):
             if (mouse.cy - 2) < 2:  # wielded gone, magic #2 = # of hands(always)-old ver.=len(player.fighter.wielded)
                 mouse_grabbed_index = mouse.cy - 2
                 if mouse_grabbed_index == 0:
-                    item =player.fighter.gear.equipped['1h']
+                    item = player.fighter.gear.equipped['1h']
                 if mouse_grabbed_index == 1:
                     item = player.fighter.gear.equipped['2h']
                 #item = player.fighter.wielded[mouse.cy - 2]
