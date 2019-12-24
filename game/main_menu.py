@@ -5,6 +5,7 @@ from gEngine.utilities.user_interface.menu import Menus
 import os
 import sys
 from gEngine import gEngine as _gEngine
+import time
 
 class MainMenu:
     def __init__(self, gEngine):

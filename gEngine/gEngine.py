@@ -19,13 +19,13 @@ if RELEASE:
     path = getattr(sys, "_MEIPASS", ".")
 else:
     path = sys.path[0]
-try:
-    path = os.path.join(path, 'gEngine', 'pyds', 'gEngine', 'pyds')
-    fp, pathname, description = imp.find_module('cy_light_mask', [path])
-    light_mask = imp.load_module('cy_light_mask', fp, pathname, description)
-except ImportError as e:
-    print(e)
-    from gEngine import light_mask, cEngine
+# try:
+#     path = os.path.join(path, 'gEngine', 'pyds', 'gEngine', 'pyds')
+#     fp, pathname, description = imp.find_module('cy_light_mask', [path])
+#     light_mask = imp.load_module('cy_light_mask', fp, pathname, description)
+# except ImportError as e:
+#     print(e)
+#     from gEngine import light_mask, cEngine
 try:
     from gEngine import cEngine
 except ImportError as e:
@@ -92,7 +92,7 @@ class gEngine:
         self.light_sources = []
         self.noise = libtcod.noise_new(1, libtcod.NOISE_SIMPLEX)
 
-        self.lightmask = light_mask.LightMask(self.w, 48)
+        # self.lightmask = light_mask.LightMask(self.w, 48)
 
         self.particles = []
         self.modules = []
@@ -161,6 +161,7 @@ class gEngine:
                 mouse = libtcod.Mouse()
 
             for event in tcod_event.get():
+                print(event)
                 if event.type == 'MOUSEMOTION':
                     self.mouse.cx = int(event.pixel[0] / 16)
                     self.mouse.cy = int(event.pixel[1] / 16)
@@ -187,6 +188,8 @@ class gEngine:
                 if event.type == "KEYDOWN":
                     if event.scancode in key_conv:
                         key.vk = key_conv[event.scancode]
+                if event.type == "WINDOWCLOSE":
+                    exit(69420)  # lmao
             return key, self.mouse
         else:
             key = libtcod.Key()
@@ -667,6 +670,20 @@ class gEngine:
             for tile in self.mMap:
                 if tile.x == x and tile.y == y:
                     return tile.explored
+    def map_is_transparent(self, x, y):
+        if cEngine:
+            # if SUBCELL:
+            #     x *= 2
+            #     y *= 2
+            returnable = (
+                self.engine.mDungeonIsExplored(x * 2, y * 2),
+                self.engine.mDungeonIsExplored(x * 2 + 1, y * 2),
+                self.engine.mDungeonIsExplored(x * 2, y * 2 + 1),
+                self.engine.mDungeonIsExplored(x * 2 + 1, y * 2 + 1)
+            )
+            return returnable
+        else:
+            pass
 
     def lightmask_set_ambient(self, ambient):
         if cEngine:

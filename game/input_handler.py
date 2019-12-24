@@ -193,4 +193,6 @@ def player_move_or_attack(game, dx, dy, direction=None):
     else:
         game.player.move(dx, dy, game.level.dungeon, game.objects)
         game.fov_recompute = True
+
+        print(game.gEngine.map_is_transparent(game.player.x,  game.player.y))
         return 'player-moved'

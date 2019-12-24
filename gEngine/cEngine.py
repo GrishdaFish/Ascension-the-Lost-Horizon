@@ -206,6 +206,12 @@ class gEngine(object):
     def mDungeonIsExplored(self, x, y):
         return _cEngine.gEngine_mDungeonIsExplored(self, x, y)
 
+    def mDungeonIsWalkable(self, x, y):
+        return _cEngine.gEngine_mDungeonIsWalkable(self, x, y)
+
+    def mDungeonIsTransparent(self, x, y):
+        return _cEngine.gEngine_mDungeonIsTransparent(self, x, y)
+
     def mLightmaskInit(self, w, h):
         return _cEngine.gEngine_mLightmaskInit(self, w, h)
 
