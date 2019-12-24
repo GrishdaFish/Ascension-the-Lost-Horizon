@@ -171,6 +171,7 @@ class GameObjects:
         item_component.spell = spell_component
         item_component.use_function = item_component.spell.cast  # function pointer
         item_component.value = int(potion.value)
+        item_component.stackable = True
 
         name = "potion of %s" % potion.name
         item = Object(game.dungeon_console, x, y, potion.cell, name, potion.color, item=item_component)
@@ -192,6 +193,7 @@ class GameObjects:
         item_component.spell = spell_component
         item_component.use_function = item_component.spell.cast  # function pointer
         item_component.value = int(scroll.value)
+        item_component.stackable = True
 
         name = "scroll of %s" % scroll.name
         item = Object(game.dungeon_console, x, y, scroll.cell, name, scroll.color, item=item_component)
@@ -277,8 +279,7 @@ class GameObjects:
             equip_component.accuracy = eq.accuracy
             equip_component.damage = eq.damage
             equip_component.damage_type = eq.damage_type
-            if equip_component.type == 'melee':
-                equip_component.subtype = eq.subtype
+            equip_component.subtype = eq.subtype
         elif equip_component.type == 'armor':
             eq.bonus += mat.armor_bonus
             eq.penalty += mat.armor_bonus
@@ -360,23 +361,22 @@ class GameObjects:
         monster.fighter.ticker.schedule_turn(monster.fighter.stat.get_stat("Speed"), monster) #TODO UNCOMMENT AFTER REFACTOR
 
         # todo fix when either AI director is ready to spawn mobs, or when effects system is enabled
-        monster.fighter.gear.equipped['1h'] = self.build_equipment(game, x, y, type="monster_melee")
+        # this is why effects aren't working, we have to equip it using gear panel for it to activate properly
+        # monster.fighter.gear.equipped['1h'] = self.build_equipment(game, x, y, type="monster_melee")
         if mob.can_equip_gear:
             r = libtcod.random_get_int(0, 0, 100)
-            if r > 85:  # 15 % chance the mob will have a weapon
-                monster.fighter.gear.equipped['1h'] = self.build_equipment(game, x, y, type="melee")
-
+            if r > 85:  # 15 % chance the mob will have a weapon (unless it spawns a shield
+                gear = self.build_equipment(game, x, y, type="melee")
+                if gear.item.equipment.subtype != "Shield":
+                    monster.fighter.gear.quip_it(gear)
+            # for slots in monster.fighter.gear.armor_panel:
+            #   if libtcod.random_get_int(0, 0, 100) < 10:   # 10% chance of gear on each slot
+        if monster.fighter.gear.equipped['1h'] is None:
+            monster.fighter.gear.quip_it(self.build_equipment(game, x, y, type="monster_melee"))
 
         for skill in monster.fighter.skills:
             skill.set_bonus(mob.defense_bonus)
-        # #print(monster.char)
-        # #print(mob.cell)
-        # e = entity.Entity(hp=mob.hp, x=monster.x, y=monster.y, name=monster.name, char=mob.cell,
-        #                         color=mob.color, s=mob.strength, i=mob.intelligence, d=mob.dexterity,
-        #                         xp=mob.xp_value)
-        # #e = actor.get_component('zombie', e)
-        # e.hp += combat.get_stat_bonus(e.constitution)
-        # monster = e.convert(monster)
+
         return monster
 
     def get_monster(self, name):

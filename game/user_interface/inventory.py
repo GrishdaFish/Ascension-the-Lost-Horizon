@@ -6,6 +6,12 @@ from gEngine.utilities.user_interface.dialog_box import *
 from gEngine.utilities.user_interface.tab import *
 import tcod as libtcod
 
+def init_shit(game, width, height, r, g, b):
+    window = game.gEngine.console_new(width / 2, height)
+    game.gEngine.console_set_default_foreground(window, r, g, b)
+    game.gEngine.console_print_frame(window, 0, 0, width / 2, height, True)
+    game.gEngine.console_set_default_background(window, 0, 0, 0)
+    return window
 
 def inventory(con, player, game, width=80, height=43):
     """
@@ -26,9 +32,7 @@ def inventory(con, player, game, width=80, height=43):
     :param height: height of the inventory screen
     :return: An item that has been used (potion, scroll, etc..)
     """
-
-    gear_list = player.fighter.gear.gimmie_da_armors() # REPLACING player.fighter.equipment
-
+    gear_list = player.fighter.gear.gimmie_da_armors()
 
     equip_height = 14
     wield_height = 8
@@ -38,35 +42,13 @@ def inventory(con, player, game, width=80, height=43):
     equip_y = wield_height
     compare_y = equip_height + wield_height
 
-    inventory_window = game.gEngine.console_new(width / 2, height)          ## TODO CONSIDER make helper function to reduce bloat
-    game.gEngine.console_set_default_foreground(inventory_window, r, g, b)
-    game.gEngine.console_print_frame(inventory_window, 0, 0, width / 2, height, True)
-    game.gEngine.console_set_default_background(inventory_window, 0, 0, 0)
-
-    equipment_window = game.gEngine.console_new(width / 2, equip_height)    ## TODO CONSIDER make helper function to reduce bloat
-    game.gEngine.console_set_default_foreground(equipment_window, r, g, b)
-    game.gEngine.console_print_frame(equipment_window, 0, 0, width / 2, equip_height, True)
-    game.gEngine.console_set_default_background(equipment_window, 0, 0, 0)
-
-    wielded_window = game.gEngine.console_new(width / 2, wield_height)      ## TODO CONSIDER make helper function to reduce bloat
-    game.gEngine.console_set_default_foreground(wielded_window, r, g, b)
-    game.gEngine.console_print_frame(wielded_window, 0, 0, width / 2, wield_height, True)
-    game.gEngine.console_set_default_background(wielded_window, 0, 0, 0)
-
-    compare_window = game.gEngine.console_new(width / 2, compare_height)    ## TODO CONSIDER make helper function to reduce bloat
-    game.gEngine.console_set_default_foreground(compare_window, r, g, b)
-    game.gEngine.console_print_frame(compare_window, 0, 0, width / 2, compare_height, True)
-    game.gEngine.console_set_default_background(compare_window, 0, 0, 0)
+    inventory_window = init_shit(game, width, height, r, g, b)
+    equipment_window = init_shit(game, width, equip_height, r, g, b)
+    wielded_window = init_shit(game, width, wield_height, r, g, b)
+    compare_window = init_shit(game, width, compare_height, r, g, b)
 
     check_boxes = []
-    slots = ['Torso    ',  # TODO DEPRECATE / REFACTOR all relations should be to gear_panel
-             'Head     ',
-             'Hands    ',
-             'Legs     ',
-             'Feet     ',
-             'Arms     ',
-             'Shoulders',
-             'Back     ']
+
     # self.buttons.append(Button(self, self.option_labels[0], self.width//6-5, self.height/2-1, True))
     exit_button = Button(label='Exit', game=game, x_pos=(width / 2) - 9, y_pos=height - 6,
                          window=inventory_window, dest_x=width / 2, dest_y=0)
@@ -318,6 +300,7 @@ def inventory(con, player, game, width=80, height=43):
                     else:
                         d_box.destroy_box()
                 if mouse.lbutton and item.item.equipment:
+                    time.sleep(.01)
                     if player.fighter.gear.light_source:
                         if player.fighter.gear.light_source.name == "magical light":
                             message = "You cannot remove this magical light!"
@@ -350,6 +333,7 @@ def inventory(con, player, game, width=80, height=43):
                                           con=inventory_window)
                         confirm = d_box.display_box()
                         if confirm == 1:
+                            time.sleep(.01)
                             item.item.use(game.player.fighter.inventory, game.player, game)
                             d_box.destroy_box()
                             inventory_items = []
@@ -366,7 +350,7 @@ def inventory(con, player, game, width=80, height=43):
         # game.gEngine.console_set_default_background(inventory_window, 0, 0, 0)
         # Wielded
         elif 0 <= mouse.cx <= ((width / 2) - 2):  # inventory screen dims
-            if (mouse.cy - 2) < 2:  # wielded gone, magic #2 = # of hands(always)-old ver.=len(player.fighter.wielded)
+            if -1 < (mouse.cy - 2) < 2:  # wielded gone, magic #2 = # of hands(always)-old ver.=len(player.fighter.wielded)
                 mouse_grabbed_index = mouse.cy - 2
                 if mouse_grabbed_index == 0:
                     item = player.fighter.gear.equipped['1h']
@@ -393,7 +377,7 @@ def inventory(con, player, game, width=80, height=43):
             # What in the son of a fuck is this about :-{>
             # elif (mouse.cy -2) > len(player.fighter.wielded)+1 and (mouse.cy -2 ) < len(player.fighter.wielded)+3 :
             # wielded no longer, exists so now its el magicka noir
-            elif 1 > (mouse.cy) > 3:
+            elif 3 < (mouse.cy - 2) < 5:
                 item = player.fighter.gear.light_source
                 if item is not None:
                     i = item.item.equipment.type.replace('_', ' ')

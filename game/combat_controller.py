@@ -25,17 +25,18 @@ def single_target(attacker, target):
     # Evasion chance always occurs, ends turn - no damage dealt
     if try_to_evade(target) > attack_roll:
         msg = attacker.owner.name.capitalize() + ' attacks ' + target.owner.name + ' but the attack was evaded!'
-        print("evaded")
+
     # Parry chance is basically a second chance to evade
     elif target.gear.can_parry(target.gear.equipped['1h']) or \
             target.gear.can_parry(target.gear.equipped['2h']) and \
             try_to_parry(target) > attack_roll:
         msg = attacker.owner.name.capitalize() + ' attacks ' + target.owner.name + ' but the attack was deflected!'
-        print("Parried")
+
     else:  # you hit, do some damage
         # TODO when weapon crits are added they will get checked at the same time as conditions:
         if attacker.stat.conditions:
             for fx in attacker.stat.conditions:
+                print(attacker.owner.name + " trying to inflict: " + fx.effect_name)
                 fx.inflict_condition(target)
 
         weapon_damage = attacker.gear.get_weapon_damage() - try_to_defend(target)
@@ -84,7 +85,7 @@ def try_to_block(creature):
     if creature.gear.equipped['2h'] is not None:
         if creature.gear.equipped['2h'].item.equipment.subtype == 'Shield':
             roll = libtcod.random_get_int(0, 1, 10)  # half of to hit roll
-            roll += creature.get_stat("Block")
+            roll += creature.stat.get_stat("Block")
             #roll += creature.fighter.stat.get_stat("Strength")
             #roll += creature.fighter.get_skill('Shield').get_bonus()
             #roll -= get_armor_penalty(creature) * 2

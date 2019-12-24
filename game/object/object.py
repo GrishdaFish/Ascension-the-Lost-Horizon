@@ -299,19 +299,26 @@ class Fighter:
         return sp_add
 
     def level_up(self):         # TODO DEVELOP make additional stat stuff happen - level up magic
+        self.level += 1
         self.current_xp -= self.xp_to_next_level
         self.xp_to_next_level = self.get_xp_tnl()
+        # TODO skill points aren't actually doing anything currently
         sp = self.get_lv_up_sp()
         self.unused_skill_points += sp
-        self.level += 1
-        # self.stat_panel.set_stat_by_name("HP", combat.hp_bonus(self.stats[3]))
-        # self.hp = self.stat_panel.get_stat_by_name("HP")
-        add_hp = self.stat.get_stat_base("Constitution") / 4
-        add_hp += self.stat.get_stat_base("HP")
-        self.stat.set_stat_base("HP", add_hp)
-        #self.max_hp += combat.hp_bonus(self.stats[3])
-        self.hp = self.stat.get_stat_base("HP")
-        #self.hp = hp
+
+        add_hp = 2                                              # you get 2 hp at least no matter what
+        add_hp += int(self.stat.get_stat("Constitution") / 4)   # 25% of con as bonus seems low @start/high for end game
+        add_hp += self.stat.get_stat_base("HP")                 # add bonus to current
+        self.stat.set_stat_base("HP", add_hp)                   # set it in stat_panel
+        self.hp = self.stat.get_stat("HP")                      # replenish hp to max
+
+        # these will all be decided by build type.
+        # For now im just giving each a random 0-2 point boost each level for shits
+        self.stat.set_stat_base("Strength", (self.stat.get_stat_base("Strength") + libtcod.random_get_int(0, 0, 2)))
+        self.stat.set_stat_base("Dexterity", (self.stat.get_stat_base("Dexterity") + libtcod.random_get_int(0, 0, 2)))
+        self.stat.set_stat_base("Constitution", (self.stat.get_stat_base("Constitution") + libtcod.random_get_int(0, 0, 2)))
+        self.stat.set_stat_base("Intelligence", (self.stat.get_stat_base("Intelligence") + libtcod.random_get_int(0, 0, 2)))
+
 
     def apply_skill_points(self, skill):
         if isinstance(skill, str):

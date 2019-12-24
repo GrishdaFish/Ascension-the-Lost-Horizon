@@ -63,8 +63,9 @@ class Effect:
     def deactivate_effect(self):
         """     deactivates this effect on the linked actors stat panel
         """
-        self.actor.stat.remove_effect(self)
-        self.actor = None
+        if self.actor:
+            self.actor.stat.remove_effect(self)
+            self.actor = None
 
     def activate_condition(self, target):
         # checks himself in stat panel for stack-ability
@@ -103,7 +104,8 @@ class Effect:
     def inflict_damage(self):
         if self.panel_group != 'modifiers' and self.index == 0:  # damage is always the first stat in the index
             damage = self.amount - self.target.stat.get_condition_resist(self.effect_name)
-            self.target.hp -= damage
+            if self.target.hp > 0:
+                self.target.take_damage(damage, self.actor.owner, self.target.game)
 
     def get_resistance(self, effect_name):
         if self.panel_group != 'modifiers':
