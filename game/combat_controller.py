@@ -25,17 +25,18 @@ def single_target(attacker, target):
     # Evasion chance always occurs, ends turn - no damage dealt
     if try_to_evade(target) > attack_roll:
         msg = attacker.owner.name.capitalize() + ' attacks ' + target.owner.name + ' but the attack was evaded!'
-        print("evaded")
+
     # Parry chance is basically a second chance to evade
     elif target.gear.can_parry(target.gear.equipped['1h']) or \
             target.gear.can_parry(target.gear.equipped['2h']) and \
             try_to_parry(target) > attack_roll:
         msg = attacker.owner.name.capitalize() + ' attacks ' + target.owner.name + ' but the attack was deflected!'
-        print("Parried")
+
     else:  # you hit, do some damage
         # TODO when weapon crits are added they will get checked at the same time as conditions:
         if attacker.stat.conditions:
             for fx in attacker.stat.conditions:
+                print(attacker.owner.name + " trying to inflict: " + fx.effect_name)
                 fx.inflict_condition(target)
 
         weapon_damage = attacker.gear.get_weapon_damage() - try_to_defend(target)

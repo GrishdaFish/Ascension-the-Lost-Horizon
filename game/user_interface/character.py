@@ -64,13 +64,7 @@ def character_info(con, width, height, game, x=0, y=0):
                                                   libtcod.dark_grey, char_window, type='xp', gEngine=game.gEngine)
         player_xp_bar.render(1, 4, game.gEngine)
         game.gEngine.console_set_alignment(player_hp_bar.con, int(libtcod.LEFT))
-        #game.gEngine.console_print_ex(char_window, 1, y, libtcod.BKGND_SET, libtcod.LEFT, '')
 
-        #game.gEngine.console_print(char_window, 1, 2,
-        #                           'Hit Points: %d/%d' % (game.player.fighter.hp, game.player.fighter.max_hp))
-
-        #game.gEngine.console_print(char_window, 1, 5, 'To Next Level: %d' % game.player.fighter.xp_to_next_level)
-        # str dex int con
         s = color_text(str(game.player.fighter.stat.get_stat_base("Strength")), libtcod.light_gray)
         d = color_text(str(game.player.fighter.stat.get_stat_base("Dexterity")), libtcod.light_gray)
         i = color_text(str(game.player.fighter.stat.get_stat_base("Intelligence")), libtcod.light_gray)
@@ -78,16 +72,32 @@ def character_info(con, width, height, game, x=0, y=0):
         game.gEngine.console_print(char_window, 1, 7, 'Stats: Str [%s], Dex [%s]' % (s, d))
         game.gEngine.console_print(char_window, 1, 8, '       Int [%s], Con [%s]' % (i, c))
 
+        hit_bonus = color_text(str(game.player.fighter.stat.get_stat("Accuracy")), libtcod.green)
+        game.gEngine.console_print(char_window, 1, 10, 'Bonus to Hit  : [%s] ' % hit_bonus)
+
         bonus = color_text(str(game.player.fighter.stat.get_stat_mod("Defense")), libtcod.green)
-        bonus2 = color_text('10 +%d' % game.player.fighter.stat.get_stat("Defense"), libtcod.green)
-        game.gEngine.console_print(char_window, 1, 10, 'Bonus to Armor Roll  : [%s](%s) ' % (bonus, bonus2))
+        # bonus2 = color_text('10 +%d' % game.player.fighter.stat.get_stat("Defense"), libtcod.green)
+        game.gEngine.console_print(char_window, 1, 11, 'Armor Rating  : [%s] ' % (bonus))
+
+        block = color_text(str(game.player.fighter.stat.get_stat("Block")), libtcod.green)
+        game.gEngine.console_print(char_window, 1, 12, 'Bonus to Block: [%s] ' % block)
+        parry = color_text(str(game.player.fighter.stat.get_stat("Parry")), libtcod.green)
+        game.gEngine.console_print(char_window, 1, 13, 'Parry chance  : [%s] ' % parry)
 
         penalty = color_text(str(game.player.fighter.stat.get_stat_pen("Evasion")), libtcod.red)
-        penalty2 = color_text('1d20 -%d' % game.player.fighter.stat.get_stat("Evasion"), libtcod.red)
-        game.gEngine.console_print(char_window, 1, 11, 'Penalty to Dodge Roll: [%s](%s)' % (penalty, penalty2))
+        # penalty2 = color_text('1d20 -%d' % game.player.fighter.stat.get_stat("Evasion"), libtcod.red)
+        game.gEngine.console_print(char_window, 1, 14, 'Evasion Rating: [%s]' % (penalty))
 
         speed = color_text(str(game.player.fighter.stat.get_stat("Speed")), libtcod.light_gray)
-        game.gEngine.console_print(char_window, 1, 13, 'Turn Speed: [%s]' % speed)
+        game.gEngine.console_print(char_window, 1, 16, 'Turn Speed: [%s]' % speed)
+
+        game.gEngine.console_print(char_window, 1, 18, 'Status Effects:')
+
+        y = 19
+        if game.player.fighter.stat.active_conditions:
+            for condition in game.player.fighter.stat.active_conditions:
+                line = '%s ' % condition.effect_name
+                y = do_string_output(game, char_window, y, line)
 
         r, g, b = libtcod.white
         game.gEngine.console_set_default_foreground(skill_window, r, g, b)
@@ -259,7 +269,7 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
 
         y = 3
         # prepare a big dumb ass string to output ######################################################################
-        y = do_string_output(game, stat_window, y, " Stats: Cur / Mod / Pen:")
+        y = do_string_output(game, stat_window, y, " Stats:        Cur / Mod / Pen:")
         # format modifiers
         mod_start_index = y
         for fx_name in game.player.fighter.stat.panel['modifiers']:
@@ -267,8 +277,8 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
                 mod = game.player.fighter.stat.get_stat_mod(fx_name)
                 pen = game.player.fighter.stat.get_stat_pen(fx_name)
                 cur = game.player.fighter.stat.get_stat_base(fx_name) + mod - pen
-                y = do_string_output(game, stat_window, y, "%s:  %d / %d / %d" %
-                                 (fx_name.ljust(12), cur, mod, pen))
+                y = do_string_output(game, stat_window, y, "%s:  %s / %s / %d" %
+                                 (fx_name.ljust(12), str(cur).ljust(3), str(mod).ljust(3), pen))
 
         y += 1
         y = do_string_output(game, stat_window, y, " Elemental Effects:")
@@ -279,18 +289,18 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
                              game.player.fighter.stat.panel['elemental'].values()):
             if stat != 'key':
                 stat = color_text(str(stat), val[2])
-                y = do_string_output(game, stat_window, y, "%s:  %d / %d" % (stat.ljust(12), val[0], val[1]))
+                y = do_string_output(game, stat_window, y, "%s:  %s /    %d" % (stat.ljust(12), str(val[0]).ljust(4), val[1]))
 
         y += 1
         y = do_string_output(game, stat_window, y, " Conditions:")
-        y = do_string_output(game, stat_window, y, "Effect: Damage / Resist / Trigger %")
+        y = do_string_output(game, stat_window, y, "Effect: Damage / Resist / Trigger%")
         # format conditions
         conditions_start_index = y
         for stat, val in zip(game.player.fighter.stat.panel['conditions'].keys(),
                              game.player.fighter.stat.panel['conditions'].values()):
             if stat != 'key':
                 stat = color_text(str(stat), val[3])
-                y = do_string_output(game, stat_window, y, "%s:  %d / %d / %d " % (stat.ljust(12), val[0], val[1], val[2]))
+                y = do_string_output(game, stat_window, y, "%s:  %s /   %s /   %d " % (stat.ljust(12), str(val[0]).ljust(4), str(val[1]).ljust(4), val[2]))
         ################################################################################################################
         game.gEngine.console_set_default_background(stat_window, 0, 0, 0)
 

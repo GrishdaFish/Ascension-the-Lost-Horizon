@@ -97,6 +97,7 @@ def load_monster_weapon(content):
         w = MonsterWeapon()
         w.name = weap.get('name')
         w.type = weap.get('type')
+        w.subtype = weap.get('subtype')
         w.handed = weap.get('handed')
         w.dual_wield = weap.get('dual_wield')
         w.damage_type = weap.get('damage_type')
@@ -327,6 +328,7 @@ class MonsterWeapon:
     def __init__(self):
         self.name = ""
         self.type = ""
+        self.subtype = ""
         self.handed = 0
         self.dual_wield = False
         self.damage = None

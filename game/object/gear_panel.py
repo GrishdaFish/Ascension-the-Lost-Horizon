@@ -198,12 +198,16 @@ class GearPanel:
             self.equipped[gear.item.equipment.location] = gear
             self.activate_armor(gear)
 
+        elif gear.item.equipment.type == 'monster_melee':  # this is just to hopefully catch any with no subtype
+            self.equipped['1h'] = gear
+
         if len(gear.item.equipment.effects) > 0:
             self.activate_effects(gear)
         # self.activate_mods(gear)
         # self.activate_perks(gear)
-        self.owner.inventory.remove(gear)  # TODO CONSIDER:should only do this if equip is successful? is that an issue?
-        self.owner.game.message.message(gear.name + " equipped.", 1)  # this is getting sent to flavor_country
+        if self.owner.game.player.fighter == self.owner:
+            self.owner.inventory.remove(gear)  # TODO CONSIDER:should only do this if equip is successful? is that an issue?
+            self.owner.game.message.message(gear.name + " equipped.", 1)  # this is getting sent to flavor_country
 
     def unquip_it(self, gear):
         """
@@ -226,7 +230,7 @@ class GearPanel:
         elif self.is_shield(gear):
             self.equipped['2h'] = None
         elif self.is_armor(gear):
-            self.equipped[gear.item.equipment.subtype] = None
+            self.equipped[gear.item.equipment.location] = None
             self.activate_armor(gear)
 
         # self.deactivate_mods(gear)
@@ -391,7 +395,10 @@ class GearPanel:
     def get_weapon_damage(self):  # TODO consider idk if i like this here
         min_damage = 0
         max_damage = 0
-        if self.equipped['1h'] is not None and self.is_weapon(self.equipped['1h']):
+        if self.equipped['1h'] is None and self.equipped['2h'] is None:
+            min_damage = 0
+            max_damage = 1
+        elif self.equipped['1h'] is not None and self.is_weapon(self.equipped['1h']):
             min_damage = self.equipped['1h'].item.equipment.damage[0] + self.get_w_lvl(self.get_quipped_weapon_type())  # adds w_lvl to damage
             max_damage = self.equipped['1h'].item.equipment.damage[1] + self.get_w_lvl(self.get_quipped_weapon_type())  # adds w_lvl to damage
             # TODO factor in weapon bonuses ( perks / skills / w.lvls )
@@ -399,7 +406,7 @@ class GearPanel:
             min_damage += self.equipped['2h'].item.equipment.damage[0] + self.get_w_lvl(self.get_quipped_weapon_type(off_hand=True))  # adds w_lvl to damage
             max_damage += self.equipped['2h'].item.equipment.damage[1] + self.get_w_lvl(self.get_quipped_weapon_type(off_hand=True))  # adds w_lvl to damage
             # TODO factor in weapon bonuses ( perks / skills / w.lvls )
-        else:  # deal with monster_melee
+        elif self.equipped['1h'].item.equipment.type == 'monster_melee':  # deal with monster_melee
             min_damage = self.equipped['1h'].item.equipment.damage[0]
             max_damage = self.equipped['1h'].item.equipment.damage[1]
 
