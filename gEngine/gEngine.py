@@ -13,7 +13,7 @@ import sys
 import os
 import numpy as np
 
-RELEASE = False
+RELEASE = True
 SUBCELL = True
 if RELEASE:
     path = getattr(sys, "_MEIPASS", ".")
@@ -106,6 +106,9 @@ class gEngine:
         self.image_id_counter = 0
         self.image_dict = {}
         self.console_dict = {}
+
+        self.random_instance = None
+        self.random_set_instance()
 
 
     def run(self):
@@ -655,9 +658,15 @@ class gEngine:
         libtcod.map_compute_fov(self.FOV, x, y)
 
     def map_is_explored(self, x, y):
-        for tile in self.mMap:
-            if tile.x == x and tile.y == y:
-                return tile.explored
+        if cEngine:
+            if SUBCELL:
+                x *= 2
+                y *= 2
+            return not self.engine.mDungeonIsExplored(x, y)
+        else:
+            for tile in self.mMap:
+                if tile.x == x and tile.y == y:
+                    return tile.explored
 
     def lightmask_set_ambient(self, ambient):
         if cEngine:
@@ -668,7 +677,7 @@ class gEngine:
     def lightmask_set_size(self, w, h):
         if cEngine:
             pass
-            self.engine.mLightmaskInit(w,h)
+            self.engine.mLightmaskInit(w, h)
         else:
             self.lightmask.width = w
             self.lightmask.height = h
@@ -778,3 +787,15 @@ class gEngine:
     def particle_draw(self, con, c='*'):
         for p in self.particles:
             self.console_put_char_ex(con, int(p.x), int(p.y), c, 255, 255, 255, 0, 0, 0)
+
+    def random_set_instance(self, seed=None):
+        if seed:
+            self.random_instance = libtcod.random.Random(seed=seed)
+        else:
+            self.random_instance = libtcod.random.Random()
+
+    def random_get_int(self, min, max):
+        return libtcod.random_get_int(self.random_instance, min, max)
+
+    def random_get_float(self, min, max):
+        return libtcod.random_get_float(self.random_instance, min, max)

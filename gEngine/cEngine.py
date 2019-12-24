@@ -17,7 +17,7 @@ else:
 try:
     import builtins as __builtin__
 except ImportError:
-    import builtins
+    import __builtin__
 
 def _swig_repr(self):
     try:
@@ -202,6 +202,9 @@ class gEngine(object):
 
     def mDungeonRenderScrollingMap2x(self, c, x, y):
         return _cEngine.gEngine_mDungeonRenderScrollingMap2x(self, c, x, y)
+
+    def mDungeonIsExplored(self, x, y):
+        return _cEngine.gEngine_mDungeonIsExplored(self, x, y)
 
     def mLightmaskInit(self, w, h):
         return _cEngine.gEngine_mLightmaskInit(self, w, h)
