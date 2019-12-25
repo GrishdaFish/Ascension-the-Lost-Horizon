@@ -1,1 +1,0 @@
-[2019-12-24 13:53:39,198] - main.INFO - [gEngine.log_message():137] - Starting new game

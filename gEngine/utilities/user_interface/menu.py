@@ -41,8 +41,8 @@ class Menus:
         self.gEngine = gEngine
         self.cl_options = cl_options
         self.img = None
-        if bg:
-            self.img = self.gEngine.image_load(bg)
+        # if bg:
+        #     self.img = self.gEngine.image_load(bg)
 
         self.screen_height = screen_height
         self.screen_width = screen_width

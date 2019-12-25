@@ -2,33 +2,38 @@ import tcod as libtcod
 
 
 def render_all(game, injected_render_list=None):  # break this up to render ui and other elements separately
+    game.gEngine.log_message("In render, becfore clear")
     game.gEngine.console_clear(game.dungeon_console)
+    game.gEngine.log_message("Map cleared")
     if game.fov_recompute:
+        game.gEngine.log_message("Recomputing fov")
         game.fov_recompute = False
         game.gEngine.map_compute_fov(game.player.x, game.player.y)
+        game.gEngine.log_message("Fov computed")
+    game.gEngine.log_message("updating lighting...")
     update_lighting(game)
-
+    game.gEngine.log_message("done, drawing map....")
     # self.gEngine.map_draw_fast(self.dungeon_console, self.player.x, self.player.y)
     game.gEngine.map_draw(game.dungeon_console, game.player.x, game.player.y)
-
+    game.gEngine.log_message("done, drawing objects...")
     draw_objects(game)
 
     # self.world.process()
-
+    game.gEngine.log_message("done... drawing UI...")
     draw_user_interface(game)
-
+    game.gEngine.log_message("done... drawing underplayer")
     player = game.get_names_under_player()
-
+    game.gEngine.log_message("done, flushing messages")
     game.message.flush_messages()
-
+    game.gEngine.log_message("done, rendering barks")
     game.bark_manager.render_barks()
-
+    game.gEngine.log_message("done, perferming injected rendering")
     if injected_render_list:
         for r in injected_render_list:
             r(game)
-
+    game.gEngine.log_message("done, rendering consoles")
     render_consoles(game)
-
+    game.gEngine.log_message("done, rendering complete.")
 
 def update_lighting(game):
     game.gEngine.lightmask_reset()
@@ -47,17 +52,24 @@ def update_lighting(game):
 
 
 def draw_objects(game):
+    game.gEngine.log_message("Drawing objects....")
     for object in game.objects:
         if object.npc:
+            game.gEngine.log_message("Drawing NPC...")
             object.draw(game.fov, game.gEngine, force_display=True)
+            game.gEngine.log_message("Done")
         if object.misc:
             if object.misc.type == 'up' or object.misc.type == 'down':
                 # Draw stairs if they are already found
                 if game.gEngine.map_is_explored(object.x, object.y):
+                    game.gEngine.log_message("Drawing stairs...")
                     object.draw(game.fov, game.gEngine, force_display=True)
+                    game.gEngine.log_message("done..")
 
             else:
+                game.gEngine.log_message("Drawing other misc objects..")
                 object.draw(game.fov, game.gEngine)
+                game.gEngine.log_message("done")
         else:
             if game.monster_force_display[0] and object.fighter:
                 object.draw(game.fov, game.gEngine, force_display=True)
@@ -65,7 +77,9 @@ def draw_objects(game):
                 object.draw(game.fov, game.gEngine, force_display=True)
             else:
                 object.draw(game.fov, game.gEngine)
+    game.gEngine.log_message("Attempting to draw player")
     game.player.draw(game.fov, game.gEngine)
+    game.gEngine.log_message("done")
 
 
 def draw_user_interface(game):

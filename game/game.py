@@ -118,30 +118,17 @@ class Game:
         self.deactivate()
 
     def run(self, key, mouse):
-        #close = self.handle_keys(key)
-        #if close is True:
-        #    return True
-        if self.newgame:
-            menus.town_menu(self.dungeon_console, 'Welcome to Town', self, self.inventory_width, self.gEngine.h,
-                            self.gEngine.w)
-            self.newgame = False
+        self.gEngine.log_message("running.")
 
+        while True:
 
-        while not libtcod.console_is_window_closed():
-
-            libtcod.map_compute_fov(self.fov, self.player.x, self.player.y)
-
-            #self.render_all()
+            self.gEngine.map_compute_fov(self.player.x, self.player.y)
+            self.gEngine.log_message("after fov compute")
             self.player_moved = False
-            #self.gEngine.console_flush()
-            # key = libtcod.Key()
-            # mouse = libtcod.Mouse()
-            # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
-
             # erase all objects at their old locations, before they move
             for object in self.objects:
                 object.clear(self.gEngine)
-
+            self.gEngine.log_message("after objects clear")
             # for particle in self.particles:
             #    particle.clear(self.gEngine)
 
@@ -152,27 +139,19 @@ class Game:
 
             self.player_action = 'didnt-take-turn'
             if is_player_turn:
+                self.gEngine.log_message("in player turn")
                 self.player_moved = False
-                #self.player_action = self.handle_keys(key)
-                ##Make sure the player takes his turn before continuing
-                ##Need to have certain actions take certain speeds
-                ##moving takes up the full speed, attacking dependant on weapon
-                ##inventory actions depend on what was done
                 while self.player_action == 'didnt-take-turn':
-
-                    # key = libtcod.Key()
-                    # mouse = libtcod.Mouse()
-                    # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
                     key, mouse = self.gEngine.handle_input()
+                    self.gEngine.log_message("Grabbed input")
                     self.hover_description.reset()
                     self.hover_description.update(mouse, self.get_names_under_mouse(), self.dungeon_height)
-                    self.player_action = input_handler.handle_keys(key, self)#self.handle_keys(key)
-                    if self.player_action == 'exit' or libtcod.console_is_window_closed():
-                        # self.logger.log.info('Exiting and saving game..')
+                    self.player_action = input_handler.handle_keys(key, self)
+                    self.gEngine.log_message("input handled")
+                    if self.player_action == 'exit':
                         self.gEngine.remove_module((self))
                         m = main_menu.MainMenu(self.gEngine)
                         self.gEngine.add_module(m)
-                        # self.save_game()
                         return
                     if mouse.lbutton_pressed:
                         #intensity = 1.0 # libtcod.random_get_float(0, 1.0, 1.5)
@@ -190,8 +169,8 @@ class Game:
                         self.player_moved = True
 
 
-                    if libtcod.console_is_window_closed():
-                        self.player_action = 'exit'
+                    # if libtcod.console_is_window_closed():
+                    #     self.player_action = 'exit'
 
                     self.hotbar.update(mouse, key, self)
                     self.bark_manager.update_barks()
@@ -216,19 +195,15 @@ class Game:
                                 self.message.message("Your detect items spell has expired.", libtcod.light_cyan)
                             else:
                                 self.loot_force_display[1] -= 1
-
-                    render.render_all(self, self.hover_description.render(self, True))# self.render_all()
+                    self.gEngine.log_message("Attempting to render...")
+                    render.render_all(self, self.hover_description.render(self, True))
+                    self.gEngine.log_message("after render")
                     self.gEngine.console_flush()
-                #if self.player_action == 'turn-used' or self.player_action == 'player-moved':
-                #    self.ticker.schedule_turn(self.player.fighter.speed, self.player)
-
-
-
+                    self.gEngine.log_message("flushed")
             # fast forward until the next object gets its turn
             self.ticker.get_next_tick()
             if self.player.fighter.current_xp >= self.player.fighter.xp_to_next_level:
                 self.player.fighter.level_up()
-    # check for game state = dead
 
     def setup_player(self):
         fighter_component = object.Fighter(hp=90, defense=2, power=5, death_function=self.player_death, money=800,

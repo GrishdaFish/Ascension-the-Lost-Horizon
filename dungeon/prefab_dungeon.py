@@ -441,7 +441,7 @@ class PrefabGenerator:
                 object.message = self.game.message
                 object.objects = self.game.objects
 
-        self.gEngine.map_new(self.width*2, self.height*2)
+        self.gEngine.map_new(self.width, self.height)
         self.gEngine.map_clear()
         self.set_draw_map(self.dungeon)
         fov_map = self.gEngine.get_fov_map()
@@ -587,7 +587,7 @@ class PrefabGenerator:
                     self.game.player.y = y
         # populate the level class with mandatory data
         if self.gEngine:
-            self.gEngine.map_new(self.width*2, self.height*2)
+            self.gEngine.map_new(self.width, self.height)
             self.gEngine.map_clear()
             self.set_draw_map(self.dungeon)
             fov_map = self.gEngine.get_fov_map()

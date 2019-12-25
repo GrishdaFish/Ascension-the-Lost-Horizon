@@ -113,15 +113,11 @@ class gEngine:
 
     def run(self):
         is_closed = None
-        while not is_closed:
-            is_closed = libtcod.console_is_window_closed()
-            # self.console_clear_all()
+        while True:
             self.handle_input()
-            #libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, k=self.key, m=self.mouse)
             for module in self.modules:
                 if module.active is True:
-                    is_closed = module.run(self.key, self.mouse)
-            # self.render_all()
+                    module.run(None, None)
 
     def render_all(self):
         self.console_flush()
@@ -133,14 +129,15 @@ class gEngine:
         module.on_exit()
 
     def log_message(self, message, level='info'):
-        if level == 'info':
-            self.logger.log.info(message)
-        elif level == 'debug':
-            self.logger.log.debug(message)
-        elif level == 'error':
-            self.logger.log.error(message)
-        else:
-            self.logger.log.info(message)
+        # if level == 'info':
+        #     self.logger.log.info(message)
+        # elif level == 'debug':
+        #     self.logger.log.debug(message)
+        # elif level == 'error':
+        #     self.logger.log.error(message)
+        # else:
+        #     self.logger.log.info(message)
+        pass
 
     def logger_set_level(self, level='debug'):
         pass
@@ -161,7 +158,7 @@ class gEngine:
                 mouse = libtcod.Mouse()
 
             for event in tcod_event.get():
-                print(event)
+                # print(event)
                 if event.type == 'MOUSEMOTION':
                     self.mouse.cx = int(event.pixel[0] / 16)
                     self.mouse.cy = int(event.pixel[1] / 16)
@@ -661,15 +658,20 @@ class gEngine:
         libtcod.map_compute_fov(self.FOV, x, y)
 
     def map_is_explored(self, x, y):
-        if cEngine:
-            if SUBCELL:
-                x *= 2
-                y *= 2
-            return not self.engine.mDungeonIsExplored(x, y)
-        else:
-            for tile in self.mMap:
-                if tile.x == x and tile.y == y:
-                    return tile.explored
+        try:
+            if cEngine:
+                if SUBCELL:
+                    x *= 2
+                    y *= 2
+
+                return self.engine.mDungeonIsExplored(x, y)
+            else:
+                for tile in self.mMap:
+                    if tile.x == x and tile.y == y:
+                        return tile.explored
+        except Exception(e):
+            print(e)
+
     def map_is_transparent(self, x, y):
         if cEngine:
             # if SUBCELL:

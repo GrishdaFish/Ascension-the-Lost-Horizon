@@ -3,7 +3,7 @@
 [game_options]
     fullscreen = false
     key_set = 'wasd'
-    fps = 0
+    fps = 30
 
     [keys.wasd]
         key_north = "w"
