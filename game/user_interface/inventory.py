@@ -7,6 +7,7 @@ from gEngine.utilities.user_interface.tab import *
 import tcod as libtcod
 
 def init_shit(game, width, height, r, g, b):
+    """ utility function for initializing consoles - params as stated  """
     window = game.gEngine.console_new(width / 2, height)
     game.gEngine.console_set_default_foreground(window, r, g, b)
     game.gEngine.console_print_frame(window, 0, 0, width / 2, height, True)
@@ -22,17 +23,17 @@ def inventory(con, player, game, width=80, height=43):
         Fix Weapons and Equipment keyboard handling
         Fix duplication bug when equipping items (fixed)
         Fix take off weapon confirmation when equipping an item (fixed)
-        2 handed code needs work (?)
+        2 handed code needs work (?) - *** update: should be ok now
         keyboard input is sluggish. Might have to update libtcod to fix
 
     :param con: Destination console (not used atm)
     :param player: The main player object
-    :param game: The main game object
+    :param game: The main game object   # TODO DEPRECATE player got game now, minimize your calls
     :param width: width of the inventory screen
     :param height: height of the inventory screen
     :return: An item that has been used (potion, scroll, etc..)
     """
-    gear_list = player.fighter.gear.gimmie_da_armors()
+    #gear_list = player.fighter.gear.gimmie_da_armors()  # player's current gear
 
     equip_height = 14
     wield_height = 8
@@ -40,8 +41,8 @@ def inventory(con, player, game, width=80, height=43):
 
     r, g, b = libtcod.white
     equip_y = wield_height
-    compare_y = equip_height + wield_height
-
+    compare_y = equip_height + wield_height + 1  # stupid offset is killing me
+    # 16 lines compressed to init shit function above:
     inventory_window = init_shit(game, width, height, r, g, b)
     equipment_window = init_shit(game, width, equip_height, r, g, b)
     wielded_window = init_shit(game, width, wield_height, r, g, b)
@@ -300,31 +301,13 @@ def inventory(con, player, game, width=80, height=43):
                     else:
                         d_box.destroy_box()
                 if mouse.lbutton and item.item.equipment:
-                    time.sleep(.01)
-                    if player.fighter.gear.light_source:
+                    if item.item.equipment.type == 'light_source' and player.fighter.gear.light_source:
                         if player.fighter.gear.light_source.name == "magical light":
                             message = "You cannot remove this magical light!"
                             w = len(message) + 2
                             d_box = DialogBox(game, w, 10, width / 4, height / 2, message, con=inventory_window)
                             confirm = d_box.display_box()
-                        else: ###### TODO FIX THE REPEATING LOGIC :)
-                            i_n = color_text(item.name.capitalize(), item.color)
-                            message = 'Do you want to put %s on?' % i_n
-                            w = len(message) + 2
-                            d_box = DialogBox(game, w, 10, width / 4, height / 2, message, type='option', con=inventory_window)
-                            confirm = d_box.display_box()
-                            if confirm == 1:
-                                item.item.use(game.player.fighter.inventory, game.player, game)
-                                d_box.destroy_box()
-                                inventory_items = []
-                                check_boxes = []
-                                for x in range(len(player.fighter.inventory)):
-                                    check_boxes.append(CheckBox(x=1, y=x + 3))
-                                    i = color_text(player.fighter.inventory[x].name.capitalize(),
-                                                   player.fighter.inventory[x].color)
-                                    if player.fighter.inventory[x].item.check_stackable:
-                                        i += ' (%d)' % player.fighter.inventory[x].item.qty
-                                    inventory_items.append(i)
+
                     else:
                         i_n = color_text(item.name.capitalize(), item.color)
                         message = 'Do you want to put %s on?' % i_n
@@ -350,6 +333,7 @@ def inventory(con, player, game, width=80, height=43):
         # game.gEngine.console_set_default_background(inventory_window, 0, 0, 0)
         # Wielded
         elif 0 <= mouse.cx <= ((width / 2) - 2):  # inventory screen dims
+            gear_list = player.fighter.gear.gimmie_da_armors()  # player's current gear
             if -1 < (mouse.cy - 2) < 2:  # wielded gone, magic #2 = # of hands(always)-old ver.=len(player.fighter.wielded)
                 mouse_grabbed_index = mouse.cy - 2
                 if mouse_grabbed_index == 0:
@@ -538,6 +522,8 @@ def inventory(con, player, game, width=80, height=43):
 
 
 def show_effects(item, game, compare_window):
+    """ utility function for adding effects to item descriptions """
+    # TODO revisit after descriptions move to hover_description
     if item.item.equipment.effects is not None:
         if len(item.item.equipment.effects) != 0:
             game.gEngine.console_print_ex(compare_window, 1, 8, libtcod.BKGND_SET, libtcod.LEFT,

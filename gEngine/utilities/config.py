@@ -49,9 +49,9 @@ class EngineConfig:
         path2 = os.path.join(path, 'gEngine', 'config.toml')
         if not os.path.exists(path2):
             default_config = ("[engine_config] \n"
-                             "screen_width = 80 \n" 
-                             "screen_height = 55 \n" 
-                             "font = 'terminal10x10_gs_tc.png'")
+                              "screen_width = 80 \n" 
+                              "screen_height = 55 \n" 
+                              "font = 'terminal10x10_gs_tc.png'")
 
             with open(os.path.join(path, 'gEngine', 'config.toml'), 'w') as f:
                 f.write(default_config)

@@ -149,6 +149,7 @@ class Effect:
         self.effect_real_name = stat_panel.panel[self.panel_group]['key'][self.index]
 
     def generate_effect(self):  # TODO this is a basic bitch generator, fix it up
+        # when you init an effect you can pass a name to get a specific effect type
         if self.effect_name is None:
             stat_panel = StatPanel()
             self.panel_group = random.choice(list(stat_panel.panel))
