@@ -5,7 +5,7 @@ import tcod as libtcod
 
 def explosion(num_particles, particle_array, x, y, random_decay=True, bounce=True, color=None):
     for i in range(num_particles):
-        particle_array.append(Particle(x, y, 0.15, 1.0, random_decay=random_decay, bounce=bounce, color=None))
+        particle_array.append(Particle(x, y, 0.05, 1.2, random_decay=random_decay, bounce=bounce, color=color))
 
 
 def nova(num_particles, particle_array, x, y, random_decay=False, bounce=False):
@@ -106,9 +106,12 @@ class Particle:
             self.angle = angle
         self.dir_x = math.cos(self.angle * self.velocity)
         self.dir_y = math.sin(self.angle * self.velocity)
-        self.color = uniform_intensity_burst(color)
+        if color:
+            self.color = color  # uniform_intensity_burst(color)
+        else:
+            self.color = uniform_intensity_burst(color)
 
-    def update(self, lightmask=None, map=None):
+    def update(self, gEngine):
         if self.dead:
             return
 
@@ -119,8 +122,8 @@ class Particle:
             self.dead = True
             return
 
-        if map:
-            collide = map[int(newx)][int(newy)].blocked
+        if gEngine:
+            collide = not gEngine.engine.mDungeonIsWalkable(int(newx), int(newy))  # map[int(newx)][int(newy)].blocked
             if collide:
                 if self.can_bounce:
                     # determine angle of bounce with black magic
@@ -141,12 +144,12 @@ class Particle:
             self.x = newx
             self.y = newy
             self.velocity -= self.decay
-            light = (self.color[0], self.color[1], self.color[2], 2.5)
-            if lightmask:
-                lightmask.add_light(int(self.x), int(self.y), self.color)
+            # light = (self.color[0], self.color[1], self.color[2], 2.5)
+            # if lightmask:
+            #     lightmask.add_light(int(self.x), int(self.y), self.color)
 
     def draw(self, gEngine):  # change this to lightmap drawing once subcell res is implemented
-        gEngine.console_put_char_ex(0, int(self.x), int(self.y), " ", 255, 255, 255, 0, 0, 0)
+        gEngine.image_put_pixel(-1, int(self.x), int(self.y), int(self.color[0]), int(self.color[1]), int(self.color[2]))
 
     def get_angle(self, dx, dy):
         self.angle = math.atan2(float(dy), float(dx))

@@ -2,38 +2,29 @@ import tcod as libtcod
 
 
 def render_all(game, injected_render_list=None):  # break this up to render ui and other elements separately
-    game.gEngine.log_message("In render, becfore clear")
     game.gEngine.console_clear(game.dungeon_console)
-    game.gEngine.log_message("Map cleared")
     if game.fov_recompute:
-        game.gEngine.log_message("Recomputing fov")
         game.fov_recompute = False
         game.gEngine.map_compute_fov(game.player.x, game.player.y)
-        game.gEngine.log_message("Fov computed")
-    game.gEngine.log_message("updating lighting...")
+
+    game.gEngine.particle_update()
     update_lighting(game)
-    game.gEngine.log_message("done, drawing map....")
-    # self.gEngine.map_draw_fast(self.dungeon_console, self.player.x, self.player.y)
+
     game.gEngine.map_draw(game.dungeon_console, game.player.x, game.player.y)
-    game.gEngine.log_message("done, drawing objects...")
+
+    game.gEngine.particle_draw(game.dungeon_console)
+
+    game.gEngine.map_blit(game.dungeon_console)
     draw_objects(game)
 
-    # self.world.process()
-    game.gEngine.log_message("done... drawing UI...")
     draw_user_interface(game)
-    game.gEngine.log_message("done... drawing underplayer")
     player = game.get_names_under_player()
-    game.gEngine.log_message("done, flushing messages")
     game.message.flush_messages()
-    game.gEngine.log_message("done, rendering barks")
     game.bark_manager.render_barks()
-    game.gEngine.log_message("done, perferming injected rendering")
     if injected_render_list:
         for r in injected_render_list:
             r(game)
-    game.gEngine.log_message("done, rendering consoles")
     render_consoles(game)
-    game.gEngine.log_message("done, rendering complete.")
 
 def update_lighting(game):
     game.gEngine.lightmask_reset()

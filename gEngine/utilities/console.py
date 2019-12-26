@@ -90,8 +90,11 @@ class Console:
     def capture_input(self):
         ##handling keyboard input and parses it
         key = libtcod.Key()
+
         mouse = libtcod.Mouse()
-        libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+        #libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS, key, None)
+        key, mouse = self.game.gEngine.handle_input()
+        # key = libtcod.console_check_for_keypress(libtcod.EVENT_KEY)
         if key.vk is libtcod.KEY_ESCAPE:
             self.input_string = ''
             return True
@@ -119,8 +122,8 @@ class Console:
             self.input_string = ''
             return False
 
-        if key.vk is libtcod.KEY_TEXT:
-            self.input_list.append(key.text)
+        if key.c: # is libtcod.KEY_TEXT:
+            self.input_list.append(chr(key.c))
             self.input_string = ''.join(self.input_list)
             return False
 

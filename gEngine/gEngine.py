@@ -146,6 +146,8 @@ class gEngine:
         key_conv = {
             44: libtcod.KEY_SPACE,
             41: libtcod.KEY_ESCAPE,
+            42: libtcod.KEY_BACKSPACE,
+            40: libtcod.KEY_ENTER,
             80: libtcod.KEY_LEFT,
             79: libtcod.KEY_RIGHT,
             82: libtcod.KEY_UP,
@@ -156,24 +158,35 @@ class gEngine:
                 key = libtcod.Key()
             if not mouse or clear:
                 mouse = libtcod.Mouse()
-
+            # TODO THIS CODE IS PERFECTLY FINE. NOTHING TO SEE HERE.
             for event in tcod_event.get():
-                # print(event)
                 if event.type == 'MOUSEMOTION':
-                    self.mouse.cx = int(event.pixel[0] / 16)
-                    self.mouse.cy = int(event.pixel[1] / 16)
+                    # TODO: no touchy
+                    try:  # to protect my beautiful code
+                        self.mouse.cx = int(event.pixel[0] / 16)
+                        self.mouse.cy = int(event.pixel[1] / 16)
+                    except ZeroDivisionError:
+                        pass  # nothing to see here....
 
                 if event.type == 'MOUSEBUTTONDOWN':
-                    self.mouse.cx = int(event.pixel[0] / 16)
-                    self.mouse.cy = int(event.pixel[1] / 16)
+                    try:  # Todo move along
+                        self.mouse.cx = int(event.pixel[0] / 16)
+                        self.mouse.cy = int(event.pixel[1] / 16)
+                    except ZeroDivisionError:
+                        pass
+
                     if event.button == tcod_event.BUTTON_LEFT:
                         self.mouse.lbutton = True
                     if event.button == tcod_event.BUTTON_RIGHT:
                         self.mouse.rbutton = True
 
                 if event.type == "MOUSEBUTTONUP":
-                    self.mouse.cx = int(event.pixel[0] / 16)
-                    self.mouse.cy = int(event.pixel[1] / 16)
+                    try:  # TODO  JUST KEEP MOVING
+                        self.mouse.cx = int(event.pixel[0] / 16)
+                        self.mouse.cy = int(event.pixel[1] / 16)
+                    except ZeroDivisionError:
+                        pass
+
                     if event.button == tcod_event.BUTTON_LEFT:
                         self.mouse.lbutton = False
                     if event.button == tcod_event.BUTTON_RIGHT:
@@ -575,6 +588,11 @@ class gEngine:
         self.image_replace(self.map_image, libtcod.image.Image.from_array(arr))
         self.image_blit(self.map_image, con, self.w / 2, self.h / 2 - 4)
 
+    def map_blit(self, con):
+        if cEngine:
+            if SUBCELL:
+                self.engine.mDungeonBlit2x(con)
+
     def map_draw(self, con, x=0, y=0, run_fov=True):
         if cEngine:
             if SUBCELL:
@@ -783,29 +801,56 @@ class gEngine:
             return self.lightmask.get_mask_value(x, y)
 
     def particle_explosion(self, num, x, y, r=False, b=False, color=None):
+        if SUBCELL:
+            x *= 2
+            y *= 2
         particle.explosion(num, self.particles, x, y, r, b, color)
 
     def particle_nova(self, num, x, y, r=False, b=False):
+        if SUBCELL:
+            x *= 2
+            y *= 2
         particle.nova(num, self.particles, x, y, r, b)
 
     def particle_cone_spray(self, num, ox, oy, dx, dy, r=False, b=False):
+        if SUBCELL:
+            ox *= 2
+            oy *= 2
+            dx *= 2
+            dy *= 2
         particle.cone_spray(num, self.particles, ox, oy, dx, dy, r, b)
 
     def particle_cone(self, num, ox, oy, dx, dy, r=False, b=False):
+        if SUBCELL:
+            ox *= 2
+            oy *= 2
+            dx *= 2
+            dy *= 2
         particle.cone(num, self.particles, ox, oy, dx, dy, r, b)
 
     def particle_projectile(self, num, ox, oy, dx, dy, r=False, b=False, color=None):
+        if SUBCELL:
+            ox *= 2
+            oy *= 2
+            dx *= 2
+            dy *= 2
         particle.projectile(num, self.particles, ox, oy, dx, dy, r, b, color)
 
     def particle_update(self, map=None):
+        if len(self.particles) >= 1:
+            self.particles[0].update(self)
+            if self.particles[0].dead:
+                self.particles.remove(self.particles[0])
         for p in range(len(self.particles) - 1, 0, -1):
-            self.particles[p].update(self.lightmask, map)
+            self.particles[p].update(self)
             if self.particles[p].dead:
                 self.particles.pop(p)
 
+
     def particle_draw(self, con, c='*'):
         for p in self.particles:
-            self.console_put_char_ex(con, int(p.x), int(p.y), c, 255, 255, 255, 0, 0, 0)
+            p.draw(self)
+            #self.console_put_char_ex(con, int(p.x), int(p.y), c, 255, 255, 255, 0, 0, 0)
 
     def random_set_instance(self, seed=None):
         if seed:

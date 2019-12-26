@@ -17,7 +17,7 @@ else:
 try:
     import builtins as __builtin__
 except ImportError:
-    import builtins
+    import __builtin__
 
 def _swig_repr(self):
     try:
@@ -182,6 +182,9 @@ class gEngine(object):
     def mImageBlit2x(self, i, c, x, y, sx=0, sy=0, w=-1, h=-1):
         return _cEngine.gEngine_mImageBlit2x(self, i, c, x, y, sx, sy, w, h)
 
+    def mDungeonBlit2x(self, c):
+        return _cEngine.gEngine_mDungeonBlit2x(self, c)
+
     def mDungeonNewMap(self, w, h):
         return _cEngine.gEngine_mDungeonNewMap(self, w, h)
 
@@ -247,6 +250,24 @@ class gEngine(object):
 
     def mLightmaskReset(self):
         return _cEngine.gEngine_mLightmaskReset(self)
+
+    def mOpenBlock(self, message):
+        return _cEngine.gEngine_mOpenBlock(self, message)
+
+    def mCloseBlock(self):
+        return _cEngine.gEngine_mCloseBlock(self)
+
+    def mInfo(self, message):
+        return _cEngine.gEngine_mInfo(self, message)
+
+    def mNotice(self, message):
+        return _cEngine.gEngine_mNotice(self, message)
+
+    def mError(self, message):
+        return _cEngine.gEngine_mError(self, message)
+
+    def mFatalError(self, message):
+        return _cEngine.gEngine_mFatalError(self, message)
     __swig_destroy__ = _cEngine.delete_gEngine
 
 # Register gEngine in _cEngine:
