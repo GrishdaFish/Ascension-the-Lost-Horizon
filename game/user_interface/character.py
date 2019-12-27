@@ -253,10 +253,10 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
         #############################################################################################################
         line_ind = 1
         for condition in game.player.fighter.stat.active_conditions:
-            name = condition.effect.effect_name
-            amount = condition.effect.amount
-            duration = condition.effect.duration
-            stat = condition.effect.stat_effect
+            name = condition.effect_name
+            amount = condition.amount
+            duration = condition.duration
+            stat = condition.stat_effect
             game.gEngine.console_print(condition_window, 1, line_ind, '%s %s %s %s' % name, stat, amount, duration)
             line_ind += 1
         #############################################################################################################

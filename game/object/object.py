@@ -225,8 +225,8 @@ class Fighter:
     def __init__(self, hp, defense, power, death_function=None, Con=10, Str=10, Dex=10, Int=10, money=0, ticker=None,
                  speed=0, xp_value=0):
 
-        self.stat = StatPanel()   # damage, resistance, effects and conditions
-        self.gear = GearPanel(self)         # equipped items and related controls
+        self.stat = StatPanel()      # damage, resistance, effects and conditions
+        self.gear = GearPanel(self)  # equipped items and related controls
         # Achievement tracker will go here if implemented
 
         self.death_function = death_function
@@ -464,7 +464,7 @@ class Fighter:
 
     def take_damage(self, damage, attacker, game):
         # apply damage if possible
-        if damage > 0:
+        if damage > 0 and self.hp > 0:
             self.hp -= damage
             self.owner.flashing = True
             self.owner.flash_duration = 1
