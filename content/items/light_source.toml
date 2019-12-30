@@ -6,13 +6,13 @@
     color = [94, 75, 47]
     effect_color=[255, 63, 0]
     value=5
-    intensity=0.65
+    intensity=0.77
 
 [["light_source"]]
     name="lantern"
     cell="|"
     max_fuel=540
     color = [225, 225, 0]
-    effect_color=[225, 225, 0]
+    effect_color=[225, 159, 0]
     value=50
     intensity=0.9

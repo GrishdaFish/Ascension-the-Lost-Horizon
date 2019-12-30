@@ -41,6 +41,7 @@ class PrefabGenerator:
     def __init__(self, w,  h, gEngine=None, game=None):
         self.game = game
         self.gEngine = gEngine
+        self.gEngine.log_open_block("Initializing prefab generator")
         self.width = w
         self.height = h
         self.dungeon = [[tile.Tile(True)
@@ -49,6 +50,8 @@ class PrefabGenerator:
         self.room_holder = []
 
         self.load_prefab_rooms()
+        self.gEngine.log_message("Prefab generator initialized")
+        self.gEngine.log_close_block()
 
     def load_prefab_rooms(self):
         """
@@ -56,10 +59,12 @@ class PrefabGenerator:
         :return:
         """
         p = os.path.join(path, 'prefabs', 'prefab_rooms.txt')
+        self.gEngine.log_open_block("Loading prefabs from [%s]" % p)
         f = open(p)
         m = f.readlines()
         f.close()
         num_rooms = int(m.pop(0))  # pull the number of rooms out of the array and keep it
+        self.gEngine.log_message("Loading [%d] rooms." % num_rooms)
         room_size = 0
         offset = 0  # loop offset to find the length of the next room
         room_offset = 0  # offset for the start of the next room
@@ -83,6 +88,8 @@ class PrefabGenerator:
                 h.append(w)
             room_height = len(h) # and get the height of our entire room
             self.room_holder.append((h, room_width, room_height))  # add a tuple with the room, plus it dimensions
+        self.gEngine.log_message("all rooms successfully loaded")
+        self.gEngine.log_close_block()
 
     def add_prefab_room(self, map, width, height, first=False, rooms=None, connect_to_home=False, connect_to_closest=0,
                         max_path=25, place_over_hallways=False, light_handler=None, light_spawn_chance=100, max_trys=8):

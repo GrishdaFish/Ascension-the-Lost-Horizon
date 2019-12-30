@@ -26,6 +26,10 @@ from game.user_interface import hover_description
 from game import ranged_combat
 from game import input_handler
 from game import render
+import os
+import sys
+from gEngine import gEngine as _gEngine
+
 # todo externalize this data
 dungeon_height = 55
 dungeon_width = 80
@@ -40,6 +44,7 @@ class Game:
     def __init__(self, gEngine):
         self.active = True
         self.gEngine = gEngine
+        self.gEngine.log_open_block("Initializing game...")
         self.keys = self.gEngine.options  # options has direct variables eg: options.key_north
         self.dungeon_generators = []
         self.objects = []
@@ -89,6 +94,7 @@ class Game:
         self.newgame = False
         x = 32 / 2
         x = self.gEngine.w / 2 - x
+        self.gEngine.log_open_block("Initializing Hotbar")
         self.hotbar = hot_bar.HotBar(x, 0, self.gEngine, self.toolbar)
         z = 1
         index = ord('1')
@@ -99,6 +105,9 @@ class Game:
             self.hotbar.add_slot(s)
             z += 3
             index += 1
+        self.gEngine.log_message("Hotbar initialized")
+        self.gEngine.log_close_block()
+
         self.player_action = None
         self.bark_manager = bark.BarkManager()
         self.ambient = 0.15
@@ -107,6 +116,58 @@ class Game:
         self.monster_force_display = [False, 0]
         self.loot_force_display = [False, 0]
         self.hover_description = hover_description.HoverDescription(self.dungeon_console, self.gEngine, True)
+
+        if _gEngine.RELEASE:
+            path = getattr(sys, "_MEIPASS", ".")
+        else:
+            path = sys.path[0]
+        path = os.path.join(path, 'content')
+        #print(path)
+
+        self.death_index = -1
+        self.death_animation = []
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
+        self.death_animation.append(
+            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
+        self.death_animation.append(
+            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
+        self.death_animation.append(
+            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
+        self.death_animation.append(
+            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
+        self.death_animation.append(
+            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
+        self.death_animation.append(
+            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
+        self.death_animation.append(
+            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
+        self.death_animation.append(
+            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
+        self.death_animation.append(
+            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
+        self.death_animation.append(
+            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
+        self.death_animation.append(
+            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations', 'death arrow', '1.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations', 'death arrow', '2.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations', 'death arrow', '3.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations', 'death arrow', '4.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '5.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '6.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '7.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '8.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '9.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '10.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '11.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '12.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '13.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '14.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '15.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '16.png')))
+        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '17.png')))
+        self.gEngine.log_message("Game fully initialized")
+        self.gEngine.log_close_block()
 
     def activate(self):
         self.active = True
@@ -118,17 +179,15 @@ class Game:
         self.deactivate()
 
     def run(self, key, mouse):
-        self.gEngine.log_message("running.")
+        self.gEngine.log_open_block("Game running.")
 
         while True:
 
             self.gEngine.map_compute_fov(self.player.x, self.player.y)
-            self.gEngine.log_message("after fov compute")
             self.player_moved = False
             # erase all objects at their old locations, before they move
             for object in self.objects:
                 object.clear(self.gEngine)
-            self.gEngine.log_message("after objects clear")
             # for particle in self.particles:
             #    particle.clear(self.gEngine)
 
@@ -139,15 +198,12 @@ class Game:
 
             self.player_action = 'didnt-take-turn'
             if is_player_turn:
-                self.gEngine.log_message("in player turn")
                 self.player_moved = False
                 while self.player_action == 'didnt-take-turn':
                     key, mouse = self.gEngine.handle_input()
-                    self.gEngine.log_message("Grabbed input")
                     self.hover_description.reset()
                     self.hover_description.update(mouse, self.get_names_under_mouse(), self.dungeon_height)
                     self.player_action = input_handler.handle_keys(key, self)
-                    self.gEngine.log_message("input handled")
                     if self.player_action == 'exit':
                         self.gEngine.remove_module((self))
                         m = main_menu.MainMenu(self.gEngine)
@@ -195,11 +251,8 @@ class Game:
                                 self.message.message("Your detect items spell has expired.", libtcod.light_cyan)
                             else:
                                 self.loot_force_display[1] -= 1
-                    self.gEngine.log_message("Attempting to render...")
                     render.render_all(self, self.hover_description.render(self, True))
-                    self.gEngine.log_message("after render")
                     self.gEngine.console_flush()
-                    self.gEngine.log_message("flushed")
             # fast forward until the next object gets its turn
             self.ticker.get_next_tick()
             if self.player.fighter.current_xp >= self.player.fighter.xp_to_next_level:
@@ -354,6 +407,7 @@ class Game:
         # for added effect, transform the player into a corpse!
         self.player.char = '%'
         self.player.color = libtcod.dark_red
+        #self.gEngine.console_remove_console(self.dungeon_console)
 
     def get_names_under_mouse(self):
         # return a string with the names of all objects under the mouse

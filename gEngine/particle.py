@@ -133,7 +133,7 @@ class Particle:
                     if cdx == 0:
                         self.dir_y = (-self.dir_y)
                     if cdy == 0:
-                        self.dir_x = (-self.dir_y)
+                        self.dir_x = (-self.dir_x)
                     else:
                         self.dead = True
                     #    return

@@ -2,28 +2,47 @@ import tcod as libtcod
 
 
 def render_all(game, injected_render_list=None):  # break this up to render ui and other elements separately
-    game.gEngine.console_clear(game.dungeon_console)
-    if game.fov_recompute:
-        game.fov_recompute = False
-        game.gEngine.map_compute_fov(game.player.x, game.player.y)
+    if game.game_state == 'playing':
+        game.gEngine.console_clear(game.dungeon_console)
+        if game.fov_recompute:
+            game.fov_recompute = False
+            game.gEngine.map_compute_fov(game.player.x, game.player.y)
 
-    game.gEngine.particle_update()
-    update_lighting(game)
+        game.gEngine.particle_update()
+        update_lighting(game)
 
-    game.gEngine.map_draw(game.dungeon_console, game.player.x, game.player.y)
+        game.gEngine.map_draw(game.dungeon_console, game.player.x, game.player.y)
 
-    game.gEngine.particle_draw(game.dungeon_console)
+        game.gEngine.particle_draw(game.dungeon_console)
 
-    game.gEngine.map_blit(game.dungeon_console)
-    draw_objects(game)
+        game.gEngine.map_blit(game.dungeon_console)
+        draw_objects(game)
 
     draw_user_interface(game)
     player = game.get_names_under_player()
     game.message.flush_messages()
     game.bark_manager.render_barks()
-    if injected_render_list:
-        for r in injected_render_list:
-            r(game)
+
+    if game.game_state == 'playing':
+        if injected_render_list:
+            for r in injected_render_list:
+                r(game)
+
+    elif game.game_state == 'dead':
+        # game.gEngine.console_clear(0)
+        # game.gEngine.console_clear(game.death_console)
+        # draw death screen animation
+        game.death_index += 1
+        if not game.death_index > len(game.death_animation) - 1:
+            img = game.death_animation[game.death_index]
+
+        else:
+            img = game.death_animation[len(game.death_animation)-1]
+        game.gEngine.image_blit_2x(img, game.dungeon_console, 0, 0)
+        #game.gEngine.console_blit(game.death_console, 0, 0, 0, 0, 0, 0, 0, 1.0, 1.0)
+
+        #game.gEngine.console_flush()
+
     render_consoles(game)
 
 def update_lighting(game):
@@ -43,24 +62,17 @@ def update_lighting(game):
 
 
 def draw_objects(game):
-    game.gEngine.log_message("Drawing objects....")
     for object in game.objects:
         if object.npc:
-            game.gEngine.log_message("Drawing NPC...")
             object.draw(game.fov, game.gEngine, force_display=True)
-            game.gEngine.log_message("Done")
         if object.misc:
             if object.misc.type == 'up' or object.misc.type == 'down':
                 # Draw stairs if they are already found
                 if game.gEngine.map_is_explored(object.x, object.y):
-                    game.gEngine.log_message("Drawing stairs...")
                     object.draw(game.fov, game.gEngine, force_display=True)
-                    game.gEngine.log_message("done..")
 
             else:
-                game.gEngine.log_message("Drawing other misc objects..")
                 object.draw(game.fov, game.gEngine)
-                game.gEngine.log_message("done")
         else:
             if game.monster_force_display[0] and object.fighter:
                 object.draw(game.fov, game.gEngine, force_display=True)
@@ -68,9 +80,7 @@ def draw_objects(game):
                 object.draw(game.fov, game.gEngine, force_display=True)
             else:
                 object.draw(game.fov, game.gEngine)
-    game.gEngine.log_message("Attempting to draw player")
     game.player.draw(game.fov, game.gEngine)
-    game.gEngine.log_message("done")
 
 
 def draw_user_interface(game):
@@ -92,7 +102,7 @@ def draw_user_interface(game):
 
 def render_consoles(game):
     game.hotbar.render()
-
+    #if game.game_state == 'playing':
     game.gEngine.console_blit(game.dungeon_console, 0, 0, 0, 0, 0, 0, 0, 1.0, 1.0)
     game.gEngine.console_blit(game.toolbar, 0, 0, game.gEngine.w, 5, 0, 0, game.panel_y - 5, 1.0, 1.0)
     game.gEngine.console_blit(game.panel, 0, 0, game.screen_width, game.panel_height, 0, 0, game.panel_y, 1.0, 1.0)
