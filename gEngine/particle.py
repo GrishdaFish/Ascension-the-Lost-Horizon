@@ -5,7 +5,7 @@ import tcod as libtcod
 
 def explosion(num_particles, particle_array, x, y, random_decay=True, bounce=True, color=None):
     for i in range(num_particles):
-        particle_array.append(Particle(x, y, 0.05, 1.2, random_decay=random_decay, bounce=bounce, color=color))
+        particle_array.append(Particle(x, y, 0.1, .8, random_decay=random_decay, bounce=bounce, color=color))
 
 
 def nova(num_particles, particle_array, x, y, random_decay=False, bounce=False):

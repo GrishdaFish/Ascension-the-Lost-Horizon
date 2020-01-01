@@ -489,6 +489,7 @@ class Fighter:
         if self.hp > self.stat.get_stat_base("HP"):
             self.hp = self.stat.get_stat_base("HP")
 
+
 class Torch:    # TODO REFACTOR move torch to item.py
     def __init__(self, owner):
         self.owner = owner
