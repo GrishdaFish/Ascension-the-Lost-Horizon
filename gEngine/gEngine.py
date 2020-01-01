@@ -881,3 +881,6 @@ class gEngine:
 
     def random_get_float(self, min, max):
         return libtcod.random_get_float(self.random_instance, min, max)
+
+    def animation_draw_animation(self, name, target, x, y):
+        return self.animation_engine.draw_animation(name, target, x, y)

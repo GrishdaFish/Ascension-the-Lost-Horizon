@@ -2,7 +2,11 @@
 # only fill in the listed values, do not add more or remove lines from this file!
 
 # Should this animation loop?
-false
+loop = false
+
+# should this animation reverse on loop ( forward, then backward, then forward, etc..)
+# if your animation doesnt loop, this does nothing.
+reverse = false
 
 # should this animation freeze on the last frame?
-true
+freeze = true

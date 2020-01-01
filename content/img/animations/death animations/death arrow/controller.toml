@@ -1,0 +1,12 @@
+# controller for the animation system. Required for animations to work
+
+# Should this animation loop?
+loop = false
+
+# should this animation reverse on loop ( forward, then backward, then forward, etc..)
+# if your animation doesnt loop, this does nothing.
+reverse = false
+
+# should this animation freeze on the last frame?
+freeze = true
+
