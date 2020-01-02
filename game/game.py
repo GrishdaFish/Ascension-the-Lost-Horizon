@@ -419,10 +419,11 @@ class Game:
         #names = [obj.name for obj in self.objects
         #         if obj.x == x and obj.y == y and libtcod.map_is_in_fov(self.fov, obj.x, obj.y)]
         for obj in self.objects:
-            if obj.x == x and obj.y == y and libtcod.map_is_in_fov(self.fov, obj.x, obj.y):
-                names = obj.hover_description()
-            if obj.x == x and obj.y == y and not names:
-                names = [obj.name]
+            if self.gEngine.map_is_in_fov(obj.x, obj.y):
+                if obj.x == x and obj.y == y:
+                    names = obj.hover_description()
+                if obj.x == x and obj.y == y and not names:
+                    names = [obj.name]
         return names
 
     def get_names_under_player(self):
