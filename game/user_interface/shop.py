@@ -591,6 +591,10 @@ def show_effects(item, game, compare_window):
         y = 8
         x = 11
         for fx in item.item.equipment.effects:
+            if fx.panel_group != 'modifiers':
+                effect_amount = color_text(fx.amount, game.player.fighter.stat.get_effect_color(fx))
+            else:
+                effect_amount = fx.amount
             game.gEngine.console_print_ex(compare_window, x, y, libtcod.BKGND_SET, libtcod.LEFT,
-                                          str(fx.effect_name) + " " + str(fx.amount) + " " + fx.effect_real_name)
+                                          str(fx.effect_name) + " " + str(effect_amount) + " " + fx.effect_real_name)
             y += 1

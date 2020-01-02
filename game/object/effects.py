@@ -21,23 +21,26 @@ class Effect:
     """ """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""" """
 
     def __init__(self, item, effect=None, ticker=None):
+        # linked objects
+        self.actor = None  # owner of this effect, set during on_equip in activate_effect
+                    # this reference persists on conditions so you can see who caused it if you care to
+        self.item = item  # the item that instantiated this effect, used to reference @ on_unequip
+                          # in case 2 items with same effect etc.
+
         # data manipulation
         self.panel_group = None    # combat modifiers or conditions, relating to stat panel.panel[panel_group]
         self.effect_name = effect  # name relating to stat_panel.panel[panel_group][name]
         self.effect_real_name = None  # name relating to stat_panel.panel[panel_group]['key'][effect_real_name] (output)
         self.index = None          # logical storage index of stat for ease of reference
-        # linked objects
-        self.item = item           # the item that instantiated this effect, used to reference @ on_unequip
-                                   # in case 2 items with same effect etc.
-        self.actor = None          # owner of this effect, set during on_equip in activate_effect
-                                   # this reference persists on conditions so you can see who caused it if you care to
+
         self.amount = 0            # strength of effect *should support range (i.e +5 or +5-10) for damage spread
 
         # Related to conditions
         self.persist = False       # is this a 1 time persistent stat modifier, like STR down or STUN?
         self.target = None         # actor receiving
-        self.probability = 100     # % chance to trigger effect
-        self.duration = 10         # inflicted duration in turns, passed to condition : we'll call it base 10 for now, UG w/ perks
+        self.probability = 0       # % chance to trigger effect
+        self.duration = 0         # inflicted duration in turns, passed to condition : we'll call it base 10 for now, UG w/ perks
+        self.total_duration = self.duration
         self.ticker = ticker       # ***only give it a ticker if its an active condition / persist = False
         self.can_cancel = None     # effect can be cancelled by item or spell - this variable is reserved for that if needed
         self.speed = DEFAULT_EFFECT_SPEED  # declared above ^
@@ -89,7 +92,7 @@ class Effect:
     ##################################################################
     def trigger_probability(self, actor):
         triggered = False
-        prob = self.probability - int(actor.stat.get_condition_resist(self.effect_name) / 4)
+        prob = self.probability - int(actor.stat.get_condition_resist(self.effect_name) / 4)  # TODO balancing
         if libtcod.random_get_int(0, 0, 100) <= prob:
             triggered = True
         return triggered
@@ -97,14 +100,13 @@ class Effect:
     def inflict_condition(self, actor):
         print("Trying to inflict condition")
         if self.panel_group == 'conditions' and self.trigger_probability(actor):
-            # check for stacking here if we allow it
             print("inflicted")
             self.activate_condition(actor)
 
     def inflict_damage(self):
-        if self.panel_group != 'modifiers' and self.index == 0:  # damage is always the first stat in the index
+        if self.panel_group == 'conditions' and self.index == 0 and self.target is not None:  # damage is always the first stat in the index
             damage = self.amount - self.target.stat.get_condition_resist(self.effect_name)
-            if self.target.hp > 0:
+            if self.target.hp > 0 and self.actor is not None:
                 self.target.take_damage(damage, self.actor.owner, self.target.game)
 
     def get_resistance(self, effect_name):
@@ -118,15 +120,14 @@ class Effect:
     def use(self, game=None):
         test_out = self.effect_name + " is taking a turn. Damage:" + str(self.amount) + " To:" + self.target.owner.name
         print(test_out)
-        if self.duration == 0:            # if effect is expired kill it
+        if self.duration <= 0:            # if effect is expired kill it
             self.deactivate_condition()
         else:                               # if not, reduce duration and do stuff
             self.duration -= 1
+            self.add_turn()
             if self.amount:  # None will indicate special conditions that fire only once, like stun or reduce strength
                 self.inflict_damage()
 
-        if self.duration:
-            self.add_turn()
         # game.game.message stuff
 
     def add_turn(self):
@@ -149,17 +150,12 @@ class Effect:
         self.effect_real_name = stat_panel.panel[self.panel_group]['key'][self.index]
 
     def generate_effect(self):  # TODO this is a basic bitch generator, fix it up
+        # when you init an effect you can pass a name to get a specific effect type
         if self.effect_name is None:
             stat_panel = StatPanel()
             self.panel_group = random.choice(list(stat_panel.panel))
             name_list = list(stat_panel.panel[self.panel_group])
 
-            # current condition type: base : pen / mod
-            #                         elem : dam / res
-            #                         cond : dam+% / res
-            #if self.panel_group == 'modifiers':
-            #    self.index = None
-            #if self.panel_group == 'elemental' or self.panel_group == 'conditions':
             self.index = libtcod.random_get_int(0, 0, 1)
             name_list.pop(0)
 
@@ -169,7 +165,12 @@ class Effect:
         if self.panel_group == 'conditions':
             self.persist = False  # is this a 1 time persistent stat modifier, like STR down or STUN?
             self.probability = 10  # % chance to trigger effect
-            self.duration = 4  # inflicted duration in turns, passed to condition : we'll call it base 4 for now, UG w/ perks
+            self.duration = 5  # inflicted duration in turns, passed to condition : we'll call it base 5 for now, UG w/ perks
+            self.total_duration = self.duration
             self.can_cancel = None  # effect can be cancelled by item or spell - this variable is reserved for that if needed
             self.speed = DEFAULT_EFFECT_SPEED  # declared above ^
             self.max_stack = 1
+
+    def get_color(self):
+        stats = StatPanel()
+        return stats.get_effect_color(self)

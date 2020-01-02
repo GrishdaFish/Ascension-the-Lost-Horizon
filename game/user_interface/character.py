@@ -24,12 +24,13 @@ def character_info(con, width, height, game, x=0, y=0):
 
     skill_desc_window = game.gEngine.console_new(width/2, height/2)
     skill_desc_pos = height/2
-    d_header, d_pos = get_centered_text("Description", width/4)
+    d_header, d_pos = get_centered_text("Status Effects", width/4)
 
     exit_button = Button(label='Exit', game=game, x_pos=(width/2)-9, y_pos=height-6,
                          window=skill_window, dest_x=width/2, dest_y=0)
     current_selection = 0
     key = libtcod.console_check_for_keypress()
+    first_print = True
     while key.vk != libtcod.KEY_ESCAPE:
         game.gEngine.console_flush()
         # get input just after flush
@@ -54,7 +55,6 @@ def character_info(con, width, height, game, x=0, y=0):
         game.gEngine.console_print(char_window, c_pos, 0, c_header)
         game.gEngine.console_print(char_window, 1, 1, 'Name: %s' % game.player.name)
 
-
         player_hp_bar = status_bar.StatusBar(game.player.fighter, int(width/2)-10, libtcod.light_red,
                                                   libtcod.darker_red, char_window, type='hp', gEngine=game.gEngine)
         player_hp_bar.render(1, 2, game.gEngine)
@@ -63,7 +63,7 @@ def character_info(con, width, height, game, x=0, y=0):
         player_xp_bar = status_bar.StatusBar(game.player.fighter, int(width/2)-10, libtcod.light_grey,
                                                   libtcod.dark_grey, char_window, type='xp', gEngine=game.gEngine)
         player_xp_bar.render(1, 4, game.gEngine)
-        game.gEngine.console_set_alignment(player_hp_bar.con, int(libtcod.LEFT))
+        game.gEngine.console_set_alignment(player_xp_bar.con, int(libtcod.LEFT))
 
         s = color_text(str(game.player.fighter.stat.get_stat_base("Strength")), libtcod.light_gray)
         d = color_text(str(game.player.fighter.stat.get_stat_base("Dexterity")), libtcod.light_gray)
@@ -91,14 +91,6 @@ def character_info(con, width, height, game, x=0, y=0):
         speed = color_text(str(game.player.fighter.stat.get_stat("Speed")), libtcod.light_gray)
         game.gEngine.console_print(char_window, 1, 16, 'Turn Speed: [%s]' % speed)
 
-        game.gEngine.console_print(char_window, 1, 18, 'Status Effects:')
-
-        y = 19
-        if game.player.fighter.stat.active_conditions:
-            for condition in game.player.fighter.stat.active_conditions:
-                line = '%s ' % condition.effect_name
-                y = do_string_output(game, char_window, y, line)
-
         r, g, b = libtcod.white
         game.gEngine.console_set_default_foreground(skill_window, r, g, b)
         game.gEngine.console_print_frame(skill_window, 0, 0, width/2, height, True)
@@ -110,92 +102,168 @@ def character_info(con, width, height, game, x=0, y=0):
             level = game.player.fighter.gear.get_w_lvl(weapon_type)
             w_xp = game.player.fighter.gear.get_w_xp(weapon_type)
             w_xp_tnl = game.player.fighter.gear.get_w_xptnl(weapon_type)
-            y = do_string_output(game, skill_window, y, "Level: %s " % str(level).ljust(2))
+            y = do_string_output(game, skill_window, y, "Lvl:%s " % str(level).ljust(2))
             bar = status_bar.StatusBar(game.player.fighter, int(width / 2) - 17, libtcod.light_red,
                                                  libtcod.darker_red, skill_window, type='hp', gEngine=game.gEngine)
-            bar.render(14, y, game.gEngine, [w_xp, w_xp_tnl], weapon_type)
+            bar.render(14, y - 1, game.gEngine, [w_xp, w_xp_tnl], weapon_type)
             game.gEngine.console_set_alignment(bar.con, int(libtcod.LEFT))
-            y += 1
+            #y += 1
+        ###########################################################################
+        # y = 3
+        # prepare a big dumb ass string to output ######################################################################
+        #y = do_string_output(game, skill_window, y, " Stats:        Cur / Mod / Pen:")
+        # format modifiers
+        #mod_start_index = y
+        #for fx_name in game.player.fighter.stat.panel['modifiers']:
+        #    if fx_name != 'key':
+        #        mod = game.player.fighter.stat.get_stat_mod(fx_name)
+        #        pen = game.player.fighter.stat.get_stat_pen(fx_name)
+        #        cur = game.player.fighter.stat.get_stat_base(fx_name) + mod - pen
+        #        y = do_string_output(game, skill_window, y, "%s:  %s / %s / %d" %
+        #                             (fx_name.ljust(12), str(cur).ljust(3), str(mod).ljust(3), pen))
 
-        """   
-        y = 2
-        letter_index = ord('a')
-        skill_max = 5
-        for skill in game.player.fighter.skills:
-            s_name = skill.get_name()
-            s_bonus = skill.get_bonus()
-            s_index = chr(letter_index)
-            col = libtcod.white
-            if s_bonus == skill_max:
-                s_name = color_text(s_name, libtcod.green)
-                s_bonus = color_text(str(s_bonus), libtcod.green)
-                s_index = color_text(s_index, libtcod.green)
-                col = libtcod.green
-            elif s_bonus < skill_max and s_bonus > 0:
-                s_name = color_text(s_name, libtcod.light_gray)
-                s_bonus = color_text(str(s_bonus), libtcod.lighter_gray)
-                s_index = color_text(s_index, libtcod.lighter_gray)
-                col = libtcod.lighter_gray
-            elif s_bonus == 0:
-                s_name = color_text(s_name, libtcod.dark_gray)
-                s_bonus = color_text(str(s_bonus), libtcod.dark_gray)
-                s_index = color_text(s_index, libtcod.dark_gray)
-                col = libtcod.dark_gray
-            else:
-                s_name = color_text(s_name, libtcod.red)
-                s_bonus = color_text(str(s_bonus), libtcod.red)
-                s_index = color_text(s_index, libtcod.red)
-                col = libtcod.red
-            text = '(%s) %s: [%s]' % (s_index, s_name, s_bonus)
-            game.gEngine.console_print(skill_window, 1, y, text)
-            if current_selection == y-2:
-                r, g, b = libtcod.color_lerp(col, libtcod.blue, 0.5)
-                game.gEngine.console_set_default_background(skill_window, r, g, b)
-            else:
-                game.gEngine.console_set_default_background(skill_window, 0, 0, 0)
+        y += 1 ################################################################################################
+        y = do_string_output(game, skill_window, y, " Elemental Effects:")
+        y = do_string_output(game, skill_window, y, "Effect: Damage / Resist")
+        # format combat effects
+        combat_start_index = y
+        for stat, val in zip(game.player.fighter.stat.panel['elemental'].keys(),
+                             game.player.fighter.stat.panel['elemental'].values()):
+            if stat != 'key':
+                stat = color_text(str(stat), val[2])
+                y = do_string_output(game, skill_window, y,
+                                     "%s:  %s /    %d" % (stat.ljust(12), str(val[0]).ljust(4), val[1]))
 
-
-            game.gEngine.console_print_ex(skill_window, 1, y,libtcod.BKGND_SET, libtcod.LEFT, text)
-            y += 1
-            letter_index += 1
+        y += 1
+        y = do_string_output(game, skill_window, y, " Conditions:")
+        y = do_string_output(game, skill_window, y, "Effect: Damage / Resist / Trigger%")
+        # format conditions
+        conditions_start_index = y
+        for stat, val in zip(game.player.fighter.stat.panel['conditions'].keys(),
+                             game.player.fighter.stat.panel['conditions'].values()):
+            if stat != 'key':
+                stat = color_text(str(stat), val[3])
+                y = do_string_output(game, skill_window, y, "%s:  %s /   %s /   %d " % (
+                stat.ljust(12), str(val[0]).ljust(4), str(val[1]).ljust(4), val[2]))
+        ################################################################################################################
         game.gEngine.console_set_default_background(skill_window, 0, 0, 0)
-        """
+
+        game.gEngine.console_print_ex(skill_window, 1, y, libtcod.BKGND_SET, libtcod.LEFT, '')
+        #    y += 1
+        #    letter_index += 1
+        game.gEngine.console_set_default_background(skill_window, 0, 0, 0)
+
         r, g, b = libtcod.white
         game.gEngine.console_set_default_foreground(skill_desc_window, r, g, b)
-        game.gEngine.console_print_frame(skill_desc_window, 0, 0, width/2, height/2, True)
+        game.gEngine.console_print_frame(skill_desc_window, 0, 0, width / 2, height / 2, True)
         game.gEngine.console_print(skill_desc_window, d_pos, 0, d_header)
-        """
-        #mouse input
-        if mouse.cx >= width/2 +3:
-            if mouse.cy-2 < len(game.player.fighter.skills) and mouse.cy >= 0:
-                current_selection = mouse.cy-2
-                skill = game.player.fighter.skills[current_selection]
-                desc = color_text(skill.get_description(), libtcod.light_gray)
-                desc = "Skill Description: %s" % desc
-                cat = color_text(skill.get_category(), libtcod.light_gray)
-                cat = "Skill Category   : %s" % cat
-                bonus = skill.get_bonus()
-                name = skill.get_name()
-                if bonus == skill_max:
-                    bonus = color_text(str(bonus), libtcod.green)
-                    name = color_text(name, libtcod.green)
-                elif skill_max > bonus > 0:
-                    bonus = color_text(str(bonus), libtcod.lighter_gray)
-                    name = color_text(name, libtcod.lighter_gray)
-                elif bonus == 0:
-                    bonus = color_text(str(bonus), libtcod.dark_gray)
-                    name = color_text(name, libtcod.dark_gray)
-                else:
-                    bonus = color_text(str(bonus), libtcod.red)
-                    name = color_text(name, libtcod.red)
-                if skill.get_category() == 'Discipline':
-                    bonus = 'Increases your (%s) to-hit rolls by [%s].' % (name, bonus)
-                elif skill.get_category() == 'Weapon':
-                    bonus = 'Increases your (%s) damage by [%s].' % (name, bonus)
-                """
-        game.gEngine.console_print_rect(skill_desc_window, 1, 1, width/2-2, 3, "desc")
-        game.gEngine.console_print(skill_desc_window, 1, 5, "cat")
-        game.gEngine.console_print_rect(skill_desc_window, 1, 7, width/2-2, 3, bonus)
+        # TODO THIS STUFF BELOW SHOULD USE HOVER DESCRIPTION
+        # mouse input
+        # stat = ""
+        # sources = []
+        # details = []
+
+        # mod_count = game.player.fighter.stat.get_category_count('modifiers') + 3
+        # combat_count = game.player.fighter.stat.get_category_count('elemental') + mod_count + 3
+        # conditions_count = game.player.fighter.stat.get_category_count('conditions') + combat_count + 3
+        #
+        # if mouse.cx >= width / 2 + 3:
+        #     if mod_count >= mouse.cy >= mod_start_index:
+        #         current_mod_index = mod_start_index - 1  # offset by 1 because 1st index is key
+        #         for stat_iter in game.player.fighter.stat.panel['modifiers']:
+        #             if current_mod_index == mouse.cy:
+        #                 stat = stat_iter
+        #                 for things in game.player.fighter.stat.modifiers:
+        #                     if things.effect_name == stat:
+        #                         sources.append(things.item.owner.name)
+        #                         details.append(str(things.amount) + " " + things.effect_real_name)
+        #             current_mod_index += 1
+        #     if combat_count >= mouse.cy >= combat_start_index:
+        #         current_mod_index = combat_start_index - 1  # offset by 1 because 1st index is key
+        #         for stat_iter in game.player.fighter.stat.panel['elemental']:
+        #             if current_mod_index == mouse.cy:
+        #                 if stat_iter != 'key':
+        #                     stat = color_text(stat_iter, game.player.fighter.stat.panel['elemental'][stat_iter][2])
+        #                     for things in game.player.fighter.stat.elemental_effects:
+        #                         if things.effect_name == stat_iter:
+        #                             sources.append(things.item.owner.name)
+        #                             details.append(str(things.amount) + " " + things.effect_real_name)
+        #             current_mod_index += 1
+        #     if conditions_count >= mouse.cy >= conditions_start_index:
+        #         current_mod_index = conditions_start_index - 1  # offset by 1 because 1st index is key
+        #         for stat_iter in game.player.fighter.stat.panel['conditions']:
+        #             if current_mod_index == mouse.cy:
+        #                 if stat_iter != 'key':
+        #                     stat = color_text(stat_iter, game.player.fighter.stat.panel['conditions'][stat_iter][3])
+        #                     for things in game.player.fighter.stat.conditions:
+        #                         if things.effect_name == stat_iter:
+        #                             sources.append(things.item.owner.name)
+        #                             details.append(str(things.amount) + " " + things.effect_real_name)
+        #             current_mod_index += 1
+
+        #            if mouse.cy-2 < len(game.player.fighter.stats) and mouse.cy >= 0:
+        #                current_selection = mouse.cy-2
+        #                stat = game.player.fighter.stat_panel[current_selection]
+        #                desc = color_text(stat.get_description(), libtcod.light_gray)
+        #                desc = "Stat Description: %s" % desc
+        #                cat = color_text(stat.get_category(), libtcod.light_gray)
+        #                cat = "Stat Category   : %s" % cat
+        #                bonus = stat.get_bonus()
+        #                name = stat.get_name()
+        #                if bonus == stat_max:
+        #                    bonus = color_text(str(bonus), libtcod.green)
+        #                    name = color_text(name, libtcod.green)
+        #                elif stat_max > bonus > 0:
+        #                    bonus = color_text(str(bonus), libtcod.lighter_gray)
+        #                    name = color_text(name, libtcod.lighter_gray)
+        #                elif bonus == 0:
+        #                    bonus = color_text(str(bonus), libtcod.dark_gray)
+        #                    name = color_text(name, libtcod.dark_gray)
+        #                else:
+        #                    bonus = color_text(str(bonus), libtcod.red)
+        #                    name = color_text(name, libtcod.red)
+        #                if stat.get_category() == 'Discipline':
+        #                    bonus = 'Increases your (%s) to-hit rolls by [%s].' % (name, bonus)
+        #                elif stat.get_category() == 'Weapon':
+        #                    bonus = 'Increases your (%s) damage by [%s].' % (name, bonus)
+
+        #game.gEngine.console_print_rect(skill_desc_window, 1, 1, width / 2 - 2, 3, stat)
+        #y = int(height / 2 + 1)
+
+        if game.player.fighter.stat.active_conditions:
+            y = 1
+            if first_print:
+                print(game.player.fighter.stat.active_conditions)
+                first_print = False
+            for condition in game.player.fighter.stat.active_conditions:
+                if condition.duration > 0:
+                    bar = status_bar.StatusBar(game.player.fighter, int(width / 2) - 17, condition.get_color(),
+                                               libtcod.darker_red, skill_desc_window, type='hp', gEngine=game.gEngine)
+                    bar.render(1, y, game.gEngine, [condition.duration, condition.total_duration], condition.effect_name)
+                    game.gEngine.console_set_alignment(bar.con, int(libtcod.LEFT))
+                    y += 1
+
+                # player_stat_bar = status_bar.StatusBar(game.player.fighter, int(width / 2) - 10, condition.get_color(),
+                #                                      condition.get_color(), skill_desc_window, type='xp', gEngine=game.gEngine)
+                # player_stat_bar.render(1, y, game.gEngine, [condition.duration, condition.total_duration], condition.effect_name)
+                # game.gEngine.console_set_alignment(player_stat_bar.con, int(libtcod.LEFT))
+                # y += 1
+                #
+                # line = '%s ' % condition.effect_name
+                # y = do_string_output(game, skill_desc_window, y, line)
+                # y += 1
+        # for source, detail in zip(sources, details):
+        #     game.gEngine.console_print(skill_desc_window, 1, y, "%s: + %s" % (source, detail))
+        #     y += 1
+        #
+        r, g, b = libtcod.white
+        # game.gEngine.console_set_default_foreground(skill_desc_window, r, g, b)
+        # game.gEngine.console_print_frame(skill_desc_window, 0, 0, width/2, height/2, True)
+        # game.gEngine.console_print(skill_desc_window, d_pos, 0, d_header)
+
+        #game.gEngine.console_print_rect(skill_desc_window, 1, 1, width/2-2, 3, "desc")
+        #game.gEngine.console_print(skill_desc_window, 1, 5, "cat")
+        #game.gEngine.console_print_rect(skill_desc_window, 1, 7, width/2-2, 3, bonus)
         if mouse.lbutton_pressed:
             game.player.fighter.apply_skill_points(game.player.fighter.skills[current_selection]) # use unused player skill points
 
@@ -251,14 +319,14 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
         game.gEngine.console_print(condition_window, c_pos, 0, c_header)
         # game.gEngine.console_print(condition_window, 1, 1, 'Name: %s' % game.player.name)
         #############################################################################################################
-        line_ind = 1
-        for condition in game.player.fighter.stat.active_conditions:
-            name = condition.effect.effect_name
-            amount = condition.effect.amount
-            duration = condition.effect.duration
-            stat = condition.effect.stat_effect
-            game.gEngine.console_print(condition_window, 1, line_ind, '%s %s %s %s' % name, stat, amount, duration)
-            line_ind += 1
+        # line_ind = 1
+        # for condition in game.player.fighter.stat.active_conditions:
+        #     name = condition.effect_name
+        #     amount = condition.amount
+        #     duration = condition.duration
+        #     stat = condition.stat_effect
+        #     game.gEngine.console_print(condition_window, 1, line_ind, '%s %s %s %s' % name, stat, amount, duration)
+        #     line_ind += 1
         #############################################################################################################
         r, g, b = libtcod.white
         game.gEngine.console_set_default_foreground(stat_window, r, g, b)

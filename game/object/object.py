@@ -225,8 +225,8 @@ class Fighter:
     def __init__(self, hp, defense, power, death_function=None, Con=10, Str=10, Dex=10, Int=10, money=0, ticker=None,
                  speed=0, xp_value=0):
 
-        self.stat = StatPanel()   # damage, resistance, effects and conditions
-        self.gear = GearPanel(self)         # equipped items and related controls
+        self.stat = StatPanel()      # damage, resistance, effects and conditions
+        self.gear = GearPanel(self)  # equipped items and related controls
         # Achievement tracker will go here if implemented
 
         self.death_function = death_function
@@ -355,13 +355,14 @@ class Fighter:
 
     def ranged_targeted_attack(self, target, player=False, game=None):
         # wehen you click a mob with a ranged weapon equipped it should pop up a menu to select from available projectiles for current weapon
-        if not player:
-            col = 2
-        else:
-            col = 5
-        msg = "shot " + target.name + "! PEW PEW"
-        if game:
-            game.message.message(msg, col)
+        #if not player:
+        #    col = 2
+        #else:
+        #    col = 5
+        #msg = "shot " + target.name + "! PEW PEW"
+        #if game:
+        #    game.message.message(msg, col)
+        combat_controller.ranged_attack(self, target)
 
     def attack(self, target, player=False, direction=None, game=None, force_attack=False):
         print("Attacking")
@@ -464,7 +465,7 @@ class Fighter:
 
     def take_damage(self, damage, attacker, game):
         # apply damage if possible
-        if damage > 0:
+        if damage > 0 and self.hp > 0:
             self.hp -= damage
             self.owner.flashing = True
             self.owner.flash_duration = 1
@@ -488,6 +489,7 @@ class Fighter:
         self.hp += amount
         if self.hp > self.stat.get_stat_base("HP"):
             self.hp = self.stat.get_stat_base("HP")
+
 
 class Torch:    # TODO REFACTOR move torch to item.py
     def __init__(self, owner):

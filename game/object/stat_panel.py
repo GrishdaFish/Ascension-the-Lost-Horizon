@@ -14,7 +14,7 @@ class StatPanel:
         self.panel = {
             "modifiers": {
                 "key": ["Penalty", "Modifier", "Base"],
-                "HP": [0, 0, 15],
+                "HP": [0, 0, 999999],
                 "Regen": [0, 0, 0],
                 "Accuracy": [0, 0, 1],
                 "Defense": [0, 0, 1],
@@ -57,7 +57,6 @@ class StatPanel:
                 "Stun": [0, 0, 0, libtcod.orange],
                 "Blind": [0, 0, 0, libtcod.lightest_gray],
             }
-            # dodge, armor, weapon, etc can all be stored here as well
         }
 
         self.active_conditions = []     # tracks afflicted conditions
@@ -69,13 +68,10 @@ class StatPanel:
         """ Called by an effect object to register itself to the panel
         :param effect: the effect instance being registered
         """
-
         if effect.panel_group == 'modifiers':
             if effect.index == 0:  # 0 is penalty index,
-                #self.set_stat_base(effect.effect_name, (self.get_stat_base(effect.effect_name) - effect.amount))  # add to total
                 self.set_stat_pen(effect.effect_name, (self.get_stat_pen(effect.effect_name) + effect.amount))  # add to mod amount
             if effect.index == 1:  # 1 is modifier index
-                #self.set_stat_base(effect.effect_name, (self.get_stat_base(effect.effect_name) + effect.amount))  # add to total
                 self.set_stat_mod(effect.effect_name, (self.get_stat_mod(effect.effect_name) + effect.amount))   # add to mod amount
             self.modifiers.append(effect)
         if effect.panel_group == 'elemental':
@@ -91,7 +87,6 @@ class StatPanel:
             if effect.index == 1:
                 self.set_condition_resist(effect.effect_name, (self.get_condition_resist(effect.effect_name) + effect.amount))
             self.conditions.append(effect)
-        #print(self.panel)
 
     def remove_effect(self, effect):
         """ Called by an effect object to deactivate from the panel
@@ -118,15 +113,6 @@ class StatPanel:
             if effect.index == 1:
                 self.set_condition_resist(effect.effect_name, (self.get_condition_resist(effect.effect_name) - effect.amount))
             self.conditions.remove(effect)
-        #if effect.panel_group == 'modifiers' and effect in self.modifiers:
-        #    self.modifiers.remove(effect)
-        #    self.set_stat_base()
-        #if effect.panel_group == 'elemental' and effect in self.elemental_effects:
-        #    self.elemental_effects.remove(effect)
-        #    self.panel[effect.panel_group][effect.effect_name][effect.index] -= effect.amount
-        #if effect.panel_group == 'conditions' and effect in self.conditions:
-        #    self.conditions.remove(effect)
-        #    self.panel[effect.panel_group][effect.effect_name][effect.index] -= effect.amount
 
     def effect_is_active(self, effect):
         """ Determines if an effect is currently activated for use on this stat_panel
@@ -146,12 +132,22 @@ class StatPanel:
             return False
 
     def apply_condition(self, effect):
-        # TODO check for max stack after conditions are working
-        # for fx in self.active_conditions:
-        #    if fx.name == effect.name and max_stack blahc blah blah:
+
+        stacked_conditions = []
+        for fx in self.active_conditions:
+            if fx.effect_name == effect.effect_name:
+                stacked_conditions.append(fx)
+        if len(stacked_conditions) >= effect.max_stack:
+            self.remove_condition(self.find_lowest_duration(stacked_conditions))
         self.active_conditions.append(effect)
         effect.add_turn()
-        effect.actor.game
+
+    def find_lowest_duration(self, stack):
+        lowest_duration = None
+        for fx in stack:
+            if lowest_duration is None or fx.duration < lowest_duration.duration:
+                lowest_duration = fx
+        return lowest_duration
 
     def remove_condition(self, effect):
         if effect in self.active_conditions:
@@ -171,7 +167,7 @@ class StatPanel:
         return total_stat
 
     def set_stat_base(self, name, amount):
-        """     If you want to add to the value, feel free to use get_stat first
+        """     If you want to add to the value, feel free to use get_stat first >;)
         :param name: name of the base stat in self.panel['modifiers'] to change
         :param amount: amount to set it to
         """
@@ -229,6 +225,7 @@ class StatPanel:
 
     # Damage=True to return array of elemental damages, False for resistances
     def get_elem_array(self, resist=False):
+        """ :return an array of all elemental damages or all resists """
         val_index = 0
         if resist:
             val_index = 1
