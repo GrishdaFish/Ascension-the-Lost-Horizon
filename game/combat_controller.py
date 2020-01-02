@@ -61,7 +61,16 @@ def single_target(attacker, target):
 
         attacker.gear.add_w_xp(100)
 
+        if elemental_damage:
+            do_particle_burst(attacker, target)
 
+    if attacker.game:
+        attacker.game.message.message(msg, 2)
+
+
+def do_particle_burst(attacker, target):  # does particle burst on elemental weapon damage
+    for fx in attacker.stat.elemental_effects:
+        attacker.game.gEngine.particle_explosion(fx.amount, target.owner.x, target.owner.y, color=attacker.stat.get_effect_color(fx))
 
 
 def check_elemental_dam_res(attacker, target):
