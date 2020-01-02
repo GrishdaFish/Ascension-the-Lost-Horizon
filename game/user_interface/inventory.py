@@ -181,11 +181,20 @@ def inventory(con, player, game, width=80, height=43):
         game.gEngine.console_print(wielded_window, 1, 6, text)
 
         #if player.fighter
-        item = player.fighter.gear.equipped['1h']
-
-        if item:
+        item = player.fighter.gear.gimmie_da_weapon()
+        item2 = player.fighter.gear.gimmie_da_weapon(off_hand=True)
+        damage_total = [0, 0, 0, 0]
+        if item is not None and player.fighter.gear.is_weapon(item):
+            damage_total[0] += item.item.equipment.damage[0]
+            damage_total[1] += item.item.equipment.damage[1]
+            damage_total[3] += item.item.equipment.damage[3]
+        if item2 is not None and player.fighter.gear.is_weapon(item2):
+            damage_total[0] += item2.item.equipment.damage[0]
+            damage_total[1] += item2.item.equipment.damage[1]
+            damage_total[3] += item2.item.equipment.damage[3]
+        if item or item2:
             damage = '%dd%d+%d' % (
-            item.item.equipment.damage[0], item.item.equipment.damage[1], item.item.equipment.damage[3])
+            damage_total[0], damage_total[1], damage_total[3])
             text = 'Damage   (total): ' + color_text(damage, libtcod.green)
             game.gEngine.console_print(wielded_window, 1, 4, text)
             accuracy = item.item.equipment.accuracy

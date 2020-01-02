@@ -355,13 +355,14 @@ class Fighter:
 
     def ranged_targeted_attack(self, target, player=False, game=None):
         # wehen you click a mob with a ranged weapon equipped it should pop up a menu to select from available projectiles for current weapon
-        if not player:
-            col = 2
-        else:
-            col = 5
-        msg = "shot " + target.name + "! PEW PEW"
-        if game:
-            game.message.message(msg, col)
+        #if not player:
+        #    col = 2
+        #else:
+        #    col = 5
+        #msg = "shot " + target.name + "! PEW PEW"
+        #if game:
+        #    game.message.message(msg, col)
+        combat_controller.ranged_attack(self, target)
 
     def attack(self, target, player=False, direction=None, game=None, force_attack=False):
         print("Attacking")
