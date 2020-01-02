@@ -41,7 +41,7 @@ def inventory(con, player, game, width=80, height=43):
 
     r, g, b = libtcod.white
     equip_y = wield_height
-    compare_y = equip_height + wield_height + 1  # stupid offset is killing me
+    compare_y = equip_height + wield_height
     # 16 lines compressed to init shit function above:
     inventory_window = init_shit(game, width, height, r, g, b)
     equipment_window = init_shit(game, width, equip_height, r, g, b)
@@ -182,6 +182,7 @@ def inventory(con, player, game, width=80, height=43):
 
         #if player.fighter
         item = player.fighter.gear.equipped['1h']
+
         if item:
             damage = '%dd%d+%d' % (
             item.item.equipment.damage[0], item.item.equipment.damage[1], item.item.equipment.damage[3])
@@ -211,7 +212,7 @@ def inventory(con, player, game, width=80, height=43):
                 text += color_text(item.name.capitalize(), item.color)
                 armor_bonus += item.item.equipment.bonus
                 armor_penalty += item.item.equipment.penalty
-            game.gEngine.console_print(equipment_window, 1, i + 2, text)
+            game.gEngine.console_print(equipment_window, 1, i + 1, text)
             i += 1
             index += 1
         c = color_text(str(armor_bonus), libtcod.green)
@@ -301,13 +302,14 @@ def inventory(con, player, game, width=80, height=43):
                     else:
                         d_box.destroy_box()
                 if mouse.lbutton and item.item.equipment:
-                    if item.item.equipment.type == 'light_source' and player.fighter.gear.light_source:
-                        if player.fighter.gear.light_source.name == "magical light":
-                            message = "You cannot remove this magical light!"
-                            w = len(message) + 2
-                            d_box = DialogBox(game, w, 10, width / 4, height / 2, message, con=inventory_window)
-                            confirm = d_box.display_box()
-
+                    if item.item.equipment.type == 'light_source' and player.fighter.gear.light_source and player.fighter.gear.light_source.name == "magical light":
+                        # TODO make the pop up work instead of message bar output
+                    #    message = "You cannot remove this magical light!"
+                    #    w = len(message) + 2
+                    #    d_box = DialogBox(game, w, 10, width / 4, height / 2, message, con=inventory_window)
+                    #    confirm = d_box.display_box()
+                        game.message.message("You are under the effects of a magical light!", libtcod.flame)
+                        pass
                     else:
                         i_n = color_text(item.name.capitalize(), item.color)
                         message = 'Do you want to put %s on?' % i_n
@@ -376,9 +378,9 @@ def inventory(con, player, game, width=80, height=43):
                     if item.item.equipment.effects is not None: ## REFACTOR added to show gear effects
                         if len(item.item.equipment.effects) != 0:
                             show_effects(item, game, compare_window)
-            # Equipment
-            elif (mouse.cy - 2) - equip_y < len(gear_list):
-                item = gear_list[mouse.cy - 2 - equip_y]
+            # Equipment ----- holy shit balls  (mouse.cy - 2) - equip_y + 1 ?? lmfao ... this works, but damn
+            elif equip_y < (mouse.cy - 2) - equip_y + 1 < len(gear_list):
+                item = gear_list[mouse.cy - 2 - equip_y + 1]
                 if item is not None:
                     if item.item.equipment:
                         game.gEngine.console_print(compare_window, 1, 2,
@@ -532,7 +534,10 @@ def show_effects(item, game, compare_window):
             x = 11
 
             for fx in item.item.equipment.effects:
-                effect_amount = color_text(fx.amount, game.player.fighter.stat.get_effect_color(fx))
+                if fx.panel_group != 'modifiers':
+                    effect_amount = color_text(fx.amount, game.player.fighter.stat.get_effect_color(fx))
+                else:
+                    effect_amount = fx.amount
                 game.gEngine.console_print_ex(compare_window, x, y, libtcod.BKGND_SET, libtcod.LEFT,
                                               str(fx.effect_name) + " " + str(effect_amount) + " " + fx.effect_real_name)
                 y += 1
