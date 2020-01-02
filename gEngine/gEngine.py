@@ -37,6 +37,7 @@ from gEngine.utilities import logging
 from gEngine.utilities import options as _options
 from gEngine.utilities import config
 from gEngine import tcod_event
+from gEngine.animation import animations
 
 
 def in_rect(x, y, w, h):
@@ -109,7 +110,7 @@ class gEngine:
 
         self.random_instance = None
         self.random_set_instance()
-
+        self.animation_engine = animations.Animations(self)
 
     def run(self):
         is_closed = None
@@ -128,7 +129,22 @@ class gEngine:
     def remove_module(self, module):
         module.on_exit()
 
+    def log_open_block(self, message):
+        if cEngine:
+            self.engine.mOpenBlock(message)
+
+    def log_close_block(self):
+        if cEngine:
+            self.engine.mCloseBlock()
+
     def log_message(self, message, level='info'):
+        if cEngine:
+            levels = {"info": self.engine.mInfo,
+                      "notice": self.engine.mNotice,
+                      "error": self.engine.mError,
+                      "fatal": self.engine.mFatalError}
+            if level in levels:
+                levels[level](message)
         # if level == 'info':
         #     self.logger.log.info(message)
         # elif level == 'debug':
@@ -199,6 +215,7 @@ class gEngine:
                     if event.scancode in key_conv:
                         key.vk = key_conv[event.scancode]
                 if event.type == "WINDOWCLOSE":
+                    self.log_close_block()
                     exit(69420)  # lmao
             return key, self.mouse
         else:
@@ -215,6 +232,7 @@ class gEngine:
             libtcod.sys_set_fps(self.fps)
             self.console_dict[self.console_id_counter] = self.root
             self.console_id_counter += 1
+        self.animation_engine.load_animations()
         self.map_image = self.image_new(self.w, self.h)
         self.subcell_map_image = self.image_new(self.w * 2, self.h * 2)
         self.light_map = self.image_new(self.w, self.h)
@@ -339,7 +357,7 @@ class gEngine:
 
     def console_set_char(self, con, x, y, c):
         if cEngine:
-            self.engine.mSetChar(con, x, y, ord(c))
+            self.engine.mSetChar(con, int(x), int(y), ord(c))
         else:
             libtcod.console_set_char(self.console_dict[con], x, y, c)
 
@@ -863,3 +881,6 @@ class gEngine:
 
     def random_get_float(self, min, max):
         return libtcod.random_get_float(self.random_instance, min, max)
+
+    def animation_draw_animation(self, name, target, x, y):
+        return self.animation_engine.draw_animation(name, target, x, y)

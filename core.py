@@ -3,6 +3,7 @@ import gEngine.gEngine as gngine
 import os
 import sys
 from game import main_menu
+from game import splash_screen
 from game import content_parser
 import cProfile
 import io
@@ -19,8 +20,10 @@ if __name__ == "__main__":
     gEngine = gngine.gEngine()
 
     gEngine.init_root()
-    main_menu = main_menu.MainMenu(gEngine)
-    gEngine.add_module(main_menu)
+    gEngine.log_open_block("Starting up game")
+    #main_menu = main_menu.MainMenu(gEngine)
+    splash = splash_screen.SplashScreen(gEngine)
+    gEngine.add_module(splash)
 
     gEngine.run()
     '''profiler.disable()

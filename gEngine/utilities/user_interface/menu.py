@@ -77,7 +77,7 @@ class Menus:
         libtcod.mouse_get_status()  # this is to pick up stray mouse input that
         # shouldnt be picked up.
 
-    def run(self):
+    def run(self, alpha=1.0):
         if self.is_visible:
             y = 0
             letter_index = ord('a')
@@ -88,7 +88,7 @@ class Menus:
             self.gEngine.console_set_alignment(self.window, libtcod.LEFT)
             self.gEngine.console_set_default_foreground(self.window, r, g, b)
             self.gEngine.console_blit(self.window, 0, 0, self.width,
-                                      self.height, 0, self.w_pos, self.h_pos, 1.0, 1.0)
+                                      self.height, 0, self.w_pos, self.h_pos, alpha, alpha)
 
             self.gEngine.console_print_frame(self.window, 0, 0,
                                              self.width, self.height, False)
