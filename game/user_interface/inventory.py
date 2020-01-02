@@ -86,7 +86,9 @@ def inventory(con, player, game, width=80, height=43):
     return_item = None
     key = libtcod.Key()
     mouse = libtcod.Mouse()
-    libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+    # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
+    key, mouse = game.gEngine.handle_input()
+    time.sleep(0.1)
     current_selection = 0
     master_check = CheckBox(1, 30, "Check/Uncheck All")
 
@@ -300,7 +302,6 @@ def inventory(con, player, game, width=80, height=43):
                     else:
                         d_box.destroy_box()
                 if mouse.lbutton and item.item.equipment:
-                    time.sleep(.01)
                     if player.fighter.gear.light_source:
                         if player.fighter.gear.light_source.name == "magical light":
                             message = "You cannot remove this magical light!"
@@ -308,6 +309,8 @@ def inventory(con, player, game, width=80, height=43):
                             d_box = DialogBox(game, w, 10, width / 4, height / 2, message, con=inventory_window)
                             confirm = d_box.display_box()
                         else: ###### TODO FIX THE REPEATING LOGIC :)
+
+                            time.sleep(.1)
                             i_n = color_text(item.name.capitalize(), item.color)
                             message = 'Do you want to put %s on?' % i_n
                             w = len(message) + 2
@@ -332,8 +335,8 @@ def inventory(con, player, game, width=80, height=43):
                         d_box = DialogBox(game, w, 10, width / 4, height / 2, message, type='option',
                                           con=inventory_window)
                         confirm = d_box.display_box()
-                        if confirm == 1:
-                            time.sleep(.01)
+                        if confirm == 1:  # TODO RING EQUIP BUG FIXED HERE
+                            time.sleep(.1)  # this sleep timer fixed. 0.01 was too short of a sleep
                             item.item.use(game.player.fighter.inventory, game.player, game)
                             d_box.destroy_box()
                             inventory_items = []

@@ -40,11 +40,11 @@ def single_target(attacker, target):
                 fx.inflict_condition(target)
 
         weapon_damage = attacker.gear.get_weapon_damage() - try_to_defend(target)
-        if weapon_damage < 0:
+        if weapon_damage <= 0:
             weapon_damage = 0
 
         elemental_damage = check_elemental_dam_res(attacker, target)
-        if elemental_damage < 0:
+        if elemental_damage <= 0:
             elemental_damage = 0
 
         # Block should not end turn, damage should only be mitigated in the range of the shield's equipment.damage
@@ -54,13 +54,14 @@ def single_target(attacker, target):
 
         final_damage = weapon_damage + elemental_damage - mitigated_damage
         print("Damage" + str(final_damage))
-        target.take_damage(final_damage, attacker.owner, attacker.game)
         msg = attacker.owner.name.capitalize() + ' attacks ' + target.owner.name + ' for ' + str(final_damage) + '!'
+        if attacker.game:
+            attacker.game.message.message(msg, 2)
+        target.take_damage(final_damage, attacker.owner, attacker.game)
 
         attacker.gear.add_w_xp(100)
 
-    if attacker.game:
-        attacker.game.message.message(msg, 2)
+
 
 
 def check_elemental_dam_res(attacker, target):
