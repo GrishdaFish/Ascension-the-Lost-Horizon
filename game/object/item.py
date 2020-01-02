@@ -18,9 +18,7 @@ class Item:
             self.use_function = self.equipment.equip
 
     def pick_up(self, inventory, game=None):
-        # add to the player's inventory and remove from the map
-        self.owner.x = None
-        self.owner.y = None
+
         if not self.owner.misc:
             # get stackable items first
             for item in inventory:

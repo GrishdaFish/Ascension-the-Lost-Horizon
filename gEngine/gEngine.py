@@ -357,7 +357,7 @@ class gEngine:
 
     def console_set_char(self, con, x, y, c):
         if cEngine:
-            self.engine.mSetChar(con, x, y, ord(c))
+            self.engine.mSetChar(con, int(x), int(y), ord(c))
         else:
             libtcod.console_set_char(self.console_dict[con], x, y, c)
 
