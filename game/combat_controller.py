@@ -260,4 +260,4 @@ def get_attack_pattern(attacker, direction, pattern="default"):
 
 
 def get_ranged_attack_pattern(attacker, target):
-    return attacker.game.check_for_target(target.owner.x, target.owner.y)
+    return [attacker.game.check_for_target(target.x, target.y)]

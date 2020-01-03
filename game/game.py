@@ -209,7 +209,7 @@ class Game:
                         m = main_menu.MainMenu(self.gEngine)
                         self.gEngine.add_module(m)
                         return
-                    if mouse.lbutton_pressed:
+                    if mouse.lbutton:
                         #intensity = 1.0 # libtcod.random_get_float(0, 1.0, 1.5)
                         #l = lights.Light(mouse.cx, mouse.cy, self.light_handler, flicker=True, decay=0.005)
                         # c = [libtcod.white, libtcod.orange]

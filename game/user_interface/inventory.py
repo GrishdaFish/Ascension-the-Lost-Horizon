@@ -321,32 +321,6 @@ def inventory(con, player, game, width=80, height=43):
                     #    confirm = d_box.display_box()
                         game.message.message("You are under the effects of a magical light!", libtcod.flame)
                         pass
-                    if player.fighter.gear.light_source:
-                        if player.fighter.gear.light_source.name == "magical light":
-                            message = "You cannot remove this magical light!"
-                            w = len(message) + 2
-                            d_box = DialogBox(game, w, 10, width / 4, height / 2, message, con=inventory_window)
-                            confirm = d_box.display_box()
-                        else: ###### TODO FIX THE REPEATING LOGIC :)
-
-                            time.sleep(.1)
-                            i_n = color_text(item.name.capitalize(), item.color)
-                            message = 'Do you want to put %s on?' % i_n
-                            w = len(message) + 2
-                            d_box = DialogBox(game, w, 10, width / 4, height / 2, message, type='option', con=inventory_window)
-                            confirm = d_box.display_box()
-                            if confirm == 1:
-                                item.item.use(game.player.fighter.inventory, game.player, game)
-                                d_box.destroy_box()
-                                inventory_items = []
-                                check_boxes = []
-                                for x in range(len(player.fighter.inventory)):
-                                    check_boxes.append(CheckBox(x=1, y=x + 3))
-                                    i = color_text(player.fighter.inventory[x].name.capitalize(),
-                                                   player.fighter.inventory[x].color)
-                                    if player.fighter.inventory[x].item.check_stackable:
-                                        i += ' (%d)' % player.fighter.inventory[x].item.qty
-                                    inventory_items.append(i)
                     else:
                         i_n = color_text(item.name.capitalize(), item.color)
                         message = 'Do you want to put %s on?' % i_n
