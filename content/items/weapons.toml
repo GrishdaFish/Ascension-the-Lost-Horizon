@@ -268,7 +268,7 @@
     damage_type="Straightsword"
     family = "straightsword"
     base_value=90
-    description=""
+    description="Like stabbing someone with a knife from a distance"
     threat_level=0.1
     size="large"
     damage = [4, 10, 0, 0] # min damage, max damage, mutliplier, bonus (2d10*1+0)
