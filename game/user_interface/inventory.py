@@ -199,7 +199,7 @@ def inventory(con, player, game, width=80, height=43):
             damage_total[0], damage_total[1], damage_total[3])
             text = 'Damage   (total): ' + color_text(damage, libtcod.green)
             game.gEngine.console_print(wielded_window, 1, 4, text)
-            accuracy = item.item.equipment.accuracy
+            accuracy = game.player.fighter.stat.get_stat("Accuracy")
             # accuracy += game.player.fighter.get_skill(item.item.equipment.damage_type).get_bonus()
             text = 'Accuracy (total): ' + color_text(str(accuracy), libtcod.green)
             game.gEngine.console_print(wielded_window, 1, 5, text)
