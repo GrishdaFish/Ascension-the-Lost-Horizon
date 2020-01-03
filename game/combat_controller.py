@@ -2,14 +2,17 @@ __author__ = ['Grishnak', 'noobspanker']
 import tcod as libtcod
 
 
-def attack(attacker, direction, force_attack_target=None):
+def attack(attacker, target, direction, force_attack_target=None):
     # TODO need to add an attack type in the weapon that correlates to our attack patterns dict
     if force_attack_target:
         single_target(attacker, force_attack_target.fighter)
     else:
-        targets = get_attack_pattern(attacker, direction)
-        multi_target(attacker, targets)
-
+        if attacker.gear.get_combat_type() == 'melee':
+            targets = get_attack_pattern(attacker, direction)
+            multi_target(attacker, targets)
+        elif attacker.gear.get_combat_type() == 'ranged':
+            targets = get_ranged_attack_pattern(attacker, target)
+            multi_target(attacker, targets)
 
 def multi_target(attacker, targets):
     for target in targets:
@@ -254,3 +257,7 @@ def get_attack_pattern(attacker, direction, pattern="default"):
 #     # "Crossbow": ['ranged', 'Stab', False, True, 1, 0],
 #     # "Throw Dagger": ['ranged', 'Stab', False, False, 1, 0],
 #     # "Javelin": ['ranged', 'Stab', False, False, 1, 0],
+
+
+def get_ranged_attack_pattern(attacker, target):
+    return attacker.game.check_for_target(target.owner.x, target.owner.y)

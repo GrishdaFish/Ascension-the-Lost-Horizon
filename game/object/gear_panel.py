@@ -420,6 +420,10 @@ class GearPanel:
         modifier = gear_a_rating - gear_b_rating
         return modifier
 
+    def get_combat_type(self):
+        weapon = self.gimmie_da_weapon()
+        return self.weapon_panel[weapon.item.equipment.subtype][0]
+
     #######################################
     # INTERFACE ###########################
     #######################################
