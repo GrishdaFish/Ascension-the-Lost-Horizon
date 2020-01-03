@@ -245,10 +245,10 @@ class GameObjects:
         :param mat: Optional: request a specific mateiral to be used
         :return: a completed game Object.item.equipment()
         """
-        equipment_types = ['melee', 'armor']  # random player equippable equipment, add extra types here
+        equipment_types = ['melee', 'armor', 'ranged']  # random player equippable equipment, add extra types here
         random_equipment_types = {
             'melee': self.melee_weapons[libtcod.random_get_int(0, 0, (len(self.melee_weapons) - 1))],
-            # 'ranged': self.ranged_weapons[libtcod.random_get_int(0, 0, len(self.ranged_weapons) - 1)],
+            'ranged': self.ranged_weapons[libtcod.random_get_int(0, 0, len(self.ranged_weapons) - 1)],
             'monster_melee': self.monster_weapons[libtcod.random_get_int(0, 0, len(self.monster_weapons) - 1)],
             'armor': self.armor[libtcod.random_get_int(0, 0, (len(self.armor) - 1))],
         }
@@ -273,7 +273,7 @@ class GameObjects:
         # equip_component.threat_level = eq.threat_level
 
         # todo revist after ranged weapons are in place
-        if equip_component.type == 'melee' or equip_component.type == 'monster_melee':
+        if equip_component.type == 'melee' or equip_component.type == 'monster_melee' or equip_component.type == 'ranged':
             equip_component.handed = eq.handed
             equip_component.dual_wield = eq.dual_wield
             equip_component.accuracy = eq.accuracy
