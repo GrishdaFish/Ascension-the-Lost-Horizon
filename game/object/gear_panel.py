@@ -422,7 +422,9 @@ class GearPanel:
 
     def get_combat_type(self):
         weapon = self.gimmie_da_weapon()
-        return self.weapon_panel[weapon.item.equipment.subtype][0]
+        if weapon:
+            return self.weapon_panel[weapon.item.equipment.subtype][0]
+        return None
 
     #######################################
     # INTERFACE ###########################

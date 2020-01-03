@@ -1,3 +1,5 @@
+import time
+
 __author__ = 'Grishnak'
 from copy import deepcopy
 from dungeon import dungeon
@@ -210,6 +212,7 @@ class Game:
                         self.gEngine.add_module(m)
                         return
                     if mouse.lbutton:
+                        time.sleep(0.1)
                         #intensity = 1.0 # libtcod.random_get_float(0, 1.0, 1.5)
                         #l = lights.Light(mouse.cx, mouse.cy, self.light_handler, flicker=True, decay=0.005)
                         # c = [libtcod.white, libtcod.orange]
@@ -218,7 +221,8 @@ class Game:
                         #l.ramped_light(0.1, 1.5, 0.0005, False)
                         #self.light_handler.add_light(l)
                         target = self.check_for_target(mouse.cx, mouse.cy)
-                        ranged_combat.fire_shot(self.player.x, self.player.y, mouse.cx, mouse.cy, self.player, self, target)
+                        if self.player.fighter.gear.get_combat_type() == 'ranged':
+                            ranged_combat.fire_shot(self.player.x, self.player.y, mouse.cx, mouse.cy, self.player, self, target)
                         self.player_action = 'turn-used'
 
                     if self.player_action == 'player-moved':
