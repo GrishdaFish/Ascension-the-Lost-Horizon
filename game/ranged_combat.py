@@ -18,9 +18,9 @@ def fire_shot(ox, oy, dx, dy, shooter, game, target=None):
     game.light_handler.add_light(l)
     if target:
         if shooter == game.player:
-            shooter.fighter.ranged_targeted_attack(target, True, game)
+            shooter.fighter.attack(target, player=True, game=game)
         else:
-            shooter.fighter.ranged_targeted_attack(target, False, game)
+            shooter.fighter.attack(target, player=False, game=game)
     else:
         blind_fire(dx, dy, ox, oy, game, shooter)
 

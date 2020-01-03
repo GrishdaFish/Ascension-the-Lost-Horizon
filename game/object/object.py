@@ -353,13 +353,10 @@ class Fighter:
                 return skill
         return None
 
-    def ranged_targeted_attack(self, target, player=False, game=None):
-        self.attack(self, target)
-
-    def attack(self, target, player=False, direction=None, game=None, force_attack=False):
+    def attack(self, target=None, player=False, direction=None, game=None, force_attack=False):
         print("Attacking")
         if force_attack:
-            combat_controller.attack(self, direction=None, force_attack_target=target)
+            combat_controller.attack(self, target, direction=None, force_attack_target=target)
         else:
             combat_controller.attack(self, target, direction)
 
