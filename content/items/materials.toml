@@ -29,7 +29,7 @@
     modifier = 4
 
 [["material"]]
-    name = "Chocolate"
+    name = "Crystal"
     price_mod = 8
     rarity = 1.0#0.03125
     type = 2 #1 for cloth, 2 for metal
