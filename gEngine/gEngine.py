@@ -324,9 +324,9 @@ class gEngine:
             col = libtcod.Color(r, g, b)
             libtcod.console_set_default_background(self.console_dict[con], col)
 
-    def console_print_frame(self, con, x, y, width, height, clear):
+    def console_print_frame(self, con, x, y, width, height, clear, title="NULL"):
         if cEngine:
-            self.engine.mPrintFrame(con, int(x), int(y), int(width), int(height), clear, 1, "NULL")
+            self.engine.mPrintFrame(con, int(x), int(y), int(width), int(height), clear, 1, title)
         else:
             libtcod.console_print_frame(self.console_dict[con], int(x), int(y), int(width), int(height), clear)
 

@@ -315,8 +315,8 @@ class GameObjects:
     def build_ammo(self, game, x, y, weapon_type=None, name=None, mat=None):
 
         #### TODO MAKE IT NOT AS BORKED ####
-        gear_panel = GearPanel()
-        ammo_types = gear_panel.ammo_types
+        gear_panel = GearPanel(None)
+        ammo_types = gear_panel.get_ammo_types()
         ####################################
 
         if mat:
@@ -326,21 +326,24 @@ class GameObjects:
 
         ammo = None
         if weapon_type:
-            ammo = ammo_types[weapon_type]
+            ammo = self.get_ammo_from_weapon_type(ammo_types[weapon_type])
         else:
-            if name:
-                ammo = self.get_ammo_from_name(name)
-                if not ammo:
-                    ammo = ammo_types[libtcod.random_get_int(0, 0, len(ammo_types) - 1)]
-            else:
-                ammo = ammo_types[libtcod.random_get_int(0, 0, len(ammo_types) - 1)]
+            if not name:
+                name = ammo_types[libtcod.random_get_int(0, 0, len(ammo_types) - 1)]
+
+            ammo = self.get_ammo_from_weapon_type(name)
+
+        if not ammo:
+            print("BORKD")
+            return
+
         ammo_component = Ammo(weapon_type=ammo.weapon_type, max_stack=ammo.max_stack, dmg_multiplier=ammo.multiplier, col=ammo.col)
 
         item_component = Item(ammo=ammo_component)
         item_component.value = int(ammo.value * mat.price_mod)
         name = mat.name + " " + ammo.name
 
-        obj = Object(game.dungeon_console, x, y, ammo.cell, ammo.name, (0, 0, 0), item=item_component)
+        obj = Object(game.dungeon_console, x, y, ammo.cell, ammo.name, (255, 255, 255), item=item_component)
 
         return obj
 
@@ -537,8 +540,8 @@ class GameObjects:
                 return equip
         return None
 
-    def get_ammo_from_name(self, name):
+    def get_ammo_from_weapon_type(self, name):
         for ammo in self.ammo:
-            if ammo.name == name:
+            if ammo.weapon_type == name:
                 return ammo
         return None

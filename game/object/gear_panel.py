@@ -127,12 +127,12 @@ class GearPanel:
         }
         self.ammo_types_key = [] # TODO add things like skill based range modifiers or flags for ammo type bonuses
         self.ammo_types = {
-            "Throwing Axe": [],
+            # "Throwing Axe": [],
             "Sling": [],
-            "Box": [],
+            "Bow": [],
             "Crossbow": [],
-            "Throw Dagger": [],
-            "Javelin": []
+            # "Throw Dagger": [],
+            # "Javelin": []
         }
         # Armor types thought process:
         # Fully naked is the only way to level None, but should provide sick end game benefits if you survive
@@ -446,3 +446,6 @@ class GearPanel:
                 #names.append(self.equipped)
             if self.is_armor(gear_to_compare):
                 names.append(self.equipped[gear_to_compare.location])
+
+    def get_ammo_types(self):
+        return list(self.ammo_types.keys())
