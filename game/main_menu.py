@@ -21,7 +21,7 @@ class MainMenu:
         self.img = self.gEngine.image_load(os.path.join(path, 'img', 'menu_background_2.png'))
         self.m_menu = Menus(self.gEngine, int(self.gEngine.SCREEN_HEIGHT / 2 + 22),
                             int(self.gEngine.SCREEN_WIDTH), 24, '',  # TODO: remove magic numbers
-                            ['Play a new game', 'Continue last game', 'Options (not working)', 'Quit', 'dev'],
+                            ['Play a new game', 'Continue last game', 'Options (not working)', 'Quit', 'dev'], #'Discord'],
                             self.con, bg=path)
 
     def activate(self):
@@ -141,4 +141,6 @@ class MainMenu:
                 return
                 # self.dev_mode.run()
                 # self.main_menu()
+            # if choice == 5:
+            #     self.gEngine.log_message('Sending to Discord...')
         return True

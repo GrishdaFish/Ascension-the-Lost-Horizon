@@ -228,7 +228,7 @@ class Game:
                                 self.popup = ranged_combat.select_ammo(self.player.x, self.player.y, mouse.cx, mouse.cy,
                                                                    self.player, self, target)
                             elif self.ranged_ammo_index:
-                                ranged_combat.fire_shot(self.player.x, self.player.y, mouse.cx, mouse.cy, self.player, game, target)  # pass ammo index
+                                ranged_combat.fire_shot(self.player.x, self.player.y, mouse.cx, mouse.cy, self.player, self, target)  # pass ammo index
                                 self.player_action = 'turn-used'
                                 self.ranged_ammo_index = None
                                 self.popup = None
@@ -236,9 +236,8 @@ class Game:
                     if self.player_action == 'player-moved':
                         self.player_moved = True
 
-
-                    # if libtcod.console_is_window_closed():
-                    #     self.player_action = 'exit'
+                    # if self.popup:
+                    #     self.popup.update(mouse)
 
                     self.hotbar.update(mouse, key, self)
                     self.bark_manager.update_barks()
@@ -264,12 +263,12 @@ class Game:
                             else:
                                 self.loot_force_display[1] -= 1
 
-                        render_list = []
-                        if self.popup:
-                            self.ranged_ammo_index = self.popup.update(mouse)
-                            render_list.append(self.popup.render(self))
-
-                    render.render_all(self, self.hover_description.render(self, True))
+                    render_list = []
+                    if self.popup:
+                        self.ranged_ammo_index = self.popup.update(mouse)
+                        render_list.append(self.popup.render)
+                    #render_list.append(self.hover_description.render(self, True))
+                    render.render_all(self, render_list)
                     self.gEngine.console_flush()
             # fast forward until the next object gets its turn
             self.ticker.get_next_tick()
