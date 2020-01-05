@@ -185,6 +185,31 @@ def load_light_sources(content):
         lights.append(l)
     return lights
 
+def load_ammo(content):
+    ammos = []
+    for ammo in content:
+        a = Ammo()
+        a.name = ammo.get('name')
+        a.cell = ammo.get('cell')
+        a.weapon_type = ammo.get('weapon_type')
+        a.max_stack = ammo.get('max-stack')
+        a.multiplier = ammo.get('multiplier')
+        a.col = ammo.get('col')
+        a.value = ammo.get('value')
+        a.stackable = ammo.get('stackable')
+    return ammos
+
+class Ammo:
+    def __init__(self):
+        self.name = ""
+        self.cell = ''
+        self.type = "ammo"
+        self.weapon_type = ""
+        self.max_stack = 0
+        self.multiplier = 0
+        self.col = [1, 1, 1]
+        self.value = 0
+        self.stackable = True
 
 class LightSource:
     def __init__(self):

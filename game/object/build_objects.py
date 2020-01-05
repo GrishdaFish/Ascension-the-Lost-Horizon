@@ -22,6 +22,7 @@ class GameObjects:
         self.equipment = []  # content[1]
         self.consumables = []  # content[2]
         self.materials = []  # content[3]
+        self.ammo = []
         self.currency = []
         self.armor = []
         self.weapons = []
@@ -55,6 +56,7 @@ class GameObjects:
         self.armor = content_parser.load_content(os.path.join(path, 'content', 'items', 'armor.toml'))
         self.weapons = content_parser.load_content(os.path.join(path, 'content', 'items', 'weapons.toml'))
         self.light_sources = content_parser.load_content(os.path.join(path, 'content', 'items', 'light_source.toml'))
+        self.ammo = content_parser.load_content(os.path.join(path, 'content', 'items', 'ammo.toml'))
         for item in self.armor:
             self.equipment.append(item)
         for item in self.weapons:
@@ -310,6 +312,39 @@ class GameObjects:
         # equip.send_to_back(game.objects)
         return equip
 
+    def build_ammo(self, game, x, y, weapon_type=None, name=None, mat=None):
+
+        #### TODO MAKE IT NOT AS BORKED ####
+        gear_panel = GearPanel()
+        ammo_types = gear_panel.ammo_types
+        ####################################
+
+        if mat:
+            mat = self.get_mat_from_name(mat)
+        else:
+            mat = self.materials[libtcod.random_get_int(0, 0, len(self.materials) - 1)]
+
+        ammo = None
+        if weapon_type:
+            ammo = ammo_types[weapon_type]
+        else:
+            if name:
+                ammo = self.get_ammo_from_name(name)
+                if not ammo:
+                    ammo = ammo_types[libtcod.random_get_int(0, 0, len(ammo_types) - 1)]
+            else:
+                ammo = ammo_types[libtcod.random_get_int(0, 0, len(ammo_types) - 1)]
+        ammo_component = Ammo(weapon_type=ammo.weapon_type, max_stack=ammo.max_stack, dmg_multiplier=ammo.multiplier, col=ammo.col)
+
+        item_component = Item(ammo=ammo_component)
+        item_component.value = int(ammo.value * mat.price_mod)
+        name = mat.name + " " + ammo.name
+
+        obj = Object(game.dungeon_console, x, y, ammo.cell, ammo.name, (0, 0, 0), item=item_component)
+
+        return obj
+
+
     def create_monster(self, game, x, y, threat_level=None, mob_name=None):
         """
         Builds a fully created monster
@@ -500,4 +535,10 @@ class GameObjects:
         for equip in self.equipment:
             if equip.name == name:
                 return equip
+        return None
+
+    def get_ammo_from_name(self, name):
+        for ammo in self.ammo:
+            if ammo.name == name:
+                return ammo
         return None
