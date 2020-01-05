@@ -33,7 +33,10 @@ def handle_misc(key, game):
         turn = None
 
     if key.vk == libtcod.KEY_ESCAPE:
-        turn = handle_quit(key, game, turn)
+        if game.popup:
+            game.popup = None
+        else:
+            turn = handle_quit(key, game, turn)
 
     if key.vk == libtcod.KEY_SPACE:
         for item in game.objects:

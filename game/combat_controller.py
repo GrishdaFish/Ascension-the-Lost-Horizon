@@ -229,6 +229,7 @@ def get_attack_pattern(attacker, direction, pattern="default"):
 #                 t = game.check_for_target(target.x - 1, target.y - 1)
 #                 if t:
 #                     game.player.fighter.attack(t, player=True, game=game)"""
+# [combat_type, damage_type, can_dual, can_shield, level, xp, can_parry}
 #     # single target in front
 #     # "Shield":
 #     # "Short Sword": ['melee', 'Slash', True, True, 1, 0],
