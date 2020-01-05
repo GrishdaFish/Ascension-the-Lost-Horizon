@@ -9,9 +9,9 @@ def select_ammo(ox, oy, dx, dy, shooter, game, target=None):
     ammo_types = ["Ammo Types"]
     weapon_type = shooter.fighter.gear.get_quipped_weapon_type()
     for item in shooter.fighter.inventory:
-        # TODO do we need to check stackable and stack items here?
-        if item.item.ammo.weapon_type == weapon_type:
-            ammo_types.append(item.name)
+        if item.item.ammo:
+            if item.item.ammo.weapon_type == weapon_type:
+                ammo_types.append(item.name)
     if ammo_types:
         return Popup(game.gEngine, game.dungeon_console, ammo_types, dx, dy)
     else:
