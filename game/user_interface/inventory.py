@@ -261,7 +261,7 @@ def inventory(con, player, game, width=80, height=43):
                     game.gEngine.console_print(compare_window, 1, 3,
                                                'Type    : ' + item.item.equipment.type.capitalize())
 
-                    if item.item.equipment.type == 'melee' or item.item.equipment.type == 'ranged':
+                    if item.item.equipment.type == 'melee':
                         damage = '%dd%d+%d' % (item.item.equipment.damage[0], item.item.equipment.damage[1],
                                                item.item.equipment.damage[3])
                         game.gEngine.console_print(compare_window, 1, 4, 'Damage  : ' + damage)

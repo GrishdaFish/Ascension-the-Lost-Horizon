@@ -9,6 +9,8 @@ def select_ammo(ox, oy, dx, dy, shooter, game, target=None):
     ammo_types = ["Ammo Types"]
     weapon_type = shooter.fighter.gear.get_quipped_weapon_type()
     for item in shooter.fighter.inventory:
+        # TODO do we need to check stackable and stack items here?
+        #if hasattr(item.item, "ammo") and item.item.ammo.weapon_type == weapon_type:
         if item.item.ammo:
             if item.item.ammo.weapon_type == weapon_type:
                 ammo_types.append(item.name)
@@ -93,6 +95,7 @@ class Popup:
     def update(self, mouse):
         r, g, b = libtcod.black
         self.gEngine.console_set_default_background(self.console, r, g, b)
+        #self.gEngine.console_set_alignment(self.console, libtcod.LEFT)
         self.gEngine.console_print_frame(self.console, 0, 0, self.width, self.height, True, self.title)
         mouse_index = None
         if self.mouse_is_in_console(mouse):
@@ -115,11 +118,12 @@ class Popup:
             return None
 
     def render(self, game):
-        self.gEngine.console_blit(self.console, self.target_console, 0, 0, self.width, self.height, self.x, self.y)
+        self.gEngine.console_blit(self.console,  0, 0, 0, 0, self.target_console, self.x, self.y)
 
     def populate(self, data):
         self.data = data
         self.width = self.get_longest_line() + 2  # addtional width for frame
+        self.width = (max(13, self.width))
         self.title = self.data.pop(0)
         self.height = len(self.data) + 2  # addition height for frame
 
