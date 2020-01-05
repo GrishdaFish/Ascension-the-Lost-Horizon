@@ -74,9 +74,9 @@ class GearPanel:
         self.owner = owner
         self.light_source = None
 
-        self.weapon_panel_key = ['Combat Type', 'Damage Type', 'Can Dual', 'Can Shield', 'Level', 'EXP']
+        self.weapon_panel_key = ['Combat Type', 'Damage Type', 'Can Dual', 'Can Shield', 'Level', 'EXP', 'Can Parry', '2h override']
         self.weapon_panel = { # do not change indexes of values, add new values to end of arrays, TY!
-            #   Key:        [combat_type, damage_type, can_dual, can_shield, level, xp, can_parry}
+            #   Key:        [combat_type, damage_type, can_dual, can_shield, level, xp, can_parry, handed_override}
             "Shield":       ['melee', 'Shield', False, True, 1, 0, True],     #
             "Short Sword":  ['melee', 'Slash', True, True, 1, 0, False],       #
             "Long Sword":   ['melee', 'Slash', False, False, 1, 0, False],     #
@@ -124,6 +124,15 @@ class GearPanel:
             "Cloak": [],
             "Neck": [],
             "Ring": [],
+        }
+        self.ammo_types_key = [] # TODO add things like skill based range modifiers or flags for ammo type bonuses
+        self.ammo_types = {
+            "Throwing Axe": [],
+            "Sling": [],
+            "Box": [],
+            "Crossbow": [],
+            "Throw Dagger": [],
+            "Javelin": []
         }
         # Armor types thought process:
         # Fully naked is the only way to level None, but should provide sick end game benefits if you survive

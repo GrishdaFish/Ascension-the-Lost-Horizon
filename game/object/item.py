@@ -4,7 +4,7 @@ from gEngine.utilities.user_interface import menu
 
 class Item:
     # an item that can be picked up and used.
-    def __init__(self, spell=None, equipment=None):
+    def __init__(self, spell=None, equipment=None, ammo=None):
         self.owner = None
         self.value = 0
         self.spell = spell
@@ -16,6 +16,8 @@ class Item:
         self.equipment = equipment
         if self.equipment:
             self.use_function = self.equipment.equip
+        self.ammo = ammo
+
 
     def pick_up(self, inventory, game=None):
 
@@ -248,3 +250,11 @@ print("now you've done it: " + str(owner))
 
     def un_equip(self, target, item):
         target.fighter.inventory.append(item)"""
+
+
+class Ammo:
+    def __init__(self, weapon_type=None, max_stack=10, dmg_multiplier=1.0, col=[1, 1, 1]):
+        self.weapon_type = weapon_type
+        self.max_stack = max_stack
+        self.damage_multiplier = dmg_multiplier
+        self.color = col

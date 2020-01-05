@@ -168,6 +168,8 @@ class Game:
         self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '15.png')))
         self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '16.png')))
         self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '17.png')))
+        self.ranged_ammo_index = None
+        self.popup = None
         self.gEngine.log_message("Game fully initialized")
         self.gEngine.log_close_block()
 
@@ -220,10 +222,16 @@ class Game:
                         #l.randomize()
                         #l.ramped_light(0.1, 1.5, 0.0005, False)
                         #self.light_handler.add_light(l)
-                        target = self.check_for_target(mouse.cx, mouse.cy)
-                        if self.player.fighter.gear.get_combat_type() == 'ranged':
-                            ranged_combat.fire_shot(self.player.x, self.player.y, mouse.cx, mouse.cy, self.player, self, target)
-                        self.player_action = 'turn-used'
+                        if not self.popup and self.player.fighter.gear.get_combat_type() == 'ranged':
+                            target = self.check_for_target(mouse.cx, mouse.cy)
+                            if target:
+                                self.popup = ranged_combat.select_ammo(self.player.x, self.player.y, mouse.cx, mouse.cy,
+                                                                   self.player, self, target)
+                            elif self.ranged_ammo_index:
+                                ranged_combat.fire_shot(self.player.x, self.player.y, mouse.cx, mouse.cy, self.player, game, target)  # pass ammo index
+                                self.player_action = 'turn-used'
+                                self.ranged_ammo_index = None
+                                self.popup = None
 
                     if self.player_action == 'player-moved':
                         self.player_moved = True
@@ -255,6 +263,12 @@ class Game:
                                 self.message.message("Your detect items spell has expired.", libtcod.light_cyan)
                             else:
                                 self.loot_force_display[1] -= 1
+
+                        render_list = []
+                        if self.popup:
+                            self.ranged_ammo_index = self.popup.update(mouse)
+                            render_list.append(self.popup.render(self))
+
                     render.render_all(self, self.hover_description.render(self, True))
                     self.gEngine.console_flush()
             # fast forward until the next object gets its turn
