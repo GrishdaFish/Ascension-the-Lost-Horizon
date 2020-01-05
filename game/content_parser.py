@@ -23,6 +23,8 @@ def load_content(path):
         return load_material(content.get('material'))
     if content.get('light_source'):
         return load_light_sources(content.get('light_source'))
+    if content.get('ammo'):
+        return load_ammo(content.get('ammo'))
 
 def load_monsters(content):
     monster_array = []
@@ -185,6 +187,7 @@ def load_light_sources(content):
         lights.append(l)
     return lights
 
+
 def load_ammo(content):
     ammos = []
     for ammo in content:
@@ -197,7 +200,9 @@ def load_ammo(content):
         a.col = ammo.get('col')
         a.value = ammo.get('value')
         a.stackable = ammo.get('stackable')
+        ammos.append(a)
     return ammos
+
 
 class Ammo:
     def __init__(self):
