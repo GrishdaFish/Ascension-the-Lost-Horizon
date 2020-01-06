@@ -225,14 +225,20 @@ class Game:
                         if not self.popup and self.player.fighter.gear.get_combat_type() == 'ranged':
                             target = self.check_for_target(mouse.cx, mouse.cy)
                             if target:
-                                self.popup = ranged_combat.select_ammo(self.player.x, self.player.y, mouse.cx, mouse.cy,
+                                ammo, self.popup = ranged_combat.select_ammo(self.player.x, self.player.y, mouse.cx, mouse.cy,
                                                                    self.player, self, target)
                         elif self.popup and self.popup.mouse_is_in_console(mouse):
-                            # self.ranged_ammo_index:
-                            ranged_combat.fire_shot(self.player.x, self.player.y, mouse.cx, mouse.cy, self.player, self, target)  # pass ammo index
-                            self.player_action = 'turn-used'
-                            # self.ranged_ammo_index = None
-                            self.popup = None
+                            if self.ranged_ammo_index:
+                                selected_ammo = ammo[self.ranged_ammo_index]
+                                if selected_ammo.item.qty > 1:
+                                    selected_ammo.item.qty -= 1
+                                elif selected_ammo.item.qty == 1:
+                                    self.player.fighter.inventory.remove()
+                                multiplier = selected_ammo.item.ammo.damage_multiplier
+                                ranged_combat.fire_shot(self.player.x, self.player.y, mouse.cx, mouse.cy, self.player, self, target)
+                                self.player_action = 'turn-used'
+                                self.ranged_ammo_index = None
+                                self.popup = None
 
                     if self.player_action == 'player-moved':
                         self.player_moved = True

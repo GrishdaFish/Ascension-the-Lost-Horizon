@@ -7,6 +7,7 @@ from gEngine.utilities.user_interface.menu import color_text
 
 def select_ammo(ox, oy, dx, dy, shooter, game, target=None):
     ammo_types = ["Ammo Types"]
+    ammos = []
     weapon_type = shooter.fighter.gear.get_quipped_weapon_type()
     for item in shooter.fighter.inventory:
         # TODO do we need to check stackable and stack items here?
@@ -14,8 +15,9 @@ def select_ammo(ox, oy, dx, dy, shooter, game, target=None):
         if item.item.ammo:
             if item.item.ammo.weapon_type == weapon_type:
                 ammo_types.append(item.name)
+                ammos.append(item)
     if ammo_types:
-        return Popup(game.gEngine, game.dungeon_console, ammo_types, dx, dy)
+        return [ammos, Popup(game.gEngine, game.dungeon_console, ammo_types, dx, dy)]
     else:
         print("You gots none ammo's noob!")
         return None

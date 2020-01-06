@@ -195,7 +195,7 @@ def load_ammo(content):
         a.name = ammo.get('name')
         a.cell = ammo.get('cell')
         a.weapon_type = ammo.get('weapon_type')
-        a.max_stack = ammo.get('max-stack')
+        a.max_stack = ammo.get('max_stack')
         a.multiplier = ammo.get('multiplier')
         a.col = ammo.get('col')
         a.value = ammo.get('value')

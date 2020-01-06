@@ -255,6 +255,6 @@ print("now you've done it: " + str(owner))
 class Ammo:
     def __init__(self, weapon_type=None, max_stack=10, dmg_multiplier=1.0, col=[1, 1, 1]):
         self.weapon_type = weapon_type
-        self.max_stack = max_stack
+        self.max_stack = int(max_stack)
         self.damage_multiplier = dmg_multiplier
         self.color = col

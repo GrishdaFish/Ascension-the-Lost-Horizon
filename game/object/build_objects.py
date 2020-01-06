@@ -340,10 +340,12 @@ class GameObjects:
         ammo_component = Ammo(weapon_type=ammo.weapon_type, max_stack=ammo.max_stack, dmg_multiplier=ammo.multiplier, col=ammo.col)
 
         item_component = Item(ammo=ammo_component)
+        item_component.stackable = True
+        item_component.qty = int(ammo.max_stack)
         item_component.value = int(ammo.value * mat.price_mod)
         name = mat.name + " " + ammo.name
 
-        obj = Object(game.dungeon_console, x, y, ammo.cell, ammo.name, (255, 255, 255), item=item_component)
+        obj = Object(game.dungeon_console, x, y, ammo.cell, name, (255, 255, 255), item=item_component)
 
         return obj
 

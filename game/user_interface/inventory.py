@@ -255,6 +255,17 @@ def inventory(con, player, game, width=80, height=43):
                 # if mouse.cy-3 <= len(player.fighter.inventory):
                 item = player.fighter.inventory[mouse.cy - 3]
                 current_selection = mouse.cy - 3
+                if item.item.ammo:
+                    game.gEngine.console_print(compare_window, 1, 2,
+                                               'Name       : ' + color_text(item.name.capitalize(), item.color))
+                    game.gEngine.console_print(compare_window, 1, 3,
+                                               'Weapon Type: ' + item.item.ammo.weapon_type.capitalize())
+                    game.gEngine.console_print(compare_window, 1, 4,
+                                               'Damage X   : %sx' % str(item.item.ammo.damage_multiplier))
+                    game.gEngine.console_print(compare_window, 1, 5,
+                                               'Value      : ' + str(item.item.value))
+                    game.gEngine.console_print(compare_window, 1, 6,
+                                               'Quantity   : ' + str(item.item.qty))
                 if item.item.equipment:
                     game.gEngine.console_print(compare_window, 1, 2,
                                                'Name    : ' + color_text(item.name.capitalize(), item.color))
@@ -268,7 +279,7 @@ def inventory(con, player, game, width=80, height=43):
                         game.gEngine.console_print(compare_window, 1, 5,
                                                    'Accuracy: ' + str(item.item.equipment.accuracy))
 
-                        game.gEngine.console_print(compare_window, 1, 7, 'Skill   : ' + item.item.equipment.damage_type)
+                        # game.gEngine.console_print(compare_window, 1, 7, 'Skill   : ' + item.item.equipment.damage_type)
                     elif item.item.equipment.type == 'light_source':
                         i = item.item.equipment.type.replace('_', ' ')
                         game.gEngine.console_print(compare_window, 1, 2,
