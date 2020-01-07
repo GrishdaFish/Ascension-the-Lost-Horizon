@@ -2,48 +2,22 @@ import tcod as libtcod
 
 
 class StatusBar:
-    def __init__(self, owner, size, full, empty, con, type='hp', gEngine=None):
+    def __init__(self,size, full, empty, con, gEngine=None):
         self.bar = gEngine.image_new(size * 2, 2)
         self.full = full
         self.empty = empty
-        self.owner = owner
         self.size = size * 2
         self.con = con
-        self.type = type
 
-    def render(self, px, py, gEngine=None, values=None, name=None):
+    def render(self, px, py, gEngine, values=None, name=None):
         if values:
             value = values[0]
             maximum = values[1]
             msg = name.capitalize() + ': ' + str(value) + '/' + str(int(maximum))
         else:
-            maximum, value = 0, 0
-            if self.type == 'hp':
-                value = int(self.owner.hp)
-                maximum = int(self.owner.stat.get_stat_base("HP"))
-            if self.type == 'mp':
-                pass
-            if self.type == 'xp':
-                value = self.owner.current_xp
-                if self.owner.xp_to_next_level:
-                    maximum = int(self.owner.xp_to_next_level)
-            if self.type == 'status':  # for status ailments or buffs like poison, stun or regen
-                pass
-
-            if self.type == 'torch':
-                if self.owner.gear.light_source:
-                    self.full = self.owner.gear.light_source.item.equipment.torch_color
-                    value = int(self.owner.gear.light_source.item.equipment.fuel)
-                    maximum = int(self.owner.gear.light_source.item.equipment.max_fuel)
-                else:
-                    self.full = self.empty
-                    value = 0
-                    maximum = 0
-
-            if maximum <= 0:
-                maximum = 0.1
-
-            msg = self.type.capitalize() + ': ' + str(value) + '/' + str(int(maximum))
+            gEngine.log_open_block("No  values passed to status bar.render()")
+            gEngine.log_close_block()
+            return
 
         if value <= 0:
             bar = int(float(self.size) / (maximum / 0.1))
@@ -62,8 +36,7 @@ class StatusBar:
         gEngine.image_blit_2x(self.bar, self.con, px, py)
         r, g, b = libtcod.white
         gEngine.console_set_default_foreground(self.con, r, g, b)
-        gEngine.console_set_alignment(self.con, int(libtcod.CENTER))
-        gEngine.console_print(self.con, px + self.size / 4, py, msg)
+        gEngine.console_print(self.con, px, py, msg)
 
     def remove_bar(self, bars):
         pass
@@ -79,3 +52,44 @@ class StatusBar:
             pass
         if 'torch':
             pass
+
+
+class AnimatedStatusBar:
+    def __init__(self, background, foreground, animation, target_console, gEngine, x, y):
+        self.x = x
+        self.y = y
+        self.background = gEngine.image_load(background)
+        self.foreground = gEngine.image_load(foreground)
+        self.animation = animation
+        self.target_console = target_console
+        self.gEngine = gEngine
+        w, h = gEngine.image_get_size(self.foreground)
+        print(w, h)
+        self.fore_con = gEngine.console_new(w / 2, h / 2)
+        self.size = w
+        w, h = gEngine.image_get_size(self.background)
+        print(w, h)
+        self.back_con = gEngine.console_new(w / 2, h / 2)
+
+    def update(self, values):
+        value = values[0]
+        maximum = values[1]
+        animation_off = False
+        if maximum <= 0:
+            maximum = 0.1
+        if value <= 0:
+            animation_off = True
+            length = int(float(self.size) / (maximum / 0.1))
+        else:
+            length = int(float(self.size) / (float(maximum) / float(value)))
+        if length > self.size:
+            length = self.size
+
+        self.gEngine.console_blit(self.back_con, 0, 0, 0, 0, self.target_console, self.x, self.y, 1.0, 1.0)
+        self.gEngine.console_blit(self.fore_con, 0, 0, length / 2, 0, self.target_console, self.x, self.y, 1.0, 1.0)
+        if not animation_off:
+            self.gEngine.animation_draw_animation(self.animation, self.target_console, self.x + length / 2, self.y)
+
+
+    def render(self):
+        pass

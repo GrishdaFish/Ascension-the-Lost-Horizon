@@ -88,9 +88,17 @@ def draw_user_interface(game):
     game.gEngine.console_set_default_background(game.panel, r, g, b)
     game.gEngine.console_clear(game.panel)
 
-    game.player_hp_bar.render(1, 1, game.gEngine)
-    game.player_torch_bar.render(1, 2, game.gEngine)
-    game.player_xp_bar.render(1, 3, game.gEngine)
+    game.player_hp_bar.render(1, 1, game.gEngine, [game.player.fighter.hp,
+                                                   game.player.fighter.stat.get_stat_base("HP")], 'Hp: ')
+    if game.player.fighter.gear.light_source:
+        current = game.player.fighter.gear.light_source.item.equipment.fuel
+        max = game.player.fighter.gear.light_source.item.equipment.max_fuel
+        data = [current, max]
+    else:
+        data = [0, 0]
+    game.player_torch_bar.update(data)
+    game.player_xp_bar.render(1, 3, game.gEngine, [game.player.fighter.current_xp,
+                                                   game.player.fighter.xp_to_next_level], 'Xp: ')
 
     r, g, b = libtcod.light_gray
     game.gEngine.console_set_default_foreground(game.panel, r, g, b)
