@@ -17,7 +17,7 @@ def select_ammo(ox, oy, dx, dy, shooter, game, target=None):
                 ammo_types.append(item.name)
                 ammos.append(item)
     if ammo_types:
-        return [ammos, Popup(game.gEngine, game.dungeon_console, ammo_types, dx, dy)]
+        return Popup(game.gEngine, game.dungeon_console, ammo_types, dx, dy, ammos)
     else:
         print("You gots none ammo's noob!")
         return None
@@ -77,7 +77,7 @@ def blind_fire(dx, dy, ox, oy, game, shooter):
 
 
 class Popup:
-    def __init__(self, gEngine, target, data, x, y):  # target = game.dungeon_console
+    def __init__(self, gEngine, target, data, x, y, index):  # target = game.dungeon_console
         self.gEngine = gEngine
         self.target_console = target
         self.width = 0
@@ -87,6 +87,7 @@ class Popup:
         self.x = x
         self.y = y
         self.console = self.gEngine.console_new(self.width, self.height)
+        self.index = index
 
     def mouse_is_in_console(self, mouse):
         if mouse.cx > self.x and mouse.cx < self.x + self.width:

@@ -34,7 +34,7 @@ def color_text(text, color_f=None, color_b=None):
 
 class Menus:
     def __init__(self, gEngine, screen_height, screen_width, width, header, options,
-                 con=None, bg=None, cl_options=None):
+                 con=0, bg=None, cl_options=None):
         self.is_dragging = False
         self.in_drag_zone = False
         self.mouse_highlight = False
@@ -76,6 +76,7 @@ class Menus:
         self.last_input = 0
         libtcod.mouse_get_status()  # this is to pick up stray mouse input that
         # shouldnt be picked up.
+        self.con = con
 
     def run(self, alpha=1.0):
         if self.is_visible:
@@ -88,7 +89,7 @@ class Menus:
             self.gEngine.console_set_alignment(self.window, libtcod.LEFT)
             self.gEngine.console_set_default_foreground(self.window, r, g, b)
             self.gEngine.console_blit(self.window, 0, 0, self.width,
-                                      self.height, 0, self.w_pos, self.h_pos, alpha, alpha)
+                                      self.height, self.con, self.w_pos, self.h_pos, alpha, alpha)
 
             self.gEngine.console_print_frame(self.window, 0, 0,
                                              self.width, self.height, False)

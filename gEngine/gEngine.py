@@ -115,10 +115,10 @@ class gEngine:
     def run(self):
         is_closed = None
         while True:
-            self.handle_input()
+            key, mouse = self.handle_input()
             for module in self.modules:
                 if module.active is True:
-                    module.run(None, None)
+                    module.run(key, mouse)
 
     def render_all(self):
         self.console_flush()

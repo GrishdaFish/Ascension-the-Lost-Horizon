@@ -11,7 +11,7 @@ class MainMenu:
     def __init__(self, gEngine):
         self.gEngine = gEngine
         self.active = True
-        self.con = self.gEngine.console_new(self.gEngine.SCREEN_WIDTH, self.gEngine.SCREEN_HEIGHT)
+        self.con = 0  # self.gEngine.console_new(self.gEngine.SCREEN_WIDTH, self.gEngine.SCREEN_HEIGHT)
         if _gEngine.RELEASE:
             path = getattr(sys, "_MEIPASS", ".")
         else:
