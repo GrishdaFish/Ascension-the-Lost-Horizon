@@ -34,13 +34,14 @@ def color_text(text, color_f=None, color_b=None):
 
 class Menus:
     def __init__(self, gEngine, screen_height, screen_width, width, header, options,
-                 con=None, bg=None, cl_options=None):
+                 con=0, bg=None, cl_options=None):
         self.is_dragging = False
         self.in_drag_zone = False
         self.mouse_highlight = False
         self.gEngine = gEngine
         self.cl_options = cl_options
         self.img = None
+        self.con = con
         # if bg:
         #     self.img = self.gEngine.image_load(bg)
 
