@@ -28,7 +28,6 @@ class EscMenu:
     def activate(self):
         self.active = True
         self.game.deactivate()
-        self.gEngine.console_clear(0)
 
     def deactivate(self):
         self.active = False
@@ -47,37 +46,7 @@ class EscMenu:
         menu_fade_value = 0.0
         self.gEngine.log_open_block("ESC menu running...")
         while not libtcod.console_is_window_closed():
-            # if not intro_done:
-            #     img = "game logo fade"
-            #     intro_done = self.gEngine.animation_draw_animation(img, 0, 0, 0)
-            # else:
-            #     img = "game logo flicker"
-            #     self.gEngine.animation_draw_animation(img, 0, 0, 0)
-            # if logo_done:
-            #     if letter_index < len(studio_name):
-            #         print_name += studio_name[letter_index]
-            #     else:
-            #         name_done = True
-            #     letter_index +=1
-            #
-            # logo_done = self.gEngine.animation_draw_animation("title logo", 0, 0, 29)
-            #
-            # r, g, b = libtcod.color_lerp(libtcod.light_flame, libtcod.dark_flame, lerp_value)
-            # if name_done:
-            #     lerp_value += lerp_amount
-            #     if lerp_value < 0.087:
-            #         lerp_amount = 0.087
-            #     if lerp_value > 0.913:
-            #         lerp_amount = -0.087
-            #
-            #
-            # self.gEngine.console_set_default_foreground(0, r, g, b)
-            # self.gEngine.console_print(0, int(self.gEngine.SCREEN_WIDTH / 2 - 11),
-            #                            int(self.gEngine.SCREEN_HEIGHT -15),
-            #                            print_name)
-            #
-            # # libtcod.console_credits_render(2, self.gEngine.SCREEN_HEIGHT - 2, True)
-            # self.gEngine.console_set_default_background(0, 0, 0, 0)
+            self.gEngine.console_set_default_background(0, 0, 0, 0)
             # if intro_done:
             if menu_fade:
                 if menu_fade_value < 1.0:
