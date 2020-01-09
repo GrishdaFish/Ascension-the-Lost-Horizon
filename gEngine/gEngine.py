@@ -128,6 +128,7 @@ class gEngine:
 
     def remove_module(self, module):
         module.on_exit()
+        self.modules.remove(module)
 
     def log_open_block(self, message):
         if cEngine:

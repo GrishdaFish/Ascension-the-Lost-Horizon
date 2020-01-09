@@ -23,7 +23,7 @@ class EscMenu:
         self.m_menu = Menus(self.gEngine, int(self.gEngine.SCREEN_HEIGHT / 2 + 22),
                             int(self.gEngine.SCREEN_WIDTH), 24, '',  # TODO: remove magic numbers
                             ['Return to Game', 'Options (not working)', 'Quit to Menu', 'Quit Game'],
-                            self.con, bg=path)
+                            self.con)
 
     def activate(self):
         self.active = True
@@ -43,9 +43,14 @@ class EscMenu:
 
         menu_fade = False
         menu_fade_amount = 0.1
-        menu_fade_value = 0.0
+        menu_fade_value = 1.0
         self.gEngine.log_open_block("ESC menu running...")
+        first = True
         while not libtcod.console_is_window_closed():
+            #if not first:
+            key, mouse = self.gEngine.handle_input()
+            print(key, mouse)
+            first = False
             self.gEngine.console_set_default_background(0, 0, 0, 0)
             # if intro_done:
             if menu_fade:
@@ -55,8 +60,7 @@ class EscMenu:
                     # menu_fade_value = 1.0
                     menu_fade = False
 
-
-            choice = m_menu.run(menu_fade_value)
+            choice = m_menu.run(key, mouse, menu_fade_value)
             self.gEngine.console_flush()
             self.gEngine.console_clear(self.con)
             self.gEngine.console_clear(0)
@@ -65,6 +69,7 @@ class EscMenu:
                 self.gEngine.remove_module(self)
                 self.gEngine.console_remove_console(self.con)
                 self.gEngine.log_close_block()
+                self.game.activate()
                 # g = game.Game(self.gEngine)
                 # g.new_game()
                 # self.gEngine.add_module(g)

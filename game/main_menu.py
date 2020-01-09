@@ -57,6 +57,7 @@ class MainMenu:
         menu_fade_value = 0.0
         self.gEngine.log_open_block("Main menu running...")
         while not libtcod.console_is_window_closed():
+            key, mouse = self.gEngine.handle_input()
             if not intro_done:
                 img = "game logo fade"
                 intro_done = self.gEngine.animation_draw_animation(img, 0, 0, 0)
@@ -97,7 +98,7 @@ class MainMenu:
                         menu_fade = False
 
 
-            choice = m_menu.run(menu_fade_value)
+            choice = m_menu.run(key, mouse, menu_fade_value)
             self.gEngine.console_flush()
             self.gEngine.console_clear(self.con)
             self.gEngine.console_clear(0)
