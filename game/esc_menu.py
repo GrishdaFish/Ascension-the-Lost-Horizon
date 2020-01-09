@@ -41,24 +41,13 @@ class EscMenu:
         m_menu = self.m_menu
         m_menu.is_visible = True
 
-        menu_fade = False
-        menu_fade_amount = 0.1
         menu_fade_value = 1.0
         self.gEngine.log_open_block("ESC menu running...")
-        first = True
         while not libtcod.console_is_window_closed():
             #if not first:
             key, mouse = self.gEngine.handle_input()
             print(key, mouse)
-            first = False
             self.gEngine.console_set_default_background(0, 0, 0, 0)
-            # if intro_done:
-            if menu_fade:
-                if menu_fade_value < 1.0:
-                    menu_fade_value += menu_fade_amount
-                else:
-                    # menu_fade_value = 1.0
-                    menu_fade = False
 
             choice = m_menu.run(key, mouse, menu_fade_value)
             self.gEngine.console_flush()
