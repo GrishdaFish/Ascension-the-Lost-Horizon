@@ -135,7 +135,6 @@ class Menus:
         #print(mouse.cx, mouse.cy)
         mx = mouse.cx - self.w_pos
         my = math.ceil(mouse.cy - self.h_pos)
-        print(mx, my)
         # for dragging
         if 2 <= mx <= self.width - 2 and my == 0:
             self.in_drag_zone = True
