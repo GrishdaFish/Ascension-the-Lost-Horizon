@@ -47,6 +47,7 @@ class Console:
         self.commands = {'spawn_monster': self.spawn_monster,
                          'spawn_equipment': self.spawn_equipment,
                          'spawn_consumable': self.spawn_consumable,
+                         'spawn_ammo': self.spawn_ammo,
                          'python': self.python,
                          'teleport_down': self.teleport_down,
                          'teleport_up': self.teleport_up,
@@ -149,18 +150,19 @@ class Console:
         if command in self.commands:
             com = self.commands[command]
             ex = None
-            try:
-                if param is None and additional_params is None:
-                    com()
-                    return
-                if additional_params is None:
-                    com(param)
-                    return
-                else:
-                    com(param, additional_params)
-                    return
-            except ex:
-                self.game.message.error_message(ex)
+            #try:
+            if param is None and additional_params is None:
+                com()
+                return
+            if additional_params is None:
+                com(param)
+                return
+            else:
+                com(param, additional_params)
+                return
+            #except Exception as ex:
+                # self.game.message.error_message(ex)
+                #print(ex)
 
     def level_up(self):
         self.game.player.fighter.level_up()
@@ -315,3 +317,6 @@ class Console:
                         self.game.player.x = tile.x
                         self.game.player.y = tile.y
                         return
+
+    def spawn_ammo(self, param=None, add_param=None):
+        self.game.objects.append(self.game.build_objects.build_ammo(self.game, self.game.player.x, self.game.player.y))

@@ -115,10 +115,10 @@ class gEngine:
     def run(self):
         is_closed = None
         while True:
-            self.handle_input()
+            key, mouse = self.handle_input()
             for module in self.modules:
                 if module.active is True:
-                    module.run(None, None)
+                    module.run(key, mouse)
 
     def render_all(self):
         self.console_flush()
@@ -128,6 +128,7 @@ class gEngine:
 
     def remove_module(self, module):
         module.on_exit()
+        self.modules.remove(module)
 
     def log_open_block(self, message):
         if cEngine:
@@ -324,9 +325,9 @@ class gEngine:
             col = libtcod.Color(r, g, b)
             libtcod.console_set_default_background(self.console_dict[con], col)
 
-    def console_print_frame(self, con, x, y, width, height, clear):
+    def console_print_frame(self, con, x, y, width, height, clear, title="NULL"):
         if cEngine:
-            self.engine.mPrintFrame(con, int(x), int(y), int(width), int(height), clear, 1, "NULL")
+            self.engine.mPrintFrame(con, int(x), int(y), int(width), int(height), clear, 1, title)
         else:
             libtcod.console_print_frame(self.console_dict[con], int(x), int(y), int(width), int(height), clear)
 

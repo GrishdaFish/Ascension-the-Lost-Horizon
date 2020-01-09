@@ -1,3 +1,4 @@
+from game import esc_menu
 from game.user_interface import character
 from game.user_interface import inventory
 from gEngine.utilities.user_interface import dialog_box
@@ -33,7 +34,7 @@ def handle_misc(key, game):
         turn = None
 
     if key.vk == libtcod.KEY_ESCAPE:
-        turn = handle_quit(key, game, turn)
+        turn = handle_esc_menu(key, game, turn)  # handle_quit(key, game, turn)
 
     if key.vk == libtcod.KEY_SPACE:
         for item in game.objects:
@@ -145,6 +146,12 @@ def handle_quit(key, game, turn):
                 else:
                     d_box.destroy_box()
                     return 'didnt-take-turn'
+
+def handle_esc_menu(key, game, turn):
+    if key.vk == libtcod.KEY_ESCAPE and game.active:
+        m = esc_menu.EscMenu(game.gEngine, game)
+        game.gEngine.add_module(m)
+        m.activate()
 
 
 def get_move_direction(key, game):

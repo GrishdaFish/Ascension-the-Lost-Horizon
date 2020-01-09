@@ -1,5 +1,5 @@
 import tcod as libtcod
-
+import math
 
 
 def color_text(text, color_f=None, color_b=None):
@@ -77,8 +77,9 @@ class Menus:
         self.last_input = 0
         libtcod.mouse_get_status()  # this is to pick up stray mouse input that
         # shouldnt be picked up.
+        self.con = con
 
-    def run(self, alpha=1.0):
+    def run(self, key, mouse, alpha=1.0):
         if self.is_visible:
             y = 0
             letter_index = ord('a')
@@ -89,7 +90,7 @@ class Menus:
             self.gEngine.console_set_alignment(self.window, libtcod.LEFT)
             self.gEngine.console_set_default_foreground(self.window, r, g, b)
             self.gEngine.console_blit(self.window, 0, 0, self.width,
-                                      self.height, 0, self.w_pos, self.h_pos, alpha, alpha)
+                                      self.height, self.con, self.w_pos, self.h_pos, alpha, alpha)
 
             self.gEngine.console_print_frame(self.window, 0, 0,
                                              self.width, self.height, False)
@@ -107,8 +108,8 @@ class Menus:
                 letter_index += 1
 
             self.gEngine.console_flush()
-            m_input = self.mouse_input()
-            k_input = self.key_input()
+            m_input = self.mouse_input(mouse)
+            k_input = self.key_input(key)
             if m_input != -1:
                 if m_input == 'close':
                     return None
@@ -128,15 +129,13 @@ class Menus:
             self.gEngine.image_delete(self.img)
         self.gEngine.console_remove_console(self.window)
 
-    def mouse_input(self):
+    def mouse_input(self, mouse):
         # Menu Mouse Input
         mouse_choice = None
-        mouse = libtcod.Mouse()
-        key, mouse = self.gEngine.handle_input(mouse=mouse)#libtcod.mouse_get_status()
+
         #print(mouse.cx, mouse.cy)
         mx = mouse.cx - self.w_pos
-        my = mouse.cy - self.h_pos
-
+        my = math.ceil(mouse.cy - self.h_pos)
         # for dragging
         if 2 <= mx <= self.width - 2 and my == 0:
             self.in_drag_zone = True
@@ -194,9 +193,8 @@ class Menus:
             return mouse_choice
         return -1
 
-    def key_input(self):
+    def key_input(self, key):
         # Menu Keyboard Input
-        key, mouse = self.gEngine.handle_input()# libtcod.console_check_for_keypress()
 
         index = key.c - ord('a')
 

@@ -2,14 +2,17 @@ __author__ = ['Grishnak', 'noobspanker']
 import tcod as libtcod
 
 
-def attack(attacker, direction, force_attack_target=None):
+def attack(attacker, target, direction, force_attack_target=None):
     # TODO need to add an attack type in the weapon that correlates to our attack patterns dict
     if force_attack_target:
         single_target(attacker, force_attack_target.fighter)
     else:
-        targets = get_attack_pattern(attacker, direction)
-        multi_target(attacker, targets)
-
+        if attacker.gear.get_combat_type() == 'melee':
+            targets = get_attack_pattern(attacker, direction)
+            multi_target(attacker, targets)
+        elif attacker.gear.get_combat_type() == 'ranged':
+            targets = get_ranged_attack_pattern(attacker, target)
+            multi_target(attacker, targets)
 
 def multi_target(attacker, targets):
     for target in targets:
@@ -61,7 +64,16 @@ def single_target(attacker, target):
 
         attacker.gear.add_w_xp(100)
 
+        if elemental_damage:
+            do_particle_burst(attacker, target)
 
+    if attacker.game:
+        attacker.game.message.message(msg, 2)
+
+
+def do_particle_burst(attacker, target):  # does particle burst on elemental weapon damage
+    for fx in attacker.stat.elemental_effects:
+        attacker.game.gEngine.particle_explosion(fx.amount, target.owner.x, target.owner.y, color=attacker.stat.get_effect_color(fx))
 
 
 def check_elemental_dam_res(attacker, target):
@@ -217,6 +229,7 @@ def get_attack_pattern(attacker, direction, pattern="default"):
 #                 t = game.check_for_target(target.x - 1, target.y - 1)
 #                 if t:
 #                     game.player.fighter.attack(t, player=True, game=game)"""
+# [combat_type, damage_type, can_dual, can_shield, level, xp, can_parry}
 #     # single target in front
 #     # "Shield":
 #     # "Short Sword": ['melee', 'Slash', True, True, 1, 0],
@@ -245,3 +258,7 @@ def get_attack_pattern(attacker, direction, pattern="default"):
 #     # "Crossbow": ['ranged', 'Stab', False, True, 1, 0],
 #     # "Throw Dagger": ['ranged', 'Stab', False, False, 1, 0],
 #     # "Javelin": ['ranged', 'Stab', False, False, 1, 0],
+
+
+def get_ranged_attack_pattern(attacker, target):
+    return [attacker.game.check_for_target(target.x, target.y)]

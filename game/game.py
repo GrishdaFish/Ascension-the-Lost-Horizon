@@ -1,3 +1,5 @@
+import time
+
 __author__ = 'Grishnak'
 from copy import deepcopy
 from dungeon import dungeon
@@ -169,11 +171,15 @@ class Game:
         self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '15.png')))
         self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '16.png')))
         self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '17.png')))
+        self.ranged_ammo_index = None
+        self.popup = None
         self.gEngine.log_message("Game fully initialized")
         self.gEngine.log_close_block()
+        self.is_player_turn = False
 
     def activate(self):
         self.active = True
+        self.gEngine.log_open_block("Game running.")
 
     def deactivate(self):
         self.active = False
@@ -182,84 +188,96 @@ class Game:
         self.deactivate()
 
     def run(self, key, mouse):
-        self.gEngine.log_open_block("Game running.")
+        #while True:
+        self.player_moved = False
+        # erase all objects at their old locations, before they move
+        for object in self.objects:
+            object.clear(self.gEngine)
 
-        while True:
+        # Monsters faster than the player, take turns first
+        if not self.is_player_turn:
+            self.is_player_turn = self.ticker.next_turn(self)
+            self.ticker.get_next_tick()
 
+        self.player_action = 'didnt-take-turn'
+        if self.player_moved:
             self.gEngine.map_compute_fov(self.player.x, self.player.y)
             self.player_moved = False
-            # erase all objects at their old locations, before they move
+        if self.is_player_turn:
+            self.player_moved = False
+            # while self.player_action == 'didnt-take-turn':
+            #key, mouse = self.gEngine.handle_input()
+            self.hover_description.reset()
+            self.hover_description.update(mouse, self.get_names_under_mouse(), self.dungeon_height)
+            self.player_action = input_handler.handle_keys(key, self)
+            if self.player_action == 'exit':
+                self.gEngine.remove_module((self))
+                m = main_menu.MainMenu(self.gEngine)
+                self.gEngine.add_module(m)
+                return
+            if mouse.lbutton:
+                time.sleep(0.1)
+                if not self.popup and self.player.fighter.gear.get_combat_type() == 'ranged':
+                    target = self.check_for_target(mouse.cx, mouse.cy)
+                    if target:
+                        self.popup = ranged_combat.select_ammo(self.player.x, self.player.y, mouse.cx, mouse.cy,
+                                                           self.player, self, target)
+                elif self.popup and self.popup.mouse_is_in_console(mouse):
+                    if self.ranged_ammo_index:
+                        selected_ammo = self.popup.index[self.ranged_ammo_index]
+                        if selected_ammo.item.qty > 1:
+                            selected_ammo.item.qty -= 1
+                        elif selected_ammo.item.qty == 1:
+                            self.player.fighter.inventory.remove()
+                        multiplier = selected_ammo.item.ammo.damage_multiplier
+                        target = self.check_for_target(self.popup.x, self.popup.y)
+                        if target:  # possibly redundant
+                            ranged_combat.fire_shot(self.player.x, self.player.y, mouse.cx, mouse.cy, self.player, self, target)
+                            self.player_action = 'turn-used'
+                            self.ranged_ammo_index = None
+                            self.popup = None
+
+            if self.player_action == 'player-moved':
+                self.player_moved = True
+
+            self.hotbar.update(mouse, key, self)
+            self.bark_manager.update_barks()
+
             for object in self.objects:
                 object.clear(self.gEngine)
-            # for particle in self.particles:
-            #    particle.clear(self.gEngine)
 
-            # Monsters faster than the player, take turns first
-            is_player_turn = self.ticker.next_turn(self)
+            if self.player_action == 'turn-used' or self.player_action == 'player-moved':
+                self.ticker.schedule_turn(self.player.fighter.stat.get_stat("Speed"), self.player)
+                self.player.torch.update(self)
+                self.is_player_turn = False
+                # fast forward until the next object gets its turn
+                self.ticker.get_next_tick()
 
-            # self.hotbar.update(mouse, key, self)
+                if self.monster_force_display[0]:
+                    if self.monster_force_display[1] <= 0:
+                        self.monster_force_display[0] = False
+                        self.message.message("Your detect monster spell has expired.", libtcod.light_cyan)
+                    else:
+                        self.monster_force_display[1] -= 1
 
-            self.player_action = 'didnt-take-turn'
-            if is_player_turn:
-                self.player_moved = False
-                while self.player_action == 'didnt-take-turn':
-                    key, mouse = self.gEngine.handle_input()
-                    self.hover_description.reset()
-                    self.hover_description.update(mouse, self.get_names_under_mouse(), self.dungeon_height)
-                    self.player_action = input_handler.handle_keys(key, self)
-                    if self.player_action == 'exit':
-                        self.gEngine.remove_module((self))
-                        m = main_menu.MainMenu(self.gEngine)
-                        self.gEngine.add_module(m)
-                        return
-                    if mouse.lbutton_pressed:
-                        #intensity = 1.0 # libtcod.random_get_float(0, 1.0, 1.5)
-                        #l = lights.Light(mouse.cx, mouse.cy, self.light_handler, flicker=True, decay=0.005)
-                        # c = [libtcod.white, libtcod.orange]
-                        # l.staged_lerp(2.0, 1.6, 0.05, 0.0095, c)
-                        #l.randomize()
-                        #l.ramped_light(0.1, 1.5, 0.0005, False)
-                        #self.light_handler.add_light(l)
-                        target = self.check_for_target(mouse.cx, mouse.cy)
-                        ranged_combat.fire_shot(self.player.x, self.player.y, mouse.cx, mouse.cy, self.player, self, target)
-                        self.player_action = 'turn-used'
+                if self.loot_force_display[0]:
+                    if self.loot_force_display[1] <= 0:
+                        self.loot_force_display[0] = False
+                        self.message.message("Your detect items spell has expired.", libtcod.light_cyan)
+                    else:
+                        self.loot_force_display[1] -= 1
 
-                    if self.player_action == 'player-moved':
-                        self.player_moved = True
+        render_list = []
+        if self.popup:
+            self.ranged_ammo_index = self.popup.update(mouse)
+            render_list.append(self.popup.render)
+        #if self.hover_description:
+        #    render_list.append(self.hover_description.render(self, True))
+        render.render_all(self, render_list)
+        self.gEngine.console_flush()
 
-
-                    # if libtcod.console_is_window_closed():
-                    #     self.player_action = 'exit'
-
-                    self.hotbar.update(mouse, key, self)
-                    self.bark_manager.update_barks()
-
-                    for object in self.objects:
-                        object.clear(self.gEngine)
-
-                    if self.player_action == 'turn-used' or self.player_action == 'player-moved':
-                        self.ticker.schedule_turn(self.player.fighter.stat.get_stat("Speed"), self.player)
-                        self.player.torch.update(self)
-
-                        if self.monster_force_display[0]:
-                            if self.monster_force_display[1] <= 0:
-                                self.monster_force_display[0] = False
-                                self.message.message("Your detect monster spell has expired.", libtcod.light_cyan)
-                            else:
-                                self.monster_force_display[1] -= 1
-
-                        if self.loot_force_display[0]:
-                            if self.loot_force_display[1] <= 0:
-                                self.loot_force_display[0] = False
-                                self.message.message("Your detect items spell has expired.", libtcod.light_cyan)
-                            else:
-                                self.loot_force_display[1] -= 1
-                    render.render_all(self, self.hover_description.render(self, True))
-                    self.gEngine.console_flush()
-            # fast forward until the next object gets its turn
-            self.ticker.get_next_tick()
-            if self.player.fighter.current_xp >= self.player.fighter.xp_to_next_level:
-                self.player.fighter.level_up()
+        if self.player.fighter.current_xp >= self.player.fighter.xp_to_next_level:
+            self.player.fighter.level_up()
 
     def setup_player(self):
         fighter_component = object.Fighter(hp=90, defense=2, power=5, death_function=self.player_death, money=800,
@@ -279,6 +297,8 @@ class Game:
 
 
         self.ticker.schedule_turn(10, self.player)
+        # fast forward until the next object gets its turn
+        self.ticker.get_next_tick()
 
         torch = object.Torch(self.player)
         self.player.torch = torch
@@ -363,7 +383,8 @@ class Game:
         self.levels.append(level)
         self.level = level
         self.fov = self.level.fov_map
-        self.ticker.schedule_turn(10, self.player)
+        #self.ticker.schedule_turn(10, self.player)
+        #self.ticker.get_next_tick()
         # self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
         self.game_state = 'playing'
         for object in self.objects:

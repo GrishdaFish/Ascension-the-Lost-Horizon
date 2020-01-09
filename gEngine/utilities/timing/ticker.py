@@ -57,8 +57,9 @@ class Ticker:
     def get_next_tick(self):
         ##For getting the next tick with a turn, to skip past empty ticks
         ticks = list(self.schedule.keys())
-        next_tick = ticks[0]
-        for tick in ticks:
-            if tick < next_tick:
-                next_tick = tick
-        self.ticks = next_tick
+        if len(ticks) > 0:
+            next_tick = ticks[0]
+            for tick in ticks:
+                if tick < next_tick:
+                    next_tick = tick
+            self.ticks = next_tick

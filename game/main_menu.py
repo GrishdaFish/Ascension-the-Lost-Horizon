@@ -11,7 +11,7 @@ class MainMenu:
     def __init__(self, gEngine):
         self.gEngine = gEngine
         self.active = True
-        self.con = self.gEngine.console_new(self.gEngine.SCREEN_WIDTH, self.gEngine.SCREEN_HEIGHT)
+        self.con = 0  # self.gEngine.console_new(self.gEngine.SCREEN_WIDTH, self.gEngine.SCREEN_HEIGHT)
         if _gEngine.RELEASE:
             path = getattr(sys, "_MEIPASS", ".")
         else:
@@ -21,7 +21,7 @@ class MainMenu:
         self.img = self.gEngine.image_load(os.path.join(path, 'img', 'menu_background_2.png'))
         self.m_menu = Menus(self.gEngine, int(self.gEngine.SCREEN_HEIGHT / 2 + 22),
                             int(self.gEngine.SCREEN_WIDTH), 24, '',  # TODO: remove magic numbers
-                            ['Play a new game', 'Continue last game', 'Options (not working)', 'Quit', 'dev'],
+                            ['Play a new game', 'Continue last game', 'Options (not working)', 'Quit', 'dev'], #'Discord'],
                             self.con, bg=path)
 
     def activate(self):
@@ -57,6 +57,7 @@ class MainMenu:
         menu_fade_value = 0.0
         self.gEngine.log_open_block("Main menu running...")
         while not libtcod.console_is_window_closed():
+            key, mouse = self.gEngine.handle_input()
             if not intro_done:
                 img = "game logo fade"
                 intro_done = self.gEngine.animation_draw_animation(img, 0, 0, 0)
@@ -97,7 +98,7 @@ class MainMenu:
                         menu_fade = False
 
 
-            choice = m_menu.run(menu_fade_value)
+            choice = m_menu.run(key, mouse, menu_fade_value)
             self.gEngine.console_flush()
             self.gEngine.console_clear(self.con)
             self.gEngine.console_clear(0)
@@ -141,4 +142,6 @@ class MainMenu:
                 return
                 # self.dev_mode.run()
                 # self.main_menu()
+            # if choice == 5:
+            #     self.gEngine.log_message('Sending to Discord...')
         return True

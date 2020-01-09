@@ -7,6 +7,7 @@ from gEngine.utilities.user_interface.tab import *
 import tcod as libtcod
 
 def init_shit(game, width, height, r, g, b):
+    """ utility function for initializing consoles - params as stated  """
     window = game.gEngine.console_new(width / 2, height)
     game.gEngine.console_set_default_foreground(window, r, g, b)
     game.gEngine.console_print_frame(window, 0, 0, width / 2, height, True)
@@ -22,17 +23,17 @@ def inventory(con, player, game, width=80, height=43):
         Fix Weapons and Equipment keyboard handling
         Fix duplication bug when equipping items (fixed)
         Fix take off weapon confirmation when equipping an item (fixed)
-        2 handed code needs work (?)
+        2 handed code needs work (?) - *** update: should be ok now
         keyboard input is sluggish. Might have to update libtcod to fix
 
     :param con: Destination console (not used atm)
     :param player: The main player object
-    :param game: The main game object
+    :param game: The main game object   # TODO DEPRECATE player got game now, minimize your calls
     :param width: width of the inventory screen
     :param height: height of the inventory screen
     :return: An item that has been used (potion, scroll, etc..)
     """
-    gear_list = player.fighter.gear.gimmie_da_armors()
+    #gear_list = player.fighter.gear.gimmie_da_armors()  # player's current gear
 
     equip_height = 14
     wield_height = 8
@@ -41,7 +42,7 @@ def inventory(con, player, game, width=80, height=43):
     r, g, b = libtcod.white
     equip_y = wield_height
     compare_y = equip_height + wield_height
-
+    # 16 lines compressed to init shit function above:
     inventory_window = init_shit(game, width, height, r, g, b)
     equipment_window = init_shit(game, width, equip_height, r, g, b)
     wielded_window = init_shit(game, width, wield_height, r, g, b)
@@ -182,13 +183,23 @@ def inventory(con, player, game, width=80, height=43):
         game.gEngine.console_print(wielded_window, 1, 6, text)
 
         #if player.fighter
-        item = player.fighter.gear.equipped['1h']
-        if item:
+        item = player.fighter.gear.gimmie_da_weapon()
+        item2 = player.fighter.gear.gimmie_da_weapon(off_hand=True)
+        damage_total = [0, 0, 0, 0]
+        if item is not None and player.fighter.gear.is_weapon(item):
+            damage_total[0] += item.item.equipment.damage[0]
+            damage_total[1] += item.item.equipment.damage[1]
+            damage_total[3] += item.item.equipment.damage[3]
+        if item2 is not None and player.fighter.gear.is_weapon(item2):
+            damage_total[0] += item2.item.equipment.damage[0]
+            damage_total[1] += item2.item.equipment.damage[1]
+            damage_total[3] += item2.item.equipment.damage[3]
+        if item or item2:
             damage = '%dd%d+%d' % (
-            item.item.equipment.damage[0], item.item.equipment.damage[1], item.item.equipment.damage[3])
+            damage_total[0], damage_total[1], damage_total[3])
             text = 'Damage   (total): ' + color_text(damage, libtcod.green)
             game.gEngine.console_print(wielded_window, 1, 4, text)
-            accuracy = item.item.equipment.accuracy
+            accuracy = game.player.fighter.stat.get_stat("Accuracy")
             # accuracy += game.player.fighter.get_skill(item.item.equipment.damage_type).get_bonus()
             text = 'Accuracy (total): ' + color_text(str(accuracy), libtcod.green)
             game.gEngine.console_print(wielded_window, 1, 5, text)
@@ -212,7 +223,7 @@ def inventory(con, player, game, width=80, height=43):
                 text += color_text(item.name.capitalize(), item.color)
                 armor_bonus += item.item.equipment.bonus
                 armor_penalty += item.item.equipment.penalty
-            game.gEngine.console_print(equipment_window, 1, i + 2, text)
+            game.gEngine.console_print(equipment_window, 1, i + 1, text)
             i += 1
             index += 1
         c = color_text(str(armor_bonus), libtcod.green)
@@ -244,6 +255,17 @@ def inventory(con, player, game, width=80, height=43):
                 # if mouse.cy-3 <= len(player.fighter.inventory):
                 item = player.fighter.inventory[mouse.cy - 3]
                 current_selection = mouse.cy - 3
+                if item.item.ammo:
+                    game.gEngine.console_print(compare_window, 1, 2,
+                                               'Name       : ' + color_text(item.name.capitalize(), item.color))
+                    game.gEngine.console_print(compare_window, 1, 3,
+                                               'Weapon Type: ' + item.item.ammo.weapon_type.capitalize())
+                    game.gEngine.console_print(compare_window, 1, 4,
+                                               'Damage X   : %sx' % str(item.item.ammo.damage_multiplier))
+                    game.gEngine.console_print(compare_window, 1, 5,
+                                               'Value      : ' + str(item.item.value))
+                    game.gEngine.console_print(compare_window, 1, 6,
+                                               'Quantity   : ' + str(item.item.qty))
                 if item.item.equipment:
                     game.gEngine.console_print(compare_window, 1, 2,
                                                'Name    : ' + color_text(item.name.capitalize(), item.color))
@@ -257,7 +279,7 @@ def inventory(con, player, game, width=80, height=43):
                         game.gEngine.console_print(compare_window, 1, 5,
                                                    'Accuracy: ' + str(item.item.equipment.accuracy))
 
-                        game.gEngine.console_print(compare_window, 1, 7, 'Skill   : ' + item.item.equipment.damage_type)
+                        # game.gEngine.console_print(compare_window, 1, 7, 'Skill   : ' + item.item.equipment.damage_type)
                     elif item.item.equipment.type == 'light_source':
                         i = item.item.equipment.type.replace('_', ' ')
                         game.gEngine.console_print(compare_window, 1, 2,
@@ -302,32 +324,14 @@ def inventory(con, player, game, width=80, height=43):
                     else:
                         d_box.destroy_box()
                 if mouse.lbutton and item.item.equipment:
-                    if player.fighter.gear.light_source:
-                        if player.fighter.gear.light_source.name == "magical light":
-                            message = "You cannot remove this magical light!"
-                            w = len(message) + 2
-                            d_box = DialogBox(game, w, 10, width / 4, height / 2, message, con=inventory_window)
-                            confirm = d_box.display_box()
-                        else: ###### TODO FIX THE REPEATING LOGIC :)
-
-                            time.sleep(.1)
-                            i_n = color_text(item.name.capitalize(), item.color)
-                            message = 'Do you want to put %s on?' % i_n
-                            w = len(message) + 2
-                            d_box = DialogBox(game, w, 10, width / 4, height / 2, message, type='option', con=inventory_window)
-                            confirm = d_box.display_box()
-                            if confirm == 1:
-                                item.item.use(game.player.fighter.inventory, game.player, game)
-                                d_box.destroy_box()
-                                inventory_items = []
-                                check_boxes = []
-                                for x in range(len(player.fighter.inventory)):
-                                    check_boxes.append(CheckBox(x=1, y=x + 3))
-                                    i = color_text(player.fighter.inventory[x].name.capitalize(),
-                                                   player.fighter.inventory[x].color)
-                                    if player.fighter.inventory[x].item.check_stackable:
-                                        i += ' (%d)' % player.fighter.inventory[x].item.qty
-                                    inventory_items.append(i)
+                    if item.item.equipment.type == 'light_source' and player.fighter.gear.light_source and player.fighter.gear.light_source.name == "magical light":
+                        # TODO make the pop up work instead of message bar output
+                    #    message = "You cannot remove this magical light!"
+                    #    w = len(message) + 2
+                    #    d_box = DialogBox(game, w, 10, width / 4, height / 2, message, con=inventory_window)
+                    #    confirm = d_box.display_box()
+                        game.message.message("You are under the effects of a magical light!", libtcod.flame)
+                        pass
                     else:
                         i_n = color_text(item.name.capitalize(), item.color)
                         message = 'Do you want to put %s on?' % i_n
@@ -353,6 +357,7 @@ def inventory(con, player, game, width=80, height=43):
         # game.gEngine.console_set_default_background(inventory_window, 0, 0, 0)
         # Wielded
         elif 0 <= mouse.cx <= ((width / 2) - 2):  # inventory screen dims
+            gear_list = player.fighter.gear.gimmie_da_armors()  # player's current gear
             if -1 < (mouse.cy - 2) < 2:  # wielded gone, magic #2 = # of hands(always)-old ver.=len(player.fighter.wielded)
                 mouse_grabbed_index = mouse.cy - 2
                 if mouse_grabbed_index == 0:
@@ -396,8 +401,11 @@ def inventory(con, player, game, width=80, height=43):
                         if len(item.item.equipment.effects) != 0:
                             show_effects(item, game, compare_window)
             # Equipment
-            elif (mouse.cy - 2) - equip_y < len(gear_list):
-                item = gear_list[mouse.cy - 2 - equip_y]
+            #elif (mouse.cy - 2) - equip_y < len(gear_list):
+            #    item = gear_list[mouse.cy - 2 - equip_y]
+            # Equipment ----- holy shit balls  (mouse.cy - 2) - equip_y + 1 ?? lmfao ... this works, but damn
+            elif equip_y < (mouse.cy - 2) - equip_y + 1 < len(gear_list):
+                item = gear_list[mouse.cy - 2 - equip_y + 1]
                 if item is not None:
                     if item.item.equipment:
                         game.gEngine.console_print(compare_window, 1, 2,
@@ -541,6 +549,8 @@ def inventory(con, player, game, width=80, height=43):
 
 
 def show_effects(item, game, compare_window):
+    """ utility function for adding effects to item descriptions """
+    # TODO revisit after descriptions move to hover_description
     if item.item.equipment.effects is not None:
         if len(item.item.equipment.effects) != 0:
             game.gEngine.console_print_ex(compare_window, 1, 8, libtcod.BKGND_SET, libtcod.LEFT,
@@ -549,7 +559,10 @@ def show_effects(item, game, compare_window):
             x = 11
 
             for fx in item.item.equipment.effects:
-                effect_amount = color_text(fx.amount, game.player.fighter.stat.get_effect_color(fx))
+                if fx.panel_group != 'modifiers':
+                    effect_amount = color_text(fx.amount, game.player.fighter.stat.get_effect_color(fx))
+                else:
+                    effect_amount = fx.amount
                 game.gEngine.console_print_ex(compare_window, x, y, libtcod.BKGND_SET, libtcod.LEFT,
                                               str(fx.effect_name) + " " + str(effect_amount) + " " + fx.effect_real_name)
                 y += 1

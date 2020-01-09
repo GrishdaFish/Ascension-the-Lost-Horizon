@@ -1,0 +1,32 @@
+[["ammo"]]
+    name="arrow"
+    cell='{'
+    type="ammo"
+    weapon_type="Bow"
+    max_stack="25"
+    multiplier="1"
+    col=[255, 114, 114] #color of the item
+    value=25
+    stackable=true
+
+[["ammo"]]
+    name="bolt"
+    cell='{'
+    type="ammo"
+    weapon_type="Crossbow"
+    max_stack="25"
+    multiplier="1"
+    col=[255, 114, 114] #color of the item
+    value=25
+    stackable=true
+
+[["ammo"]]
+    name="shitty rock off the ground"
+    cell='{'
+    type="ammo"
+    weapon_type="Sling"
+    max_stack="25"
+    multiplier="1"
+    col=[255, 114, 114] #color of the item
+    value=25
+    stackable=true

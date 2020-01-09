@@ -2,6 +2,26 @@ import math
 from gEngine import lights
 import tcod as libtcod
 
+from gEngine.utilities.user_interface.menu import color_text
+
+
+def select_ammo(ox, oy, dx, dy, shooter, game, target=None):
+    ammo_types = ["Ammo Types"]
+    ammos = []
+    weapon_type = shooter.fighter.gear.get_quipped_weapon_type()
+    for item in shooter.fighter.inventory:
+        # TODO do we need to check stackable and stack items here?
+        #if hasattr(item.item, "ammo") and item.item.ammo.weapon_type == weapon_type:
+        if item.item.ammo:
+            if item.item.ammo.weapon_type == weapon_type:
+                ammo_types.append(item.name)
+                ammos.append(item)
+    if ammo_types:
+        return Popup(game.gEngine, game.dungeon_console, ammo_types, dx, dy, ammos)
+    else:
+        print("You gots none ammo's noob!")
+        return None
+
 def fire_shot(ox, oy, dx, dy, shooter, game, target=None):
     ay = oy - dy
     ax = ox - dx
@@ -18,9 +38,9 @@ def fire_shot(ox, oy, dx, dy, shooter, game, target=None):
     game.light_handler.add_light(l)
     if target:
         if shooter == game.player:
-            shooter.fighter.ranged_targeted_attack(target, True, game)
+            shooter.fighter.attack(target, player=True, game=game)
         else:
-            shooter.fighter.ranged_targeted_attack(target, False, game)
+            shooter.fighter.attack(target, player=False, game=game)
     else:
         blind_fire(dx, dy, ox, oy, game, shooter)
 
@@ -51,7 +71,68 @@ def blind_fire(dx, dy, ox, oy, game, shooter):
 
     if target:
         if shooter == game.player:
-            shooter.fighter.ranged_targeted_attack(target, True, game)
+            shooter.fighter.attack(target, player=True, game=game)
         else:
-            shooter.fighter.ranged_targeted_attack(target, False, game)
+            shooter.fighter.attack(target, player=False, game=game)
 
+
+class Popup:
+    def __init__(self, gEngine, target, data, x, y, index):  # target = game.dungeon_console
+        self.gEngine = gEngine
+        self.target_console = target
+        self.width = 0
+        self.height = 0
+        self.title = None
+        self.populate(data)
+        self.x = x
+        self.y = y
+        self.console = self.gEngine.console_new(self.width, self.height)
+        self.index = index
+
+    def mouse_is_in_console(self, mouse):
+        if mouse.cx > self.x and mouse.cx < self.x + self.width:
+            if mouse.cy > self.y and mouse.cy < self.y + self.height:
+                return True
+        return False
+
+    def update(self, mouse):
+        r, g, b = libtcod.black
+        self.gEngine.console_set_default_background(self.console, r, g, b)
+        #self.gEngine.console_set_alignment(self.console, libtcod.LEFT)
+        self.gEngine.console_print_frame(self.console, 0, 0, self.width, self.height, True, self.title)
+        mouse_index = None
+        if self.mouse_is_in_console(mouse):
+            cx = mouse.cx - self.x
+            cy = mouse.cy - self.y
+            mouse_index = cy
+        i = 1
+        selected = None
+        for line in self.data:
+            if mouse_index == i:
+                line = color_text(line, libtcod.red)
+                selected = self.data[i - 1]
+            else:
+                line = color_text(line, libtcod.white)
+            self.gEngine.console_print(self.console, 1, i, line)
+            i += 1
+        if mouse.lbutton and selected:
+            return mouse_index - 1
+        else:
+            return None
+
+    def render(self, game):
+        self.gEngine.console_blit(self.console,  0, 0, 0, 0, self.target_console, self.x, self.y)
+
+    def populate(self, data):
+        self.data = data
+        self.width = self.get_longest_line() + 2  # addtional width for frame
+        self.width = (max(13, self.width))
+        self.title = self.data.pop(0)
+        self.height = len(self.data) + 2  # addition height for frame
+
+    def get_longest_line(self):
+        longest_line_length = 0
+        for line in self.data:
+            if len(line) > longest_line_length:
+                longest_line_length = len(line)
+        return longest_line_length
