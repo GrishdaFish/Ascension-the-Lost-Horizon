@@ -1,6 +1,8 @@
 import tcod as libtcod
 from game import game
 from game import dev_mode
+from game.debug_modules import debug_handler
+from game.debug_modules import dungeon_status
 from gEngine.utilities.user_interface.menu import Menus
 import os
 import sys
@@ -69,6 +71,8 @@ class MainMenu:
             self.gEngine.log_open_block("Main menu running...")
             self.first = False
 
+        self.gEngine.console_clear(self.con)
+        self.gEngine.console_clear(0)
         # while not libtcod.console_is_window_closed():
         # key, mouse = self.gEngine.handle_input()
         if not self.intro_done:
@@ -110,9 +114,7 @@ class MainMenu:
                     self.menu_fade = False
 
         choice = self.m_menu.run(key, mouse, self.menu_fade_value)
-        self.gEngine.console_flush()
-        self.gEngine.console_clear(self.con)
-        self.gEngine.console_clear(0)
+        #self.gEngine.console_flush()
         if choice == 0:  # play new game
             self.gEngine.log_message('Starting new game')
             self.gEngine.remove_module(self)
@@ -122,6 +124,8 @@ class MainMenu:
             g = game.Game(self.gEngine)
             g.new_game()
             self.gEngine.add_module(g)
+            d = dungeon_status.DungeonStatus(self.gEngine, g, 5, 5, self.gEngine.SCREEN_WIDTH / 2, 5, "Dungeon Status")
+            self.gEngine.add_module(d)
             return
             # self.new_game()
             # self.play_game()

@@ -274,7 +274,7 @@ class Game:
         #if self.hover_description:
         #    render_list.append(self.hover_description.render(self, True))
         render.render_all(self, render_list)
-        self.gEngine.console_flush()
+        #self.gEngine.console_flush()
 
         if self.player.fighter.current_xp >= self.player.fighter.xp_to_next_level:
             self.player.fighter.level_up()

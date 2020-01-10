@@ -119,7 +119,7 @@ class gEngine:
             for module in self.modules:
                 if module.active is True:
                     module.run(key, mouse)
-
+            self.console_flush()
     def render_all(self):
         self.console_flush()
 
@@ -129,6 +129,33 @@ class gEngine:
     def remove_module(self, module):
         module.on_exit()
         self.modules.remove(module)
+
+    def get_module_by_name(self, name):
+        for module in self.modules:
+            if str(module.__class__.__name__) == name:
+                return module
+        return None
+
+    def get_module_status(self, name):
+        module = self.get_module_by_name(name)
+        if module:
+            return module.active
+        else:
+            return None
+
+    def activate_module(self, name):
+        module = self.get_module_by_name(name)
+        if module:
+            module.activate()
+            return True
+        return False
+
+    def deactivate_module(self, name):
+        module = self.get_module_by_name(name)
+        if module:
+            module.deactivate()
+            return True
+        return False
 
     def log_open_block(self, message):
         if cEngine:
@@ -193,7 +220,10 @@ class gEngine:
                         pass
 
                     if event.button == tcod_event.BUTTON_LEFT:
-                        self.mouse.lbutton = True
+                        if self.mouse.lbutton:
+                            self.mouse.lbutton = False
+                        else:
+                            self.mouse.lbutton = True
                     if event.button == tcod_event.BUTTON_RIGHT:
                         self.mouse.rbutton = True
 
@@ -239,10 +269,6 @@ class gEngine:
         self.light_map = self.image_new(self.w, self.h)
         self.subcell_light_map = self.image_new(self.w * 2, self.h * 2)
 
-    def console_set_key_color(self, con, r, g, b):
-        col = libtcod.Color(r, g, b)
-        libtcod.console_set_key_color(self.console_dict[con], col)
-
     def sys_get_fps(self):
         if cEngine:
             return self.engine.mSysGetFPS()
@@ -266,6 +292,10 @@ class gEngine:
             c = self.console_id_counter
             self.console_id_counter += 1
         return c
+
+    def console_set_key_color(self, con, col):
+        if cEngine:
+            self.engine.mSetKeyColor(con, col[0], col[1], col[2])
 
     def console_flush(self):
         if cEngine:
