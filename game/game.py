@@ -125,6 +125,9 @@ class Game:
             path = sys.path[0]
         path = os.path.join(path, 'content')
         #print(path)
+        back = os.path.join(path, 'img', 'BurntTorch.png')
+        fore = os.path.join(path, 'img', 'Torch.png')
+        self.player_torch_bar = status_bar.AnimatedStatusBar(back, fore, "torch flame", self.toolbar, self.gEngine, 0, 0)
 
         self.death_index = -1
         self.death_animation = []
@@ -283,14 +286,15 @@ class Game:
         self.player = object.Object(self.dungeon_console, 0, 0, '@', 'player',
                                     libtcod.white, blocks=True, fighter=fighter_component)
         self.player.game = self
-        self.player_hp_bar = status_bar.StatusBar(self.player.fighter, self.bar_width, libtcod.light_red,
-                                                  libtcod.darker_red, self.panel, type='hp', gEngine=self.gEngine)
+        self.player_hp_bar = status_bar.StatusBar(self.bar_width, libtcod.light_red,
+                                                  libtcod.darker_red, self.panel, gEngine=self.gEngine)
 
-        self.player_torch_bar = status_bar.StatusBar(self.player.fighter, self.bar_width, libtcod.light_flame,
-                                                     libtcod.darker_flame, self.panel, type='torch', gEngine=self.gEngine)
+        #self.player_torch_bar = status_bar.StatusBar(self.bar_width, libtcod.light_flame,
+        #                                             libtcod.darker_flame, self.panel, gEngine=self.gEngine)
 
-        self.player_xp_bar = status_bar.StatusBar(self.player.fighter, self.bar_width, libtcod.light_grey,
-                                                  libtcod.dark_grey, self.panel, type='xp', gEngine=self.gEngine)
+        self.player_xp_bar = status_bar.StatusBar(self.bar_width, libtcod.light_grey,
+                                                  libtcod.dark_grey, self.panel, gEngine=self.gEngine)
+
 
         self.ticker.schedule_turn(10, self.player)
         # fast forward until the next object gets its turn
