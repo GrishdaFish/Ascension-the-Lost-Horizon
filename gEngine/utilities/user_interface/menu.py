@@ -41,6 +41,7 @@ class Menus:
         self.gEngine = gEngine
         self.cl_options = cl_options
         self.img = None
+        self.con = con
         # if bg:
         #     self.img = self.gEngine.image_load(bg)
 
@@ -135,6 +136,7 @@ class Menus:
         #print(mouse.cx, mouse.cy)
         mx = mouse.cx - self.w_pos
         my = math.ceil(mouse.cy - self.h_pos)
+
         # for dragging
         if 2 <= mx <= self.width - 2 and my == 0:
             self.in_drag_zone = True

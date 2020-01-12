@@ -7,7 +7,7 @@ class CheckBox:
         self.x = x
         self.y = y
         self.is_checked = False
-        self.char = chr(224)
+        self.char = chr(224)  # position of the check box in the GS_TC type font
         self.label = label
 
     def render(self, target=None, game=None):

@@ -29,19 +29,20 @@ def render_all(game, injected_render_list=None):  # break this up to render ui a
                 r(game)
 
     elif game.game_state == 'dead':
+        game.gEngine.animation_draw_animation("death arrow", game.dungeon_console)
         # game.gEngine.console_clear(0)
         # game.gEngine.console_clear(game.death_console)
         # draw death screen animation
-        game.death_index += 1
-        if not game.death_index > len(game.death_animation) - 1:
-            img = game.death_animation[game.death_index]
+        # game.death_index += 1
+        # if not game.death_index > len(game.death_animation) - 1:
+        #     img = game.death_animation[game.death_index]
+        #
+        # else:
+        #     img = game.death_animation[len(game.death_animation)-1]
+        # game.gEngine.image_blit_2x(img, game.dungeon_console, 0, 0)
+        # game.gEngine.console_blit(game.death_console, 0, 0, 0, 0, 0, 0, 0, 1.0, 1.0)
 
-        else:
-            img = game.death_animation[len(game.death_animation)-1]
-        game.gEngine.image_blit_2x(img, game.dungeon_console, 0, 0)
-        #game.gEngine.console_blit(game.death_console, 0, 0, 0, 0, 0, 0, 0, 1.0, 1.0)
-
-        #game.gEngine.console_flush()
+        # game.gEngine.console_flush()
 
     render_consoles(game)
 

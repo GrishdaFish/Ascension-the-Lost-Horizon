@@ -99,9 +99,9 @@ def inventory(con, player, game, width=80, height=43):
 
         game.gEngine.console_flush()
         # get input just after flush
-
-        exit_input = exit_button.display()
-        drop_input = drop_button.display()
+        key, mouse = game.gEngine.handle_input()
+        exit_input = exit_button.display(mouse)
+        drop_input = drop_button.display(mouse)
         #inventory_tab.display()
         game.gEngine.console_blit(inventory_window, 0, 0, width / 2, height, 0, (width / 2), 0, 1.0, 1.0)
         game.gEngine.console_blit(wielded_window, 0, 0, width / 2, height, 0, 0, 0, 1.0, 1.0)
@@ -117,7 +117,7 @@ def inventory(con, player, game, width=80, height=43):
         # key = libtcod.Key()
         # mouse = libtcod.Mouse()
         # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
-        key, mouse = game.gEngine.handle_input()
+
         # set up draw screen
         r, g, b = libtcod.white
         game.gEngine.console_set_default_foreground(inventory_window, r, g, b)

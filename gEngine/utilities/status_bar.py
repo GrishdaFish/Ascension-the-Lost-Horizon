@@ -74,7 +74,6 @@ class AnimatedStatusBar:
     def update(self, values):
         value = values[0]
         maximum = values[1]
-        print(value, maximum)
         animation_off = False
         if maximum <= 0:
             maximum = 0.1
@@ -86,7 +85,6 @@ class AnimatedStatusBar:
             length = int(float(self.size) / (float(maximum) / float(value)))
         if length > self.size:
             length = self.size
-        print(length)
         self.gEngine.console_print(self.back_con, 0, 0, "Test")
         self.gEngine.image_blit_2x(self.background, self.back_con, 0, 0)
         self.gEngine.image_blit_2x(self.foreground, self.fore_con, 0, 0)

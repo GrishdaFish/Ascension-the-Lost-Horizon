@@ -139,6 +139,7 @@ def handle_quit(key, game, turn):
             confirm = d_box.display_box()
             if confirm == 1:
                 d_box.destroy_box()
+                game.ai_director.dump_data()
                 return 'exit'  # exit game
             elif confirm == 0:
                 if first:

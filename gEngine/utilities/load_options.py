@@ -3,7 +3,7 @@ import sys
 import os
 import toml
 
-path = sys.path[0]
+path = os.path.abspath('.')
 options = os.path.join(path, 'options.toml')
 
 

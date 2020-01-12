@@ -39,20 +39,17 @@ class Button:
         #self.parent.game.gEngine.console_flush()
 
         k = self.key_input()
-        m = self.mouse_input()
-        if mouse:
-            m = self.mouse_input(mouse)
+        m = self.mouse_input(mouse)
+
         return m, k
 
     def destroy_button(self):
         self.parent.game.gEngine.console_remove_console(self.window)
 
     def mouse_input(self, mouse=None):
-        key = libtcod.Key()
-        if not mouse:
-            mouse = libtcod.Mouse()
-        #libtcod.sys_check_for_event(libtcod.EVENT_MOUSE, key, mouse)
-        key, mouse = self.parent.game.gEngine.handle_input()
+        #key, mouse = self.parent.game.gEngine.handle_input()
+        #print(mouse)
+
         mx = mouse.cx - (self.x_pos + self.dest_x)
         my = mouse.cy - (self.y_pos + self.dest_y)
 

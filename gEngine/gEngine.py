@@ -15,10 +15,11 @@ import numpy as np
 
 RELEASE = True
 SUBCELL = True
-if RELEASE:
-    path = getattr(sys, "_MEIPASS", ".")
-else:
-    path = sys.path[0]
+# if RELEASE:
+#     path = getattr(sys, "_MEIPASS", ".")
+# else:
+#     path = sys.path[0]
+path = os.path.abspath('.')
 # try:
 #     path = os.path.join(path, 'gEngine', 'pyds', 'gEngine', 'pyds')
 #     fp, pathname, description = imp.find_module('cy_light_mask', [path])
@@ -43,6 +44,11 @@ from gEngine.animation import animations
 def in_rect(x, y, w, h):
     return x < w and y < h
 
+class NetworkDummy:
+    def __init__(self):
+        pass
+    def send_package(self, package):
+        pass
 
 class Tile:
     def __init__(self, x=0, y=0, cell='#', blocked=True, block_sight=True,
@@ -111,11 +117,24 @@ class gEngine:
         self.random_instance = None
         self.random_set_instance()
         self.animation_engine = animations.Animations(self)
-
+        try:
+            from gEngine.utilities import network
+            self.network = network.NetworkController()
+        except ImportError as imp_err:
+            print(imp_err)
+            print("using networking dummy")
+            self.network = NetworkDummy()
+        self.additional_modules = []
     def run(self):
         is_closed = None
         while True:
+            self.console_flush()
             key, mouse = self.handle_input()
+            if len(self.additional_modules) > 0:
+                for modules in self.additional_modules:
+                    self.modules.append(modules)
+                self.additional_modules.clear()
+
             for module in self.modules:
                 if module.active is True:
                     module.run(key, mouse)
@@ -124,11 +143,38 @@ class gEngine:
         self.console_flush()
 
     def add_module(self, module):
-        self.modules.append(module)
+        self.additional_modules.append(module)
 
     def remove_module(self, module):
         module.on_exit()
         self.modules.remove(module)
+
+    def get_module_by_name(self, name):
+        for module in self.modules:
+            if str(module.__class__.__name__) == name:
+                return module
+        return None
+
+    def get_module_status(self, name):
+        module = self.get_module_by_name(name)
+        if module:
+            return module.active
+        else:
+            return None
+
+    def activate_module(self, name):
+        module = self.get_module_by_name(name)
+        if module:
+            module.activate()
+            return True
+        return False
+
+    def deactivate_module(self, name):
+        module = self.get_module_by_name(name)
+        if module:
+            module.deactivate()
+            return True
+        return False
 
     def log_open_block(self, message):
         if cEngine:
@@ -175,39 +221,36 @@ class gEngine:
                 key = libtcod.Key()
             if not mouse or clear:
                 mouse = libtcod.Mouse()
-            # TODO THIS CODE IS PERFECTLY FINE. NOTHING TO SEE HERE.
+            mouse.cx = self.mouse.cx
+            mouse.cy = self.mouse.cy
+
             for event in tcod_event.get():
                 if event.type == 'MOUSEMOTION':
-                    # TODO: no touchy
-                    try:  # to protect my beautiful code
-                        self.mouse.cx = int(event.pixel[0] / 16)
-                        self.mouse.cy = int(event.pixel[1] / 16)
-                    except ZeroDivisionError:
-                        pass  # nothing to see here....
+                    mouse.cx = self.mouse.cx = int(event.pixel[0] / 16)
+                    mouse.cy = self.mouse.cy = int(event.pixel[1] / 16)
 
                 if event.type == 'MOUSEBUTTONDOWN':
-                    try:  # Todo move along
-                        self.mouse.cx = int(event.pixel[0] / 16)
-                        self.mouse.cy = int(event.pixel[1] / 16)
-                    except ZeroDivisionError:
-                        pass
+                    mouse.cx = self.mouse.cx = int(event.pixel[0] / 16)
+                    mouse.cy = self.mouse.cy = int(event.pixel[1] / 16)
 
                     if event.button == tcod_event.BUTTON_LEFT:
-                        self.mouse.lbutton = True
+                        # self.mouse.lbutton = True
+                        mouse.lbutton = True
                     if event.button == tcod_event.BUTTON_RIGHT:
-                        self.mouse.rbutton = True
+                        # self.mouse.rbutton = True
+                        mouse.rbutton = True
 
                 if event.type == "MOUSEBUTTONUP":
-                    try:  # TODO  JUST KEEP MOVING
-                        self.mouse.cx = int(event.pixel[0] / 16)
-                        self.mouse.cy = int(event.pixel[1] / 16)
-                    except ZeroDivisionError:
-                        pass
+                    mouse.cx = self.mouse.cx = int(event.pixel[0] / 16)
+                    mouse.cy = self.mouse.cy = int(event.pixel[1] / 16)
 
                     if event.button == tcod_event.BUTTON_LEFT:
-                        self.mouse.lbutton = False
+                        # self.mouse.lbutton_pressed = True
+                        mouse.lbutton_pressed = True
+
                     if event.button == tcod_event.BUTTON_RIGHT:
-                        self.mouse.rbutton = False
+                        # self.mouse.rbutton_pressed = True
+                        mouse.rbutton_pressed = True
 
                 if event.type == "TEXTINPUT":
                     key.c = ord(event.text)
@@ -215,10 +258,25 @@ class gEngine:
                 if event.type == "KEYDOWN":
                     if event.scancode in key_conv:
                         key.vk = key_conv[event.scancode]
+
                 if event.type == "WINDOWCLOSE":
+                    try:
+                        self.log_open_block("Dumping data to disk and uploading to server")
+                        game = self.get_module_by_name("Game")
+                        if game:
+                            game.ai_director.dump_data()
+                            self.log_message('Data dumped succesfully')
+                            self.log_close_block()
+                        else:
+                            self.log_message("Data dump unsuccessful", 'error')
+                            self.log_close_block()
+                    except Exception as ex:
+                        self.log_message(ex, "error")
+                        pass
                     self.log_close_block()
                     exit(69420)  # lmao
-            return key, self.mouse
+
+            return key, mouse
         else:
             key = libtcod.Key()
             mouse = libtcod.Mouse()
@@ -234,14 +292,10 @@ class gEngine:
             self.console_dict[self.console_id_counter] = self.root
             self.console_id_counter += 1
         self.animation_engine.load_animations()
-        self.map_image = self.image_new(self.w, self.h)
-        self.subcell_map_image = self.image_new(self.w * 2, self.h * 2)
-        self.light_map = self.image_new(self.w, self.h)
-        self.subcell_light_map = self.image_new(self.w * 2, self.h * 2)
-
-    def console_set_key_color(self, con, r, g, b):
-        col = libtcod.Color(r, g, b)
-        libtcod.console_set_key_color(self.console_dict[con], col)
+        # self.map_image = self.image_new(self.w, self.h)
+        # self.subcell_map_image = self.image_new(self.w * 2, self.h * 2)
+        # self.light_map = self.image_new(self.w, self.h)
+        # self.subcell_light_map = self.image_new(self.w * 2, self.h * 2)
 
     def sys_get_fps(self):
         if cEngine:
@@ -266,6 +320,10 @@ class gEngine:
             c = self.console_id_counter
             self.console_id_counter += 1
         return c
+
+    def console_set_key_color(self, con, col):
+        if cEngine:
+            self.engine.mSetKeyColor(con, col[0], col[1], col[2])
 
     def console_flush(self):
         if cEngine:
@@ -885,3 +943,6 @@ class gEngine:
 
     def animation_draw_animation(self, name, target, x, y):
         return self.animation_engine.draw_animation(name, target, x, y)
+
+    def network_send_package(self, package):
+        self.network.send_package(package)

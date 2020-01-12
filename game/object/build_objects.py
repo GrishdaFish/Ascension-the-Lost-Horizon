@@ -42,10 +42,11 @@ class GameObjects:
         Calls the content parser to load all of the items from disk
         :return:
         """
-        if gEngine.RELEASE:
-            path = getattr(sys, "_MEIPASS", ".")
-        else:
-            path = sys.path[0]
+        # if gEngine.RELEASE:
+        #     path = getattr(sys, "_MEIPASS", ".")
+        # else:
+        #     path = sys.path[0]
+        path = os.path.abspath('.')
         self.monsters = content_parser.load_content(os.path.join(path, 'content', 'actors', 'monsters.toml'))
         self.consumables = content_parser.load_content(
             os.path.join(path, 'content', 'items', 'consumables.toml'))

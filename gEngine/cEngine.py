@@ -17,7 +17,7 @@ else:
 try:
     import builtins as __builtin__
 except ImportError:
-    import builtins
+    import __builtin__
 
 def _swig_repr(self):
     try:
@@ -91,6 +91,9 @@ class gEngine(object):
 
     def mSysGetFPS(self):
         return _cEngine.gEngine_mSysGetFPS(self)
+
+    def mSetKeyColor(self, c, r, g, b):
+        return _cEngine.gEngine_mSetKeyColor(self, c, r, g, b)
 
     def mSetForegroundColor(self, c, h, s, v):
         return _cEngine.gEngine_mSetForegroundColor(self, c, h, s, v)

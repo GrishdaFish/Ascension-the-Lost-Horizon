@@ -67,6 +67,7 @@ class Object:
         self.torch = torch
         if self.torch:
             self.torch.owner = self
+        self.force_display = False
 
     def move(self, dx, dy, map, objects):
         # move by the given amount, if the destination is not blocked
@@ -113,7 +114,7 @@ class Object:
 
     def draw(self, fov_map, gEngine, is_player=False, force_display=False):
         # only show if it's visible to the player
-        if force_display:
+        if force_display or self.force_display:
             # print gEngine.return_color_background(self.con,self.x,self.y)
             col = gEngine.get_map_tile_color(int(self.x), int(self.y))
             brightness = gEngine.lightmask_get_mask_value(self.x, self.y)
@@ -454,6 +455,17 @@ class Fighter:
 
     def take_damage(self, damage, attacker, game):
         # apply damage if possible
+        if self.owner == game.player:
+            most_damage = game.ai_director.get_player_stat('most damage received')
+            if damage > most_damage:
+                game.ai_director.add_player_stat('most damage received', damage, True)
+            game.ai_director.add_player_stat('total damage received', damage)
+        else:
+            most_damage = game.ai_director.get_player_stat('most damage dealt')
+            if damage > most_damage:
+                game.ai_director.add_player_stat('most damage dealt', damage, True)
+            game.ai_director.add_player_stat('total damage dealt', damage)
+
         if damage > 0 and self.hp > 0:
             self.hp -= damage
             self.owner.flashing = True
@@ -466,6 +478,8 @@ class Fighter:
 
             # check for death. if there's a death function, call it
             if self.hp <= 0:
+                if self.owner != game.player:
+                    game.ai_director.add_player_stat('kills', 1)
                 attacker.fighter.current_xp += self.current_xp
                 function = self.death_function
                 if function is not None:
