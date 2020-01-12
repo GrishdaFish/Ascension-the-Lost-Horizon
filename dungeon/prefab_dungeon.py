@@ -139,8 +139,8 @@ class PrefabGenerator:
                 room_x = int(width/2)
                 room_y = int(height/2)
             else:
-                room_x = libtcod.random_get_int(0, int(new_room_width + 1), int(width - center_x - 1))
-                room_y = libtcod.random_get_int(0, int(new_room_height + 1), int(height - center_y - 1))
+                room_x = libtcod.random_get_int(0, int(new_room_width + 2), int(width - center_x - 2))
+                room_y = libtcod.random_get_int(0, int(new_room_height + 2), int(height - center_y - 2))
                 failed = False
 
                 if place_over_hallways:
@@ -404,7 +404,6 @@ class PrefabGenerator:
         first = True
 
         for r in range(max_rooms):
-            print("Light handler size = %d" % len(light_handler.lights))
             dungeon, rooms, s = self.add_prefab_room(self.dungeon, self.width, self.height, first=first,
                                                           rooms=map_rooms, connect_to_home=False, connect_to_closest=50,
                                                           max_path=30, place_over_hallways=True,
@@ -540,7 +539,7 @@ class PrefabGenerator:
                     img = os.path.join(path, 'img', 'bg-wep.png')
                     container = []
                     for i in range(10):  ##Need to init objects and message in object creation
-                        item = self.game.build_objects.build_equipment(self.game, 0, 0, 'melee')
+                        item = self.game.ai_director.get_equipment(0, 0, 'melee')
                         container.append(item)
                     container.sort(key=lambda cons: cons.name)
                     n = npc.NPC()
@@ -572,7 +571,7 @@ class PrefabGenerator:
                     img = os.path.join(path, 'img', 'bg-arm.png')
                     container = []
                     for i in range(10):  ##Need to init objects and message in object creation
-                        item = self.game.build_objects.build_equipment(self.game, 0, 0, 'armor')
+                        item = self.game.ai_director.get_equipment(0, 0, 'armor')
                         container.append(item)
                     container.sort(key=lambda cons: cons.name)
                     n = npc.NPC()

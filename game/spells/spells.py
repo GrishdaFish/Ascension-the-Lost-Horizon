@@ -38,6 +38,8 @@ def heal(min, max, range, radius, targets, target, player, game, effect_color):
         game.level.light_handler.add_light(l)
         game.message.message('Your wounds start to feel better!', libtcod.light_lime)
     HEAL_AMOUNT = libtcod.random_get_int(0, min, max)
+    game.ai_director.add_player_stat('potions quaffed', 1)
+    game.ai_director.add_player_stat('hit points healed', HEAL_AMOUNT)
     target.fighter.heal(HEAL_AMOUNT)
 
 
@@ -48,6 +50,7 @@ def fireball(min, max, range, radius, targets, target, player, game, effect_colo
     if x is None:
         game.message.message('You cancelled the spell!', libtcod.light_cyan)
         return 'cancelled'
+    game.ai_director.add_player_stat('spells cast', 1)
     game.message.message('The fireball explodes, burning everything within ' + str(radius) + ' tiles!', 5)
     game.gEngine.particle_explosion(25, x, y, b=True, color=libtcod.white)
     l = lights.Light(x, y, game.light_handler, flicker=True, flicker_intensity=0.15)
@@ -69,6 +72,7 @@ def lightning(min, max, range, radius, targets, target, player, game, effect_col
     if monster is None:  # no enemy found within maximum range
         game.message.message('No enemy is close enough to strike.', libtcod.light_cyan)
         return 'cancelled'
+    game.ai_director.add_player_stat('spells cast', 1)
     l = lights.Light(monster.x, monster.y, game.light_handler, flicker=True)
     c = [libtcod.white, libtcod.light_blue]
     l.staged_lerp(2.0, 1.0, 0.05, 0.0095, c)
@@ -91,6 +95,7 @@ def chain_lightning(min, max, r, radius, targets, target, player, game, effect_c
     if monster is None:  # no enemy found within maximum range
         game.message.message('No enemy is close enough to strike.', libtcod.light_cyan)
         return 'cancelled'
+    game.ai_director.add_player_stat('spells cast', 1)
     l = lights.Light(monster.x, monster.y, game.light_handler, flicker=True)
     c = [libtcod.white, libtcod.light_blue]
     l.staged_lerp(2.0, 1.0, 0.05, 0.0095, c)
@@ -126,6 +131,7 @@ def confuse(min, max, range, radius, targets, target, player, game, effect_color
     if monster is None:
         game.message.message('You cancelled the spell!', libtcod.cyan)
         return 'cancelled'
+    game.ai_director.add_player_stat('spells cast', 1)
     l = lights.Light(monster.x, monster.y, game.light_handler, flicker=True, intensity=1.35, decay=0.0005)
     l.randomize()
     game.level.light_handler.add_light(l)
@@ -147,6 +153,7 @@ def light(min, max, range, radius, targets, target, player, game, effect_color):
     equip = object.Object(game.dungeon_console, 0, 0, ' ', 'magical light', effect_color, item=item_component)
     equip.message = game.message
     equip.objects = game.objects
+
     if target == game.player:
         game.message.message("You are surrounded by a glowing magical light!", libtcod.light_cyan)
         if target.fighter.gear.light_source:
@@ -154,8 +161,9 @@ def light(min, max, range, radius, targets, target, player, game, effect_color):
                 game.message.message("You cannot cast magical light while under the effects of another magical light!", libtcod.flame)
                 return "cancelled"
             else:
+                game.ai_director.add_player_stat('spells cast', 1)
                 target.fighter.inventory.append(target.fighter.gear.light_source)
-        target.fighter.gear.light_source = equip
+                target.fighter.gear.light_source = equip
 
 
 def detect_monsters(min, max, range, radius, targets, target, player, game, effect_color):
@@ -169,6 +177,7 @@ def detect_monsters(min, max, range, radius, targets, target, player, game, effe
         game.monster_force_display[1] = num_turns
         game.message.message("You can now see all monsters around you for " + str(num_turns) +
                              " turns!", libtcod.light_cyan)
+    game.ai_director.add_player_stat('spells cast', 1)
 
 
 def detect_loot(min, max, range, radius, targets, target, player, game, effect_color):
@@ -182,43 +191,13 @@ def detect_loot(min, max, range, radius, targets, target, player, game, effect_c
         game.loot_force_display[1] = num_turns
         game.message.message("You can now see all items around you for " + str(num_turns) +
                              " turns!", libtcod.light_cyan)
+    game.ai_director.add_player_stat('spells cast', 1)
 
 
 def magical_mapping(min, max, range, radius, targets, tile, player, game, effect_color):
     for tile in game.level.dungeon:
         tile.explored = True
-
-
-
-def detect_monsters(min, max, range, radius, targets, target, player, game, effect_color):
-    num_turns = libtcod.random_get_int(0, min, max)
-    if game.monster_force_display[0]:
-        game.monster_force_display[1] += num_turns
-        game.message.message("You've extended your ability to see all monsters around you by " + str(num_turns) +
-                             " turns!", libtcod.light_cyan)
-    else:
-        game.monster_force_display[0] = True
-        game.monster_force_display[1] = num_turns
-        game.message.message("You can now see all monsters around you for " + str(num_turns) +
-                             " turns!", libtcod.light_cyan)
-
-
-def detect_loot(min, max, range, radius, targets, target, player, game, effect_color):
-    num_turns = libtcod.random_get_int(0, min, max)
-    if game.loot_force_display[0]:
-        game.loot_force_display[1] += num_turns
-        game.message.message("You've extended your ability to see all items around you by " + str(num_turns) +
-                             " turns!", libtcod.light_cyan)
-    else:
-        game.loot_force_display[0] = True
-        game.loot_force_display[1] = num_turns
-        game.message.message("You can now see all items around you for " + str(num_turns) +
-                             " turns!", libtcod.light_cyan)
-
-
-def magical_mapping(min, max, range, radius, targets, tile, player, game, effect_color):
-    for tile in game.level.dungeon:
-        tile.explored = True
+    game.ai_director.add_player_stat('spells cast', 1)
 
 
 spells = {

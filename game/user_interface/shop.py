@@ -310,6 +310,8 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                         player.fighter.money += item.item.value / 2
                         player.fighter.inventory.remove(item)
                         inventory_items = []
+                        game.ai_director.add_player_stat('gold earned', item.item.value /2)
+                        game.ai_director.add_player_stat('items sold', 1)
                         i_check_boxes = []
                         for x in range(len(player.fighter.inventory)):
                             i_check_boxes.append(CheckBox(x=1, y=x + 1))
@@ -397,6 +399,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                         confirm = d_box.display_box()
                         if confirm == 1:
                             player.fighter.money -= item.item.value
+                            game.ai_director.add_player_stat('gold spent', item.item.value)
                             # player.fighter.inventory.append(item)
                             item.item.pick_up(player.fighter.inventory)
                             container.remove(item)
@@ -461,10 +464,14 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                     for box in i_check_boxes:
                         if box.get_checked():
                             items_to_sell.append(player.fighter.inventory[box.y - 1])
+                    ii = 0
                     for item_to_sell in items_to_sell:
                         if item_to_sell:
                             player.fighter.money += item_to_sell.item.value / 2
                             player.fighter.inventory.remove(item_to_sell)
+                            game.ai_director.add_player_stat('gold earned', item_to_sell.item.value / 2)
+                            ii += 1
+                            game.ai_director.add_player_stat('items sold', ii)
                     i_check_boxes = []
                     inventory_items = []
                     for x in range(len(player.fighter.inventory)):
@@ -515,6 +522,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                             if item_to_buy:
                                 container.remove(item_to_buy)
                                 player.fighter.money -= item_to_buy.item.value
+                                game.ai_director.add_player_stat('gold spent', item_to_buy.item.value)
                                 # player.fighter.inventory.append(item_to_buy)
                                 item_to_buy.item.pick_up(player.fighter.inventory)
 
