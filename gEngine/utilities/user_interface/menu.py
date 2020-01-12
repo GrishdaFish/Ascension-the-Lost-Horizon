@@ -1,5 +1,5 @@
 import tcod as libtcod
-
+import math
 
 
 def color_text(text, color_f=None, color_b=None):
@@ -134,8 +134,7 @@ class Menus:
 
         #print(mouse.cx, mouse.cy)
         mx = mouse.cx - self.w_pos
-        my = mouse.cy - self.h_pos
-
+        my = math.ceil(mouse.cy - self.h_pos)
         # for dragging
         if 2 <= mx <= self.width - 2 and my == 0:
             self.in_drag_zone = True
