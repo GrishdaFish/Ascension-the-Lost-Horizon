@@ -22,13 +22,13 @@ import time
 width = 80
 height = 43
 
-if _gEngine.RELEASE:
-    path = getattr(sys, "_MEIPASS", ".")
-else:
-    path = sys.path[0]
+# if _gEngine.RELEASE:
+#     path = getattr(sys, "_MEIPASS", ".")
+# else:
+#     path = sys.path[0]
+path = os.path.abspath('.')
 path = os.path.join(path, 'content')
-path = path.replace('core.exe', '')
-
+# path = path.replace('core.exe', '')
 
 class PrefabGenerator:
     """

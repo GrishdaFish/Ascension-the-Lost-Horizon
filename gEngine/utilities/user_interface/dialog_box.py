@@ -48,8 +48,8 @@ class DialogBox:
         input = -1
         while input == -1:
             input = self.run()
-        libtcod.mouse_get_status()
-        libtcod.console_check_for_keypress()
+        #libtcod.mouse_get_status()
+        #libtcod.console_check_for_keypress()
         return input
 
     def dialog_box(self):
@@ -66,7 +66,7 @@ class DialogBox:
 
         self.game.gEngine.console_flush()
         key, mouse = self.game.gEngine.handle_input()
-        input = self.buttons[0].display()
+        input = self.buttons[0].display(mouse)
         for i in input:
             if i != -1:
                 return 1
@@ -84,15 +84,15 @@ class DialogBox:
         self.game.gEngine.console_print(self.window, 1, 1, self.body_text)
 
         self.game.gEngine.console_flush()
-
-        input = self.buttons[0].display()
+        key, mouse = self.game.gEngine.handle_input()
+        input = self.buttons[0].display(mouse)
         for i in input:
             if i != -1:
                 return i
 
-        self.game.gEngine.console_flush()
+        #self.game.gEngine.console_flush()
 
-        input = self.buttons[1].display()
+        input = self.buttons[1].display(mouse)
         for i in input:
             if i != -1:
                 return i

@@ -346,14 +346,14 @@ class MouseMotion(MouseState):
 
         pixel = motion.x, motion.y
         pixel_motion = motion.xrel, motion.yrel
-        subtile = _pixel_to_tile(*pixel)
-        #tile = int(subtile[0]), int(subtile[1])
-        #prev_pixel = pixel[0] - pixel_motion[0], pixel[1] - pixel_motion[1]
-        #prev_subtile = _pixel_to_tile(*prev_pixel)
-        #prev_tile = int(prev_subtile[0]), int(prev_subtile[1])
-        #tile_motion = tile[0] - prev_tile[0], tile[1] - prev_tile[1]
-        tile = (0, 0)
-        tile_motion = tile
+        subtile = pixel[0] / 16, pixel[1] / 16  #_pixel_to_tile(*pixel)
+        tile = int(subtile[0]), int(subtile[1])
+        prev_pixel = pixel[0] - pixel_motion[0], pixel[1] - pixel_motion[1]
+        prev_subtile = prev_pixel[0] / 16, prev_pixel[1] / 16  #_pixel_to_tile(*prev_pixel)
+        prev_tile = int(prev_subtile[0]), int(prev_subtile[1])
+        tile_motion = tile[0] - prev_tile[0], tile[1] - prev_tile[1]
+        # tile = (0, 0)
+        # tile_motion = tile
         self = cls(pixel, pixel_motion, tile, tile_motion, motion.state)
         self.sdl_event = sdl_event
         return self

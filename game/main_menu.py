@@ -124,7 +124,7 @@ class MainMenu:
             g = game.Game(self.gEngine)
             g.new_game()
             self.gEngine.add_module(g)
-            d = dungeon_status.DungeonStatus(self.gEngine, g, 5, 5, self.gEngine.SCREEN_WIDTH / 2, 5, "Dungeon Status")
+            d = dungeon_status.DungeonStatus(self.gEngine, g, 5, 6, self.gEngine.SCREEN_WIDTH / 2, 7, "Dungeon Status")
             self.gEngine.add_module(d)
             return
             # self.new_game()

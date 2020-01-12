@@ -60,10 +60,11 @@ class Animations:
         :return:
         """
         self.gEngine.log_open_block("Loading all animation files")
-        if _gEngine.RELEASE:
-            path = getattr(sys, "_MEIPASS", ".")
-        else:
-            path = sys.path[0]
+        # if _gEngine.RELEASE:
+        #     path = getattr(sys, "_MEIPASS", ".")
+        # else:
+        #     path = sys.path[0]
+        path = os.path.abspath('.')
         root_path = os.path.join(path, 'content', 'img', 'animations')
         for root, dirs, files in os.walk(root_path):
             if len(files) > 0:

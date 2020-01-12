@@ -119,10 +119,11 @@ class Game:
         self.loot_force_display = [False, 0]
         self.hover_description = hover_description.HoverDescription(self.dungeon_console, self.gEngine, True)
 
-        if _gEngine.RELEASE:
-            path = getattr(sys, "_MEIPASS", ".")
-        else:
-            path = sys.path[0]
+        # if _gEngine.RELEASE:
+        #     path = getattr(sys, "_MEIPASS", ".")
+        # else:
+        #     path = sys.path[0]
+        path = os.path.abspath('.')
         path = os.path.join(path, 'content')
         #print(path)
         back = os.path.join(path, 'img', 'BurntTorch.png')
@@ -216,7 +217,8 @@ class Game:
                 self.gEngine.add_module(m)
                 return
             if mouse.lbutton:
-                time.sleep(0.1)
+                print("Mouse lbutton")
+                # time.sleep(0.1)
                 if not self.popup and self.player.fighter.gear.get_combat_type() == 'ranged':
                     target = self.check_for_target(mouse.cx, mouse.cy)
                     if target:

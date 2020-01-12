@@ -135,9 +135,9 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
         #libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY, key, mouse)
         key, mouse = game.gEngine.handle_input()
 
-        exit_input = exit_button.display()
-        sell_input = sell_button.display()
-        buy_input = buy_button.display()
+        exit_input = exit_button.display(mouse)
+        sell_input = sell_button.display(mouse)
+        buy_input = buy_button.display(mouse)
 
         game.gEngine.console_clear(inventory_window)
         game.gEngine.console_clear(shop_window)

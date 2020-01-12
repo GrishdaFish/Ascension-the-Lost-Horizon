@@ -39,7 +39,7 @@ def character_info(con, width, height, game, x=0, y=0):
         # mouse = libtcod.Mouse()
         # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
         key, mouse = game.gEngine.handle_input()
-        exit_input = exit_button.display()
+        exit_input = exit_button.display(mouse)
 
         game.gEngine.console_blit(char_window, 0, 0, width / 2, height / 2, 0, 0, 0, 1.0, 1.0)
         game.gEngine.console_blit(skill_window, 0, 0, width / 2, height, 0, skill_window_y_pos, 0, 1.0, 1.0)
