@@ -118,10 +118,7 @@ class AiDirector:
             return None
 
     def dump_data(self):
-        if GENGINE.RELEASE:
-            path = getattr(sys, "_MEIPASS", ".")
-        else:
-            path = sys.path[0]
+        path = os.path.abspath('.')
         path = os.path.join(path, 'logs', 'data', 'aid')
         pathlib.Path(path).mkdir(parents=True, exist_ok=True)
         name = 'stats_'+str(int(time.time())) + '.dat'
@@ -129,6 +126,7 @@ class AiDirector:
         with open(path, 'w') as file:
             for item in self.player_stats:
                 file.write(item + " " + str(self.player_stats[item]) + "\n")
+        self.gEngine.network_send_data(self.player_stats)
 
 if __name__ == "__main__":
     ad = AiDirector(None, None)

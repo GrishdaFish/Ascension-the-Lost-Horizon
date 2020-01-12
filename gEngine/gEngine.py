@@ -124,12 +124,17 @@ class gEngine:
             print(imp_err)
             print("using networking dummy")
             self.network = NetworkDummy()
-
+        self.additional_modules = []
     def run(self):
         is_closed = None
         while True:
             self.console_flush()
             key, mouse = self.handle_input()
+            if len(self.additional_modules) > 0:
+                for modules in self.additional_modules:
+                    self.modules.append(modules)
+                self.additional_modules.clear()
+
             for module in self.modules:
                 if module.active is True:
                     module.run(key, mouse)
@@ -138,7 +143,7 @@ class gEngine:
         self.console_flush()
 
     def add_module(self, module):
-        self.modules.append(module)
+        self.additional_modules.append(module)
 
     def remove_module(self, module):
         module.on_exit()
@@ -218,10 +223,8 @@ class gEngine:
                 mouse = libtcod.Mouse()
             mouse.cx = self.mouse.cx
             mouse.cy = self.mouse.cy
-            #self.mouse.lbutton_pressed = False
-            #self.mouse.lbutton = False
+
             for event in tcod_event.get():
-                print(event)
                 if event.type == 'MOUSEMOTION':
                     mouse.cx = self.mouse.cx = int(event.pixel[0] / 16)
                     mouse.cy = self.mouse.cy = int(event.pixel[1] / 16)
@@ -257,6 +260,19 @@ class gEngine:
                         key.vk = key_conv[event.scancode]
 
                 if event.type == "WINDOWCLOSE":
+                    try:
+                        self.log_open_block("Dumping data to disk and uploading to server")
+                        game = self.get_module_by_name("Game")
+                        if game:
+                            game.ai_director.dump_data()
+                            self.log_message('Data dumped succesfully')
+                            self.log_close_block()
+                        else:
+                            self.log_message("Data dump unsuccessful", 'error')
+                            self.log_close_block()
+                    except Exception as ex:
+                        self.log_message(ex, "error")
+                        pass
                     self.log_close_block()
                     exit(69420)  # lmao
 
@@ -276,10 +292,10 @@ class gEngine:
             self.console_dict[self.console_id_counter] = self.root
             self.console_id_counter += 1
         self.animation_engine.load_animations()
-        self.map_image = self.image_new(self.w, self.h)
-        self.subcell_map_image = self.image_new(self.w * 2, self.h * 2)
-        self.light_map = self.image_new(self.w, self.h)
-        self.subcell_light_map = self.image_new(self.w * 2, self.h * 2)
+        # self.map_image = self.image_new(self.w, self.h)
+        # self.subcell_map_image = self.image_new(self.w * 2, self.h * 2)
+        # self.light_map = self.image_new(self.w, self.h)
+        # self.subcell_light_map = self.image_new(self.w * 2, self.h * 2)
 
     def sys_get_fps(self):
         if cEngine:

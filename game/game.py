@@ -133,48 +133,7 @@ class Game:
         fore = os.path.join(path, 'img', 'Torch.png')
         self.player_torch_bar = status_bar.AnimatedStatusBar(back, fore, "torch flame", self.toolbar, self.gEngine, 0, 0)
 
-        self.death_index = -1
-        self.death_animation = []
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
-        self.death_animation.append(
-            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
-        self.death_animation.append(
-            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
-        self.death_animation.append(
-            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
-        self.death_animation.append(
-            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
-        self.death_animation.append(
-            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
-        self.death_animation.append(
-            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
-        self.death_animation.append(
-            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
-        self.death_animation.append(
-            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
-        self.death_animation.append(
-            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
-        self.death_animation.append(
-            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
-        self.death_animation.append(
-            self.gEngine.image_load(os.path.join(path, 'img', 'death animations', 'death arrow', '0.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations', 'death arrow', '1.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations', 'death arrow', '2.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations', 'death arrow', '3.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations', 'death arrow', '4.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '5.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '6.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '7.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '8.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '9.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '10.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '11.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '12.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '13.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '14.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '15.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '16.png')))
-        self.death_animation.append(self.gEngine.image_load( os.path.join(path, 'img', 'death animations','death arrow', '17.png')))
+
         self.ranged_ammo_index = None
         self.popup = None
         self.gEngine.log_message("Game fully initialized")

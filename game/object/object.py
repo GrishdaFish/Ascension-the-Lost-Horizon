@@ -67,6 +67,7 @@ class Object:
         self.torch = torch
         if self.torch:
             self.torch.owner = self
+        self.force_display = False
 
     def move(self, dx, dy, map, objects):
         # move by the given amount, if the destination is not blocked
@@ -113,7 +114,7 @@ class Object:
 
     def draw(self, fov_map, gEngine, is_player=False, force_display=False):
         # only show if it's visible to the player
-        if force_display:
+        if force_display or self.force_display:
             # print gEngine.return_color_background(self.con,self.x,self.y)
             col = gEngine.get_map_tile_color(int(self.x), int(self.y))
             brightness = gEngine.lightmask_get_mask_value(self.x, self.y)
