@@ -36,6 +36,9 @@ class DungeonStatus(window_widget.WindowWidget):
                     popup = DungeonStatusPopup(self.gEngine, self.game, 0, 0, 16, 7, title="Monster List")
                     popup.setup(monsters)
                     self.gEngine.add_module(popup)
+                if mouse.rbutton:
+                    for object in monsters:
+                        object.fighter.take_damage(object.fighter.hp, self.game.player, self.game)
 
             self.gEngine.console_print(self.con, 1, 1, mon)
 
@@ -108,10 +111,46 @@ class DungeonStatusPopup(window_widget.WindowWidget):
             i = 1
             for index in range(self.list_offset, end):
                 data = self.data[index].name
-                if mousex >= 1 and mousex <= self.width:
+                if mousex >= 1 and mousex <= self.width-1:
                     if mousey == i and not mouse.lbutton:
                         data = menu.color_text(data, libtcod.green)
                     elif mousey == i and mouse.lbutton:
                         data = menu.color_text(data, libtcod.red)
+                        if self.data[index].fighter:
+                            m = MonsterPopup(self.gEngine, self.game, self.x+self.width + 1, self.y+self.height+1,
+                                             22+4, 5, self.data[index].name)
+                            m.setup(self.data[index])
+                            self.gEngine.add_module(m)
                 self.gEngine.console_print(self.con, 1, i, data)
                 i += 1
+
+
+class MonsterPopup(window_widget.WindowWidget):
+    def close(self):
+        self.gEngine.remove_module(self)
+        self.data.force_display = False
+
+    def setup(self, data):
+        self.data = data
+        self.data.force_display = True
+
+    def update(self, key, mouse):
+        # print hp, lclick to heal, rclick to kill
+        mousex = math.ceil(mouse.cx - self.x)
+        mousey = math.ceil(mouse.cy - self.y)
+
+        self.gEngine.console_print(self.con, 1, 1, "LB to Heal, RB to Kill")
+        if self.data.fighter:
+            data = "Hp: %d" % self.data.fighter.hp
+            if mousex >= 1 and mousex <= self.width - 1:
+                if mousey == 2:
+                    data = menu.color_text(data, libtcod.green)
+                    if mouse.lbutton:
+                        self.data.fighter.heal(self.data.fighter.stat.get_stat_base("HP"))
+                    if mouse.rbutton:
+                        self.data.fighter.take_damage(self.data.fighter.hp, self.game.player, self.game)
+        else:
+            data = "Monster Dead"
+        self.gEngine.console_print(self.con, 1, 2, data)
+
+

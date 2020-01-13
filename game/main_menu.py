@@ -1,7 +1,7 @@
 import tcod as libtcod
 from game import game
 from game import dev_mode
-from game.debug_modules import debug_handler
+from game.debug_modules import module_list
 from game.debug_modules import dungeon_status
 from gEngine.utilities.user_interface.menu import Menus
 import os
@@ -126,6 +126,9 @@ class MainMenu:
             self.gEngine.add_module(g)
             d = dungeon_status.DungeonStatus(self.gEngine, g, 5, 6, self.gEngine.SCREEN_WIDTH / 2, 7, "Dungeon Status")
             self.gEngine.add_module(d)
+            m = module_list.ModuleList(self.gEngine, g, 0, 0, 15, 5, 'Module List')
+            self.gEngine.add_module(m)
+
             return
             # self.new_game()
             # self.play_game()

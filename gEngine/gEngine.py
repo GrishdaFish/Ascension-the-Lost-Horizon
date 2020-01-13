@@ -125,6 +125,7 @@ class gEngine:
             print("using networking dummy")
             self.network = NetworkDummy()
         self.additional_modules = []
+
     def run(self):
         is_closed = None
         while True:
@@ -175,6 +176,9 @@ class gEngine:
             module.deactivate()
             return True
         return False
+
+    def toggle_module(self, module):
+        module.active = not module.active
 
     def log_open_block(self, message):
         if cEngine:
