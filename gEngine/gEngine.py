@@ -34,7 +34,6 @@ except ImportError as e:
     cEngine = None
 
 from gEngine import particle
-from gEngine.utilities import logging
 from gEngine.utilities import options as _options
 from gEngine.utilities import config
 from gEngine import tcod_event
@@ -944,5 +943,5 @@ class gEngine:
     def animation_draw_animation(self, name, target, x, y):
         return self.animation_engine.draw_animation(name, target, x, y)
 
-    def network_send_package(self, package):
-        self.network.send_package(package)
+    def network_send_package(self, type, package):
+        self.network.send_package(type, package)
