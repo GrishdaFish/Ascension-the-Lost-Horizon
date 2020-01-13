@@ -3,6 +3,7 @@ from game import game
 from game import dev_mode
 from game.debug_modules import module_list
 from game.debug_modules import dungeon_status
+from game.debug_modules import spawning_tool
 from gEngine.utilities.user_interface.menu import Menus
 import os
 import sys
@@ -121,11 +122,19 @@ class MainMenu:
             self.gEngine.console_remove_console(self.con)
 
             self.gEngine.log_close_block()
+
             g = game.Game(self.gEngine)
             g.new_game()
             self.gEngine.add_module(g)
+
             d = dungeon_status.DungeonStatus(self.gEngine, g, 5, 6, self.gEngine.SCREEN_WIDTH / 2, 7, "Dungeon Status")
             self.gEngine.add_module(d)
+
+            spawn_tool = spawning_tool.SpawningTools(self.gEngine, g, 0, 0, 18, 9, "Spawning Tools")
+            spawn_tool.setup()
+            self.gEngine.add_module(spawn_tool)
+
+            # load this module last
             m = module_list.ModuleList(self.gEngine, g, 0, 0, 15, 5, 'Module List')
             self.gEngine.add_module(m)
 
