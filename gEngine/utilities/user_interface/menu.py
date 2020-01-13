@@ -196,7 +196,6 @@ class Menus:
 
     def key_input(self, key):
         # Menu Keyboard Input
-
         index = key.c - ord('a')
 
         if key.vk == libtcod.KEY_ENTER and key.lalt:

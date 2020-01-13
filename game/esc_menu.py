@@ -48,7 +48,7 @@ class EscMenu:
             key, mouse = self.gEngine.handle_input()
             self.gEngine.console_set_default_background(0, 0, 0, 0)
 
-            choice = m_menu.run(key, mouse, menu_fade_value)
+            choice = m_menu.run(key, mouse, alpha=1.0)
             self.gEngine.console_flush()
             self.gEngine.console_clear(self.con)
             self.gEngine.console_clear(0)
