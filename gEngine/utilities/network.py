@@ -10,8 +10,8 @@ class NetworkController():
 
     def send_package(self, request_type, data):
         # TEST CALLS ## COMMENT OR REMOVE THIS BLOCK ###############
-        request_type = "add_player"
-        data = {'user_name': "user02", 'user_pass': "12345"}
+        # request_type = "add_player"
+        # data = {'user_name': "user02", 'user_pass': "12345"}
         ############################################################
 
 
@@ -35,8 +35,8 @@ class NetworkController():
         from pprint import pprint
         pprint(vars(r))
         #################################################################################################
+        if r.status_code == str("200"):
+            return True
+        else:
+            return False
 
-
-
-nc = NetworkController()
-nc.send_package(0,0)

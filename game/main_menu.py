@@ -4,6 +4,7 @@ from game import dev_mode
 from game.debug_modules import module_list
 from game.debug_modules import dungeon_status
 from game.debug_modules import spawning_tool
+from game.modules import login_module
 from gEngine.utilities.user_interface.menu import Menus
 import os
 import sys
@@ -42,6 +43,7 @@ class MainMenu:
         self.menu_fade_amount = 0.05
         self.menu_fade_value = 0.0
 
+
     def activate(self):
         self.active = True
         self.first = True
@@ -60,6 +62,7 @@ class MainMenu:
         self.menu_fade_amount = 0.05
         self.menu_fade_value = 0.0
 
+
     def deactivate(self):
         self.active = False
 
@@ -71,6 +74,13 @@ class MainMenu:
         if self.first:
             self.gEngine.log_open_block("Main menu running...")
             self.first = False
+            login = login_module.LoginMenu(self.gEngine, None, self.gEngine.SCREEN_WIDTH / 4,
+                                           self.gEngine.SCREEN_HEIGHT / 4,
+                                           25, 7, "Login")
+            login.setup()
+            self.gEngine.add_module(login)
+            return
+
 
         self.gEngine.console_clear(self.con)
         self.gEngine.console_clear(0)
@@ -83,6 +93,8 @@ class MainMenu:
             img = "game logo flicker"
             self.gEngine.animation_draw_animation(img, 0, 0, 0)
         if self.logo_done:
+
+
             if self.letter_index < len(self.studio_name):
                 self.print_name += self.studio_name[self.letter_index]
             else:
@@ -114,61 +126,63 @@ class MainMenu:
                     # menu_fade_value = 1.0
                     self.menu_fade = False
 
-        choice = self.m_menu.run(key, mouse, self.menu_fade_value)
-        #self.gEngine.console_flush()
-        if choice == 0:  # play new game
-            self.gEngine.log_message('Starting new game')
-            self.gEngine.remove_module(self)
-            self.gEngine.console_remove_console(self.con)
+        if not self.gEngine.get_module_status("LoginMenu"):
+            choice = self.m_menu.run(key, mouse, self.menu_fade_value)
 
-            self.gEngine.log_close_block()
+            #self.gEngine.console_flush()
+            if choice == 0:  # play new game
+                self.gEngine.log_message('Starting new game')
+                self.gEngine.remove_module(self)
+                self.gEngine.console_remove_console(self.con)
 
-            g = game.Game(self.gEngine)
-            g.new_game()
-            self.gEngine.add_module(g)
+                self.gEngine.log_close_block()
 
-            d = dungeon_status.DungeonStatus(self.gEngine, g, 5, 6, self.gEngine.SCREEN_WIDTH / 2, 7, "Dungeon Status")
-            self.gEngine.add_module(d)
+                g = game.Game(self.gEngine)
+                g.new_game()
+                self.gEngine.add_module(g)
 
-            spawn_tool = spawning_tool.SpawningTools(self.gEngine, g, 0, 0, 18, 9, "Spawning Tools")
-            spawn_tool.setup()
-            self.gEngine.add_module(spawn_tool)
+                d = dungeon_status.DungeonStatus(self.gEngine, g, 5, 6, self.gEngine.SCREEN_WIDTH / 2, 7, "Dungeon Status")
+                self.gEngine.add_module(d)
 
-            # load this module last
-            m = module_list.ModuleList(self.gEngine, g, 0, 0, 15, 5, 'Module List')
-            self.gEngine.add_module(m)
+                spawn_tool = spawning_tool.SpawningTools(self.gEngine, g, 0, 0, 18, 9, "Spawning Tools")
+                spawn_tool.setup()
+                self.gEngine.add_module(spawn_tool)
 
-            return
-            # self.new_game()
-            # self.play_game()
-            # self.main_menu()
-        if choice == 1:  # load game
-            self.gEngine.log_message('loading game')
-            self.gEngine.remove_module(self)
-            self.gEngine.log_close_block()
-            return
-            # try:
-            # self.load_game()
-            # except:
-            #    msgbox('\n No saved game to load.\n', 24)
-            #    continue
-            # self.play_game()
-            # self.main_menu()
-        if choice == 3:# or choice is None:  # quit. TODO fix for new engine
-            self.gEngine.log_message('Quitting game')
-            self.gEngine.remove_module(self)
-            self.gEngine.log_close_block()
-            return True
+                # load this module last
+                m = module_list.ModuleList(self.gEngine, g, 0, 0, 15, 5, 'Module List')
+                self.gEngine.add_module(m)
 
-        if choice == 4:  # dev mode
-            self.gEngine.log_message('Entering Devmode')
-            self.gEngine.remove_module(self)
-            d = dev_mode.DevMode(self.gEngine)
-            self.gEngine.add_module(d)
-            self.gEngine.log_close_block()
-            return
-                # self.dev_mode.run()
+                return
+                # self.new_game()
+                # self.play_game()
                 # self.main_menu()
-            # if choice == 5:
-            #     self.gEngine.log_message('Sending to Discord...')
-        # return True
+            if choice == 1:  # load game
+                self.gEngine.log_message('loading game')
+                self.gEngine.remove_module(self)
+                self.gEngine.log_close_block()
+                return
+                # try:
+                # self.load_game()
+                # except:
+                #    msgbox('\n No saved game to load.\n', 24)
+                #    continue
+                # self.play_game()
+                # self.main_menu()
+            if choice == 3:# or choice is None:  # quit. TODO fix for new engine
+                self.gEngine.log_message('Quitting game')
+                self.gEngine.remove_module(self)
+                self.gEngine.log_close_block()
+                return True
+
+            if choice == 4:  # dev mode
+                self.gEngine.log_message('Entering Devmode')
+                self.gEngine.remove_module(self)
+                d = dev_mode.DevMode(self.gEngine)
+                self.gEngine.add_module(d)
+                self.gEngine.log_close_block()
+                return
+                    # self.dev_mode.run()
+                    # self.main_menu()
+                # if choice == 5:
+                #     self.gEngine.log_message('Sending to Discord...')
+            # return True
