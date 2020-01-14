@@ -107,7 +107,7 @@ class Menus:
                 y += 1
                 letter_index += 1
 
-            self.gEngine.console_flush()
+            #self.gEngine.console_flush()
             m_input = self.mouse_input(mouse)
             k_input = self.key_input(key)
             if m_input != -1:

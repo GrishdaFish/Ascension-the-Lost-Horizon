@@ -43,6 +43,7 @@ class MainMenu:
         self.menu_fade_amount = 0.05
         self.menu_fade_value = 0.0
 
+
     def activate(self):
         self.active = True
         self.first = True
@@ -61,6 +62,7 @@ class MainMenu:
         self.menu_fade_amount = 0.05
         self.menu_fade_value = 0.0
 
+
     def deactivate(self):
         self.active = False
 
@@ -73,9 +75,12 @@ class MainMenu:
             self.gEngine.log_open_block("Main menu running...")
             self.first = False
             login = login_module.LoginMenu(self.gEngine, None, self.gEngine.SCREEN_WIDTH / 4,
-                                           self.gEngine.SCREEN_HEIGHT / 4, 25, 7, "Login")
+                                           self.gEngine.SCREEN_HEIGHT / 4,
+                                           25, 7, "Login")
             login.setup()
             self.gEngine.add_module(login)
+            return
+
 
         self.gEngine.console_clear(self.con)
         self.gEngine.console_clear(0)
@@ -88,6 +93,8 @@ class MainMenu:
             img = "game logo flicker"
             self.gEngine.animation_draw_animation(img, 0, 0, 0)
         if self.logo_done:
+
+
             if self.letter_index < len(self.studio_name):
                 self.print_name += self.studio_name[self.letter_index]
             else:
@@ -118,8 +125,10 @@ class MainMenu:
                 else:
                     # menu_fade_value = 1.0
                     self.menu_fade = False
+
         if not self.gEngine.get_module_status("LoginMenu"):
             choice = self.m_menu.run(key, mouse, self.menu_fade_value)
+
             #self.gEngine.console_flush()
             if choice == 0:  # play new game
                 self.gEngine.log_message('Starting new game')

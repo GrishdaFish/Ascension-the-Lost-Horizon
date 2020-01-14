@@ -106,6 +106,7 @@ class gEngine:
         self.key = libtcod.Key()
         self.mouse = libtcod.Mouse()
         self.root = None
+        # self.logger = logging.log_manager()
         self.engine = None
         self.console_id_counter = 0
         self.image_id_counter = 0
@@ -121,7 +122,7 @@ class gEngine:
         except ImportError as imp_err:
             print(imp_err)
             print("using networking dummy")
-            self.network = NetworkDummy()
+            #self.network = NetworkDummy()
         self.additional_modules = []
 
     def run(self):
