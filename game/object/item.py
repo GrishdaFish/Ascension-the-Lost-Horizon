@@ -20,7 +20,6 @@ class Item:
 
 
     def pick_up(self, inventory, game=None):
-
         if not self.owner.misc:
             # get stackable items first
             for item in inventory:
@@ -28,7 +27,8 @@ class Item:
                     if item.item.check_stackable() and item.name == self.owner.name:
                         item.item.stack(self.qty)
                         if game:
-                            game.objects.remove(self.owner)
+                            if self.owner in game.objects:
+                                game.objects.remove(self.owner)
                             msg = menu.color_text('You picked up a ', libtcod.yellow)
                             msg += menu.color_text(self.owner.name, self.owner.color)
                             msg += menu.color_text('!', libtcod.yellow)
@@ -43,7 +43,8 @@ class Item:
             else:  # otherwise pick up the item
                 inventory.append(self.owner)
                 if game:
-                    game.objects.remove(self.owner)
+                    if self.owner in game.objects:
+                        game.objects.remove(self.owner)
                     msg = menu.color_text('You picked up a ', libtcod.yellow)
                     msg += menu.color_text(self.owner.name, self.owner.color)
                     msg += menu.color_text('!', libtcod.yellow)

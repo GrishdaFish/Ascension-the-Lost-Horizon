@@ -35,7 +35,7 @@ class NetworkController():
         from pprint import pprint
         pprint(vars(r))
         #################################################################################################
-        if r.status_code == str("200"):
+        if str(r.status_code) == str("200"):
             return True
         else:
             return False

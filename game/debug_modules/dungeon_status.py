@@ -1,6 +1,6 @@
 __author__ = 'GrishdaFish'
 import math
-from gEngine.utilities.user_interface import window_widget
+from gEngine.utilities.widget import window_widget
 from gEngine.utilities.user_interface import menu
 
 import tcod as libtcod

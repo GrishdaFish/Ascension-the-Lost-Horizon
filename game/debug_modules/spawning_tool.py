@@ -1,7 +1,7 @@
 __author__ = 'GrishdaFish'
 
 import math
-from gEngine.utilities.user_interface import window_widget
+from gEngine.utilities.widget import window_widget, button_widget, text_input_widget
 from gEngine.utilities.user_interface import menu
 
 import tcod as libtcod
@@ -10,7 +10,7 @@ import tcod as libtcod
 class SpawningTools(window_widget.WindowWidget):
     def setup(self):
         self.deactivate()
-
+        self.text_input = text_input_widget.TextInputWidget(self, "Test:", 1, 7, self.width-2)
 
     def update(self, key, mouse):
         mousex = math.ceil(mouse.cx - self.x)
@@ -34,11 +34,15 @@ class SpawningTools(window_widget.WindowWidget):
                 elif mousey == 2:
                     scroll = menu.color_text(scroll, libtcod.green)
                     if mouse.lbutton:
-                        pass
+                        scr = ScrollSpawner(self.gEngine, self.game, 0, 0, 16, 1, "Scroll Spawner")
+                        scr.setup()
+                        self.gEngine.add_module(scr)
                 elif mousey == 3:
                     potion = menu.color_text(potion, libtcod.green)
                     if mouse.lbutton:
-                        pass
+                        pot = PotionSpawner(self.gEngine, self.game, 0, 0, 16, 1, "Potion Spawner")
+                        pot.setup()
+                        self.gEngine.add_module(pot)
                 elif mousey == 4:
                     gear = menu.color_text(gear, libtcod.green)
                     if mouse.lbutton:
@@ -59,36 +63,73 @@ class SpawningTools(window_widget.WindowWidget):
         self.gEngine.console_print(self.con, 1, 4, gear)
         self.gEngine.console_print(self.con, 1, 5, full_set)
         self.gEngine.console_print(self.con, 1, 6, move_up)
-        self.gEngine.console_print(self.con, 1, 7, move_down)
+        #self.gEngine.console_print(self.con, 1, 7, move_down)
+        self.text_input.run(key, mouse)
 
 
 class PotionSpawner(window_widget.WindowWidget):
+    def close(self):
+        self.gEngine.remove_module(self)
+
     def setup(self):
         self.pots = self.game.build_objects.potions
         self.list_offset = 0
+        self.buttons = []
         w_size = 0
+        i = 1
         for object in self.pots:
             if len(object.name) > w_size:
                 w_size = len(object.name)
-        self.original_width = w_size + 2
-        self.width = w_size + 2
+            self.buttons.append(
+                button_widget.ButtonWidget(self, 1, i, object.name, self.game.build_objects.build_potion,
+                                           [self.game, self.game.player.x, self.game.player.y, object.name]))
+            i += 1
+        self.height = len(self.pots) + 2
+        self.original_height = self.height
+        if w_size > len(self.title):
+            self.original_width = w_size + 2
+            self.width = w_size + 2
+        self.gEngine.console_remove_console(self.con)
+        self.con = self.gEngine.console_new(self.width, self.height)
 
     def update(self, key, mouse):
-        mousex = math.ceil(mouse.cx - self.x)
-        mousey = math.ceil(mouse.cy - self.y)
-        i = 1
+        returnables = []
+        for button in self.buttons:
+            returnables.append(button.run(key, mouse))
+        for returnable in returnables:
+            if returnable:
+                returnable.item.pick_up(self.game.player.fighter.inventory, self.game)
 
-        # for index in range(self., end):
-        #     data = self.data[index].name
-        #     if mousex >= 1 and mousex <= self.width - 1:
-        #         if mousey == i and not mouse.lbutton:
-        #             data = menu.color_text(data, libtcod.green)
-        #         elif mousey == i and mouse.lbutton:
-        #             data = menu.color_text(data, libtcod.red)
-        #             if self.data[index].fighter:
-        #                 m = MonsterPopup(self.gEngine, self.game, self.x + self.width + 1, self.y + self.height + 1,
-        #                                  22 + 4, 5, self.data[index].name)
-        #                 m.setup(self.data[index])
-        #                 self.gEngine.add_module(m)
-        #     self.gEngine.console_print(self.con, 1, i, data)
-        #     i += 1
+
+class ScrollSpawner(window_widget.WindowWidget):
+    def close(self):
+        self.gEngine.remove_module(self)
+
+    def setup(self):
+        self.scrolls = self.game.build_objects.scrolls
+        self.list_offset = 0
+        self.buttons = []
+        w_size = 0
+        i = 1
+        for object in self.scrolls:
+            if len(object.name) > w_size:
+                w_size = len(object.name)
+            self.buttons.append(
+                button_widget.ButtonWidget(self, 1, i, object.name, self.game.build_objects.build_scroll,
+                                           [self.game, self.game.player.x, self.game.player.y, object.name]))
+            i += 1
+        self.height = len(self.scrolls) + 2
+        self.original_height = self.height
+        if w_size > len(self.title):
+            self.original_width = w_size + 2
+            self.width = w_size + 2
+        self.gEngine.console_remove_console(self.con)
+        self.con = self.gEngine.console_new(self.width, self.height)
+
+    def update(self, key, mouse):
+        returnables = []
+        for button in self.buttons:
+            returnables.append(button.run(key, mouse))
+        for returnable in returnables:
+            if returnable:
+                returnable.item.pick_up(self.game.player.fighter.inventory, self.game)

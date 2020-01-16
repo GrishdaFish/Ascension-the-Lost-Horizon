@@ -179,8 +179,6 @@ class Game:
                 self.gEngine.add_module(m)
                 return
             if mouse.lbutton:
-                print("Mouse lbutton")
-                # time.sleep(0.1)
                 if not self.popup and self.player.fighter.gear.get_combat_type() == 'ranged':
                     target = self.check_for_target(mouse.cx, mouse.cy)
                     if target:

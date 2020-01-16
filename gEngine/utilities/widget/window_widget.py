@@ -64,7 +64,8 @@ class WindowWidget:
         self.basic_mouse_input(mouse)
         self.pre_draw_widgit()
         self.update(key, mouse)
-        self.gEngine.console_blit(self.con, 0, 0, 0, 0, 0, self.x, self.y, 1.0, 1.0)
+        if self.active:
+            self.gEngine.console_blit(self.con, 0, 0, 0, 0, 0, self.x, self.y, 1.0, 1.0)
 
     def mouse_is_in_console(self, mouse):
         if self.x <= mouse.cx <= self.x + self.width:
@@ -95,7 +96,6 @@ class WindowWidget:
             self.is_dragging = False
 
         elif self.is_dragging:
-            print(mouse.cy, self.dragy, mousey)
             self.x = mouse.cx - self.dragx
             self.y = mouse.cy - self.dragy
 
@@ -114,10 +114,11 @@ class WindowWidget:
             self.collapse_button = menu.color_text('-', libtcod.white)
 
     def pre_draw_widgit(self):
-        self.gEngine.console_print_frame(self.con, 0, 0, self.width, self.height, True)
-        self.gEngine.console_print(self.con, self.title_x_position, 0, self.title)
-        self.gEngine.console_print(self.con, 0, 0, self.collapse_button)
-        self.gEngine.console_print(self.con, self.width-1, 0, self.minimize_button)
+        if self.active:
+            self.gEngine.console_print_frame(self.con, 0, 0, self.width, self.height, True)
+            self.gEngine.console_print(self.con, self.title_x_position, 0, self.title)
+            self.gEngine.console_print(self.con, 0, 0, self.collapse_button)
+            self.gEngine.console_print(self.con, self.width-1, 0, self.minimize_button)
 
     def collapse(self):
         if self.collapsed:
