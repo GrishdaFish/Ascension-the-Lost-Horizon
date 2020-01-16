@@ -142,6 +142,7 @@ class MainMenu:
                 self.gEngine.add_module(g)
 
                 d = dungeon_status.DungeonStatus(self.gEngine, g, 5, 6, self.gEngine.SCREEN_WIDTH / 2, 7, "Dungeon Status")
+                d.deactivate()
                 self.gEngine.add_module(d)
 
                 spawn_tool = spawning_tool.SpawningTools(self.gEngine, g, 0, 0, 18, 9, "Spawning Tools")

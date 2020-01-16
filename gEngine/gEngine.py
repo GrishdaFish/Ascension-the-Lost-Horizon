@@ -124,7 +124,7 @@ class gEngine:
             print("using networking dummy")
             #self.network = NetworkDummy()
         self.additional_modules = []
-
+        self.modules_to_remove = []
     def run(self):
         is_closed = None
         while True:
