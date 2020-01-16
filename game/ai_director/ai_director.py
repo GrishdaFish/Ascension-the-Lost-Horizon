@@ -126,7 +126,7 @@ class AiDirector:
         with open(path, 'w') as file:
             for item in self.player_stats:
                 file.write(item + " " + str(self.player_stats[item]) + "\n")
-        self.gEngine.network_send_data('submit_win', self.player_stats)
+        self.gEngine.network_send_package('submit_win', self.player_stats)
 
 if __name__ == "__main__":
     ad = AiDirector(None, None)

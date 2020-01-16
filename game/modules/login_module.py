@@ -37,6 +37,9 @@ class LoginPopup(window_widget.WindowWidget):
 
 
 class LoginMenu(window_widget.WindowWidget):
+    def close(self):
+        self.gEngine.remove_module(self)
+
     def setup(self):
         self.user_text = "Username:"
         self.pass_text = "Password:"
@@ -73,11 +76,11 @@ class LoginMenu(window_widget.WindowWidget):
         if key.vk == libtcod.KEY_BACKSPACE:
             if self.in_user:
                 if len(self.user_name) > 0:
-                    list(self.user_name).pop(len(self.user_name) - 1)
+                    self.user_name = self.user_name[:-1]
 
             if self.in_pass:
                 if len(self.password) > 0:
-                    list(self.password).pop(len(self.password) - 1)
+                    self.password = self.password[:-1]
 
         if key.vk == libtcod.KEY_TAB:
             if self.in_user:
@@ -88,15 +91,17 @@ class LoginMenu(window_widget.WindowWidget):
 
         if key.vk == libtcod.KEY_ENTER:
             if len(self.user_name) > 0 and len(self.password) > 0:
-                success = self.submit()
-                if not success:
+                login_response = self.submit()
+                if not login_response:
                     pop = LoginPopup(self.gEngine, self.game, self.gEngine.SCREEN_WIDTH / 2, self.gEngine.SCREEN_HEIGHT / 2, 1, 5, "Alert")
-                    pop.setup("SUBMIT FAIL MESSAGE")
+                    pop.setup("There was a network error, please check your connection and try again.")
                     self.gEngine.add_module(pop)
                 else:
                     pop = LoginPopup(self.gEngine, self.game, self.gEngine.SCREEN_WIDTH / 2,
                                      self.gEngine.SCREEN_HEIGHT / 2, 1, 5, "Alert")
-                    pop.setup("You are now logged in...")
+                    pop.setup(login_response['message'])
+                    if login_response['data']['player_id'] > 0:
+                        self.deactivate()
                     self.gEngine.add_module(pop)
             elif len(self.user_name) == 0 and len(self.password) == 0:
                 pop = LoginPopup(self.gEngine, self.game, self.gEngine.SCREEN_WIDTH / 2, self.gEngine.SCREEN_HEIGHT / 2, 1, 5, "Alert")
@@ -150,5 +155,9 @@ class LoginMenu(window_widget.WindowWidget):
     def submit(self):
         request_type = "add_player"
         data = {'user_name': self.user_name, 'user_pass': self.password}
-        logged_in = self.gEngine.network_send_package(request_type, data)
-        return logged_in
+        response = self.gEngine.network_send_package(request_type, data)
+        # there should always be a response, the network controller will notify if it fails
+        if response:
+            return response
+        else:
+            return False
