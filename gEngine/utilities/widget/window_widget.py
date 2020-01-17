@@ -48,6 +48,13 @@ class WindowWidget:
 
     def activate(self):
         self.active = True
+        self.minimized = False
+        self.collapsed = False
+        self.gEngine.console_remove_console(self.con)
+        self.width = self.original_width
+        self.height = self.original_height
+        self.title = self.original_title
+        self.con = self.gEngine.console_new(self.width, self.height)
 
     def deactivate(self):
         self.active = False
@@ -60,7 +67,8 @@ class WindowWidget:
         pass
 
     def run(self, key, mouse):
-        self.gEngine.console_clear(self.con)
+        if self.active:
+            self.gEngine.console_clear(self.con)
         self.basic_mouse_input(mouse)
         self.pre_draw_widgit()
         self.update(key, mouse)
@@ -68,8 +76,8 @@ class WindowWidget:
             self.gEngine.console_blit(self.con, 0, 0, 0, 0, 0, self.x, self.y, 1.0, 1.0)
 
     def mouse_is_in_console(self, mouse):
-        if self.x <= mouse.cx <= self.x + self.width:
-            if self.y <= mouse.cy <= self.y + self.height:
+        if self.x <= mouse.cx <= self.x + math.floor(self.width):
+            if self.y <= mouse.cy <= self.y + math.floor(self.height):
                 return True
         return False
 
@@ -136,7 +144,7 @@ class WindowWidget:
         """
         Over-ride to change behavior of the 'x' button
         """
-        pass
+        self.gEngine.remove_module(self)
 
     def minimize(self):
         self.close()

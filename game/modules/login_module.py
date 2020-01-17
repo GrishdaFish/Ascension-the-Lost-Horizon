@@ -9,7 +9,7 @@ import tcod as libtcod
 class LoginPopup(window_widget.WindowWidget):
     def close(self):
         self.gEngine.remove_module(self)
-        self.ok_button.on_exit()
+        self.ok_button.close()
 
     def setup(self, message):
         self.message = message
@@ -35,7 +35,7 @@ class LoginMenu(window_widget.WindowWidget):
         self.deactivate()
         self.user_widget.close()
         self.pass_widget.close()
-        self.submit_button.on_exit()
+        self.submit_button.close()
 
     def setup(self):
         self.user_text = "Username:"
