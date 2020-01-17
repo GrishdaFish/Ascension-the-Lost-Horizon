@@ -125,6 +125,7 @@ class gEngine:
             #self.network = NetworkDummy()
         self.additional_modules = []
         self.modules_to_remove = []
+        self.player_id = None
     def run(self):
         is_closed = None
         while True:

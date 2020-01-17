@@ -105,6 +105,7 @@ class LoginMenu(window_widget.WindowWidget):
                 pop.setup(data)
                 if login_response['data']['player_id'] > 0:
                     self.close()
+                    self.gEngine.player_id = login_response['data']['player_id']
                 self.gEngine.add_module(pop)
 
         elif len(self.user_name) == 0 and len(self.password) == 0:

@@ -19,6 +19,7 @@ class AiDirector:
         self.monster_scaling = 1.0
         self.item_scaling = 1.0
         self.player_stats = {
+            'player id': self.gEngine.player_id,
             'kills': 0,
             'spells cast': 0,
             'potions quaffed': 0,
@@ -126,7 +127,7 @@ class AiDirector:
         with open(path, 'w') as file:
             for item in self.player_stats:
                 file.write(item + " " + str(self.player_stats[item]) + "\n")
-        self.gEngine.network_send_package('submit_win', self.player_stats)
+        self.gEngine.network_send_package('add_session', self.player_stats)
 
 if __name__ == "__main__":
     ad = AiDirector(None, None)

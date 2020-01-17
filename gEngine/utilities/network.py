@@ -7,7 +7,8 @@ class NetworkController():
     def __init__(self):
         # api-endpoint, this will most likely change before release
         self.API_URL = "https://criticalmiss-studios.com/network/network.php"
-        # store the most recent response
+        # store the most recent request and response
+        self.current_request = None
         self.current_response = None
 
     def send_package(self, request_type, data):
@@ -21,12 +22,12 @@ class NetworkController():
         # data = {'user_name': "user02", 'user_pass': "12345"}
         ############################################################
 
-        # defining a params dict for the parameters to be sent to the API
-        req_params = {'request': request_type,
-                      'api_key': "12345",  ## TODO how will we generate/hide api key?
+        # defining a params dict for the parameters to be sent to the API ## TODO how will we generate/hide api key?
+        self.current_request = {'request': request_type,
+                      'api_key': "12345",
                       'data': json.dumps(data)}
         # send get request and save the response as response object
-        self.current_response = requests.post(url=self.API_URL, data=req_params)
+        self.current_response = requests.post(url=self.API_URL, data=self.current_request)
         # extracting data from json to python dict
         # data = json.loads(self.current_response.text)
         data = self.get_response_content()
@@ -42,6 +43,14 @@ class NetworkController():
         pprint(vars(self.current_response))
         # TODO###############################################################################
 
+        if str(self.current_response.status_code) == "200":
+            return data
+        else:
+            return {"message": "Failed to connect to server. Please check connection and try again."}
+
+    def resend_package(self):
+        self.current_response = requests.post(url=self.API_URL, data=self.current_request)
+        data = self.get_response_content()
         if str(self.current_response.status_code) == "200":
             return data
         else:
