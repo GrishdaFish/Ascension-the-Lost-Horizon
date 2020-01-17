@@ -125,6 +125,8 @@ class gEngine:
             #self.network = NetworkDummy()
         self.additional_modules = []
         self.modules_to_remove = []
+        self.player_id = None
+
     def run(self):
         is_closed = None
         while True:
@@ -146,8 +148,9 @@ class gEngine:
         self.additional_modules.append(module)
 
     def remove_module(self, module):
-        module.on_exit()
-        self.modules.remove(module)
+        if module in self.modules:
+            module.on_exit()
+            self.modules.remove(module)
 
     def get_module_by_name(self, name):
         for module in self.modules:

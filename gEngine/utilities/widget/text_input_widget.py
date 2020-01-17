@@ -1,6 +1,6 @@
 __author__ = 'GrishdaFish'
 from gEngine.utilities.user_interface import menu
-
+import math
 import tcod as libtcod
 
 class TextInputWidget:
@@ -70,7 +70,7 @@ class TextInputWidget:
 
     def mouse_is_in_console(self, mouse):
         if (self.x + self.parent.x) <= mouse.cx <= (self.parent.x + self.x) + self.width:
-            if mouse.cy == (self.y + self.parent.y):
+            if mouse.cy == (self.y + math.floor(self.parent.y)):
                 return True
         return False
 

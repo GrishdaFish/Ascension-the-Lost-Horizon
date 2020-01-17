@@ -4,6 +4,8 @@ from game import main_menu
 import sys
 import os
 import tcod as libtcod
+from game.modules import login_module
+
 
 class SplashScreen:
     def __init__(self, gEngine):
@@ -51,6 +53,7 @@ class SplashScreen:
                 self.gEngine.console_remove_console(self.con)
                 main = main_menu.MainMenu(self.gEngine)
                 self.gEngine.add_module(main)
+
                 self.gEngine.log_close_block()
                 return
 
