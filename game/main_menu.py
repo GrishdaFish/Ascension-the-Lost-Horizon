@@ -8,6 +8,7 @@ from game.modules import login_module
 from gEngine.utilities.user_interface.menu import Menus
 from gEngine.utilities.widget import button_widget
 from gEngine.utilities.widget import window_widget
+from gEngine.utilities.widget import button_group
 import os
 import sys
 from gEngine import gEngine as _gEngine
@@ -41,10 +42,11 @@ class MainMenu:
         self.menu_fade_value = 0.0
 
         self.menu_widget = MenuWidget(self.gEngine, None, self.gEngine.SCREEN_WIDTH / 2 - 12,
-                                      self.gEngine.SCREEN_HEIGHT / 2 - 7, 24, 9, "Main Menu")
+                                      self.gEngine.SCREEN_HEIGHT / 2 - 7, 24, 12, "Main Menu")
 
         self.menu_widget.setup()
         self.menu_widget.deactivate()
+
 
     def activate(self):
         self.active = True
@@ -122,6 +124,7 @@ class MainMenu:
                     self.menu_fade = False
 
         if not self.gEngine.get_module_status("LoginMenu"):
+            # TODO REFACTOR this to prevent constant creation of new buttons
             if self.gEngine.player_id:
                 logout = False
                 for button in self.menu_widget.buttons:
@@ -151,6 +154,7 @@ class MainMenu:
                             break
                     self.menu_widget.buttons.append(Login(self.menu_widget, 1, 6, "Login", None))
 
+
             self.menu_widget.activate()
 
 
@@ -172,8 +176,13 @@ class MenuWidget(window_widget.WindowWidget):
         self.buttons.append(DevMode(self, 1, 5, "Developer Mode", None))
         self.buttons.append(DiscordButton(self, 1, 7, "Join Discord", None))
 
-    def update(self, key, mouse):
+        self.button_group = button_group.ButtonGroupWidget(self, 1, 8, 5, 1)
+        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, "Test1"))
+        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, "Test2"))
+        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, "Test3"))
 
+    def update(self, key, mouse):
+        self.button_group.run(key, mouse)
         for button in self.buttons:
             if self.active:
                 button.run(key, mouse)

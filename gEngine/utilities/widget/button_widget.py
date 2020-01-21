@@ -68,7 +68,7 @@ class ButtonWidget:
         return self.function()
 
     def mouse_is_in_console(self, mouse):
-        if (self.x + self.parent.x) <= mouse.cx <= (self.parent.x + self.x) + self.width:
+        if math.floor(self.x + self.parent.x) <= math.floor(mouse.cx) <= math.floor(((self.parent.x + self.x)) + self.width):
             if mouse.cy == (self.y + math.floor(self.parent.y)):
                 return True
         return False

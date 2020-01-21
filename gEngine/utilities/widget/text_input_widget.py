@@ -40,6 +40,7 @@ class TextInputWidget:
         self.carrot = "|"
         self.text_field = ""
         self.frame_blink = 0
+        self.enabled = True
 
     def activate(self):
         self.active = True
@@ -60,6 +61,12 @@ class TextInputWidget:
         :return:
         """
         self.in_text = True
+
+    def disable(self):
+        self.enabled = False
+
+    def enable(self):
+        self.enabled = True
 
     def toggle_carrot(self):
         if self.is_blinking:
