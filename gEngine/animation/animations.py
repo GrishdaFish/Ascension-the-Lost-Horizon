@@ -43,6 +43,9 @@ class Animation:
                 self.finished = True
         return self.finished
 
+    def reset(self):
+        self.index = 0
+        self.finished = False
 
 class Animations:
     def __init__(self, gEngine):
@@ -121,3 +124,9 @@ class Animations:
                 if img:
                     self.gEngine.image_blit_2x(img, target, x, y)
                 return animation.update()
+
+    def reset_animation(self, animation_name):
+        for animation in self.animations:
+            if animation.name == animation_name:
+                animation.reset()
+                return
