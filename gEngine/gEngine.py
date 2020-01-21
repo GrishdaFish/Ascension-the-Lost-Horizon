@@ -271,7 +271,7 @@ class gEngine:
                         game = self.get_module_by_name("Game")
                         if game:
                             game.ai_director.dump_data()
-                            self.log_message('Data dumped succesfully')
+                            self.log_message('Data dumped succesfully ...we assume')
                             self.log_close_block()
                         else:
                             self.log_message("Data dump unsuccessful", 'error')

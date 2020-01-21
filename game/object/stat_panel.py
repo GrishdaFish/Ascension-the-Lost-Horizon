@@ -198,6 +198,22 @@ class StatPanel:
         if name in self.panel['modifiers'].keys():
             return self.panel['modifiers'][name][0]
 
+    def get_all_base_stats(self):
+        """ called to get data before pickling and passing to server """
+        stat_array = []
+        for stat in list(self.panel['modifiers'].keys()):
+            if stat != "key":
+                stat_array.append(self.get_stat_base(stat))
+        return stat_array
+
+    def set_all_base_stats(self, stat_array):
+        """ called to set data sent from server """
+        i = 0
+        for stat in list(self.panel['modifiers'].keys()):
+            if stat != "key":
+                self.set_stat_base(stat, int(stat_array[i]))
+                i += 1
+
     ###################################################################################################################
     # self.panel.elemental access ########################################################################################
     ###################################################################################################################

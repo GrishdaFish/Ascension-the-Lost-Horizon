@@ -5,7 +5,11 @@ from gEngine.utilities.user_interface.menu import Menus
 import os
 import sys
 from gEngine import gEngine as _gEngine
+import game.input_handler as iph
 import time
+
+from game.object.effects import Effect
+
 
 class EscMenu:
     def __init__(self, gEngine, game):
@@ -58,6 +62,7 @@ class EscMenu:
                 self.gEngine.console_remove_console(self.con)
                 self.gEngine.log_close_block()
                 self.game.activate()
+
                 # g = game.Game(self.gEngine)
                 # g.new_game()
                 # self.gEngine.add_module(g)
@@ -77,13 +82,19 @@ class EscMenu:
                 #    continue
                 # self.play_game()
                 # self.main_menu()
-            if choice == 3:
+            if choice == 2:
                 self.gEngine.log_message('Quit to menu')
-                self.gEngine.remove_module(self)
-                self.gEngine.log_close_block()
+                class ShoeHorn():
+                    def __init__(self):
+                        self.vk = libtcod.KEY_ESCAPE
+                k = ShoeHorn()
+                result = iph.handle_quit(k, self.game, None)
+                if result == 'exit':
+                    self.game.return_to_main_menu()
+                    self.gEngine.remove_module(self)
+                    self.gEngine.log_close_block()
                 return
-
-            if choice == 4:  # dev mode
+            if choice == 3:
                 self.gEngine.log_message('Quit game')
                 self.gEngine.remove_module(self)
                 self.gEngine.log_close_block()

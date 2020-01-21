@@ -174,9 +174,7 @@ class Game:
             self.hover_description.update(mouse, self.get_names_under_mouse(), self.dungeon_height)
             self.player_action = input_handler.handle_keys(key, self)
             if self.player_action == 'exit':
-                self.gEngine.remove_module((self))
-                m = main_menu.MainMenu(self.gEngine)
-                self.gEngine.add_module(m)
+                self.return_to_main_menu()
                 return
             if mouse.lbutton:
                 if not self.popup and self.player.fighter.gear.get_combat_type() == 'ranged':
@@ -253,9 +251,13 @@ class Game:
         if self.player.fighter.current_xp >= self.player.fighter.xp_to_next_level:
             self.player.fighter.level_up()
 
+    def return_to_main_menu(self):
+        self.gEngine.remove_module((self))
+        m = main_menu.MainMenu(self.gEngine)
+        self.gEngine.add_module(m)
+
     def setup_player(self):
-        fighter_component = object.Fighter(hp=90, defense=2, power=5, death_function=self.player_death, money=800,
-                                           speed=10, ticker=self.ticker)
+        fighter_component = object.Fighter(death_function=self.player_death, money=800, ticker=self.ticker)
         fighter_component.game = self
         self.player = object.Object(self.dungeon_console, 0, 0, '@', 'player',
                                     libtcod.white, blocks=True, fighter=fighter_component)

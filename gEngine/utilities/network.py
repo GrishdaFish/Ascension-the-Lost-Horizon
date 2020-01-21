@@ -22,6 +22,10 @@ class NetworkController():
         # data = {'user_name': "user02", 'user_pass': "12345"}
         ############################################################
 
+        # this is so you can pass a request with None data and json doesn't shit itself
+        if not data:
+            data = {"no_data": 0}
+
         # defining a params dict for the parameters to be sent to the API ## TODO how will we generate/hide api key?
         self.current_request = {'request': request_type,
                       'api_key': "12345",
@@ -34,13 +38,13 @@ class NetworkController():
 
         # TODO DEBUGGING SECTION:  REMOVE ALL THIS SHIT ####################################
         # printing the response code 200=ok 300=redirect 400=fnf 500=bork
-        # print("%s" % self.current_response)
+        print("%s" % self.current_response)
         # printing response content, this is the data you will want to work with
-        # print("TEXT: %s" % self.current_response.text)
+        print("TEXT: %s" % self.current_response.text)
 
         # prints all variables of the response object for debugging
-        from pprint import pprint
-        pprint(vars(self.current_response))
+        # from pprint import pprint
+        # pprint(vars(self.current_response))
         # TODO###############################################################################
 
         if str(self.current_response.status_code) == "200":
@@ -49,6 +53,7 @@ class NetworkController():
             return {"message": "Failed to connect to server. Please check connection and try again."}
 
     def resend_package(self):
+        """  Mirrors send_package using most recent request instead of accepting args """
         self.current_response = requests.post(url=self.API_URL, data=self.current_request)
         data = self.get_response_content()
         if str(self.current_response.status_code) == "200":
