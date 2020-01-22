@@ -38,7 +38,7 @@ from gEngine.utilities import options as _options
 from gEngine.utilities import config
 from gEngine import tcod_event
 from gEngine.animation import animations
-
+from gEngine import custom_font
 
 def in_rect(x, y, w, h):
     return x < w and y < h
@@ -298,6 +298,7 @@ class gEngine:
             self.console_dict[self.console_id_counter] = self.root
             self.console_id_counter += 1
         self.animation_engine.load_animations()
+        self.load_custom_font_chars()
         # self.map_image = self.image_new(self.w, self.h)
         # self.subcell_map_image = self.image_new(self.w * 2, self.h * 2)
         # self.light_map = self.image_new(self.w, self.h)
@@ -952,3 +953,7 @@ class gEngine:
 
     def network_send_package(self, type, package):
         return self.network.send_package(type, package)
+
+    def load_custom_font_chars(self):
+        for name, pos in custom_font.Fonts.items():
+            self.engine.mMapAsciiCodeToFont(name, pos[0], pos[1])
