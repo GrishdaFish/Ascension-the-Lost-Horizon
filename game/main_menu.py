@@ -176,9 +176,9 @@ class MenuWidget(window_widget.WindowWidget):
         self.buttons.append(DiscordButton(self, 1, 7, "Join Discord", None))
 
         self.button_group = button_group.ButtonGroupWidget(self, 1, 8, 5, 1)
-        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, chr(custom_font.long_sword)))
-        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, chr(custom_font.hammer)))
-        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, chr(custom_font.bow_and_arrow)))
+        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, chr(custom_font.CHAR_ARROW_N)))
+        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, chr(custom_font.CHAR_ARROW2_N)))
+        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, chr(custom_font.CHAR_DARROW_H)))
 
     def update(self, key, mouse):
         self.button_group.run(key, mouse)
@@ -194,7 +194,9 @@ class NewGame(button_widget.TextButtonWidget):
         self.gEngine.remove_module(self.gEngine.get_module_by_name("MainMenu"))
 
         self.gEngine.log_close_block()
-
+        self.gEngine.modules = []
+        self.gEngine.additional_modules = []
+        self.gEngine.module_adjust_list = []
         g = game.Game(self.gEngine)
         g.new_game()
         self.gEngine.add_module(g)

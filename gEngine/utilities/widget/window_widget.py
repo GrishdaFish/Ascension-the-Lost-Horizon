@@ -71,6 +71,9 @@ class WindowWidget:
             self.gEngine.console_clear(self.con)
         self.basic_mouse_input(mouse)
         self.pre_draw_widgit()
+        if self.check_for_overlap():
+            mouse = libtcod.Mouse()
+            key = libtcod.Key()
         self.update(key, mouse)
         if self.active:
             self.gEngine.console_blit(self.con, 0, 0, 0, 0, 0, self.x, self.y, 1.0, 1.0)
@@ -81,52 +84,93 @@ class WindowWidget:
                 return True
         return False
 
+    def check_for_overlap(self):
+        module = self.get_overlap_module()
+        if module:
+            if self.gEngine.modules.index(self) > self.gEngine.modules.index(module):
+                return False
+            else:
+                return True
+        return False
+
+    def get_overlap_module(self):
+        for module in self.gEngine.modules:
+            if isinstance(module, WindowWidget):
+                if module != self:
+                    if module.active:
+                        if (self.x <= module.x + math.floor(module.width) and
+                                self.x + math.floor(self.width) >= module.x and
+                                self.y <= module.y + math.floor(module.height) and
+                                self.y + math.floor(self.height) >= module.y):
+                            return module
+        return None
+
+    def in_overlap_zone(self, mouse):
+        other_module = self.get_overlap_module()
+        if other_module:
+            left_overlap = max(self.x, other_module.x)
+            right_overlap = min(self.x + self.width, other_module.x + other_module.width) - 1
+            top_overlap = max(self.y, other_module.y)
+            bottom_overlap = min(self.y + self.height, other_module.y + other_module.height) - 1
+            if mouse.cx >= left_overlap and mouse.cx <= right_overlap:
+                if mouse.cy >= top_overlap and mouse.cy <= bottom_overlap:
+                    return other_module
+        else:
+            return None
+
     def basic_mouse_input(self, mouse):
         mousex = math.ceil(mouse.cx - self.x)
         mousey = math.ceil(mouse.cy - self.y)
-
-        if 1 <= mousex <= self.width - 2 and mousey == 0:
-            self.in_drag_zone = True
-            if not self.is_dragging:
-                self.title = menu.color_text(self.original_title, libtcod.red)
-        else:
-            if not self.is_dragging:
-                self.title = menu.color_text(self.original_title, libtcod.white)
-                self.in_drag_zone = False
-
-        if mouse.lbutton and not self.is_dragging and self.in_drag_zone:
-            self.is_dragging = True
-            self.title = menu.color_text(self.original_title, libtcod.green)
-            self.dragx = mousex  # mouse.cx  # - self.width/2
-            self.dragy = mousey  # mouse.cy
-
-        elif mouse.lbutton_pressed and self.is_dragging:
-            self.is_dragging = False
-
-        elif self.is_dragging:
+        if self.mouse_is_in_console(mouse):
+            if mouse.lbutton:
+                other_module = self.in_overlap_zone(mouse)
+                if other_module:
+                    if self.gEngine.modules.index(self) > self.gEngine.modules.index(other_module):
+                        pass
+                elif self.gEngine.modules.index(self) < len(self.gEngine.modules) - 1:
+                    self.gEngine.bring_module_to_front(self)
+        if self.is_dragging:
             self.x = mouse.cx - self.dragx
             self.y = mouse.cy - self.dragy
+        if not self.check_for_overlap():
+            if 1 <= mousex <= self.width - 2 and mousey == 0:
+                self.in_drag_zone = True
+                if not self.is_dragging:
+                    self.title = menu.color_text(self.original_title, libtcod.red)
+            else:
+                if not self.is_dragging:
+                    self.title = menu.color_text(self.original_title, libtcod.white)
+                    self.in_drag_zone = False
 
-        if mousex == self.width-1 and mousey == 0 and not self.is_dragging:
-            self.minimize_button = menu.color_text('x', libtcod.green)
-            if mouse.lbutton:
-                self.minimize()
+            if mouse.lbutton and not self.is_dragging and self.in_drag_zone:
+                self.is_dragging = True
+                self.title = menu.color_text(self.original_title, libtcod.green)
+                self.dragx = mousex  # mouse.cx  # - self.width/2
+                self.dragy = mousey  # mouse.cy
 
-        elif mousex == 0 and mousey == 0 and not self.is_dragging:
-            self.collapse_button = menu.color_text('-', libtcod.green)
-            if mouse.lbutton:
-                self.collapse()
+            elif mouse.lbutton_pressed and self.is_dragging:
+                self.is_dragging = False
 
-        else:
-            self.minimize_button = menu.color_text('x', libtcod.white)
-            self.collapse_button = menu.color_text('-', libtcod.white)
+            if mousex == self.width - 1 and mousey == 0 and not self.is_dragging:
+                self.minimize_button = menu.color_text('x', libtcod.green)
+                if mouse.lbutton:
+                    self.minimize()
+
+            elif mousex == 0 and mousey == 0 and not self.is_dragging:
+                self.collapse_button = menu.color_text('-', libtcod.green)
+                if mouse.lbutton:
+                    self.collapse()
+
+            else:
+                self.minimize_button = menu.color_text('x', libtcod.white)
+                self.collapse_button = menu.color_text('-', libtcod.white)
 
     def pre_draw_widgit(self):
         if self.active:
             self.gEngine.console_print_frame(self.con, 0, 0, self.width, self.height, True)
             self.gEngine.console_print(self.con, self.title_x_position, 0, self.title)
             self.gEngine.console_print(self.con, 0, 0, self.collapse_button)
-            self.gEngine.console_print(self.con, self.width-1, 0, self.minimize_button)
+            self.gEngine.console_print(self.con, self.width - 1, 0, self.minimize_button)
 
     def collapse(self):
         if self.collapsed:
