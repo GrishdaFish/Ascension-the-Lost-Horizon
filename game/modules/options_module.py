@@ -2,37 +2,97 @@ __author__ = 'noobspanker'
 import os
 import sys
 import toml
-from gEngine.utilities.widget import window_widget, button_widget, text_input_widget, text_button_widget
+from gEngine.utilities.widget import window_widget, button_widget, text_input_widget, button_group
 import tcod as libtcod
 
 
-class Options(window_widget.WindowWidget):
-    """ This is the OPTIONS SELECTION module.
-        for default options see options.toml
-        for option setup see options.py  """
+class KeySelectPopup(window_widget.WindowWidget):
     def close(self):
-        """ close and cleanup children of the module """
         self.gEngine.remove_module(self)
         self.deactivate()
-        self.wasd_button.close()
-        self.arrows_button.close()
-        self.custom_button.close()
-        self.save_button.close()
-        self.default_button.close()
-        self.exit_button.close()
+
+    def update(self, key, mouse):
+        self.gEngine.console_print(self.con, int(self.width/2 - (len(self.message) / 2)), 2, self.message)
+        self.gEngine.console_print(self.con, int(self.width/2 - (len(self.message) / 2)), 4, self.prompt)
+        if key.c or key.vk or mouse.lbutton or mouse.rbutton:
+            if self.keyset == 'wasd' or self.keyset =='arrows':
+                self.close()
+            if self.keyset == 'custom':
+                if key.c and key.c > 10:
+                    self.owner.get_popup_input(self.key_name, chr(key.c))
+                    self.close()
+
+    def setup(self, op_module, key, key_name, selected_keyset):
+        """ """
+        self.owner = op_module
+        self.keyset = selected_keyset
+        self.key_name = key_name
+        if selected_keyset == 'wasd' or selected_keyset == 'arrows':
+            self.message = "Please select 'Custom' Key Map to set your custom keys."
+            self.prompt = "Press any key to continue."
+        if selected_keyset == 'custom':
+            self.message = "Press a key to re-map:" + key_name
+            self.prompt = "Press escape to cancel."
+
+class OptionsModule(window_widget.WindowWidget):
+    """ This is the OPTIONS SELECTION module.
+        for default/saved options see options.toml
+        for options setup see options.py
+        for instantiation see esc_menu.py and main_menu.py"""
+    def close(self):
+        """ close and cleanup children of the module """
+        self.gEngine.options.reload_options()
+        self.gEngine.remove_module(self)
+        self.deactivate()
+        for button in self.widgets:
+            button.close()
+        for button in self.keymap_widgets:
+            button.close()
 
     def setup(self):
         """ let's get this party started """
+        self.width = self.gEngine.SCREEN_WIDTH
+        self.height = self.gEngine.SCREEN_HEIGHT
+        self.gEngine.console_remove_console(self.con)
+        self.con = self.gEngine.console_new(self.width, self.height)
+        self.title_x_position = self.width / 2 - (len(self.title) / 2)
+
+        self.widgets = []
+        self.widget_groups = []
+        self.keymap_widgets = []
         self.get_options_from_file()
         self.setup_current_config()
-        self.content_setup()
+        self.dynamic_content_setup()
+        self.static_content_setup()
 
     def update(self, key, mouse):
         """ while doing stuff: pass """
         if not self.collapsed and not self.minimized:
-            pass
-        # TODO get some stuff going on
+            # Move all this to a print_static_shit fucntion ##################################3
 
+            # if gimmie_da_hline(): dev.uncomment_next_line(num_lines=2)
+            # self.gEngine.console_hline(self.con, 1, 3, self.width, flag=libtcod.BKGND_COLOR_BURN) # because FIRE
+            # self.gEngine.console_hline(self.con, 1, 12, self.width, flag=libtcod.BKGND_COLOR_BURN) # todo calculate magic # 12: get y depth of menu items
+            self.gEngine.console_print(self.con, 1, 1, "Key Mapping:")
+            self.gEngine.console_print(self.con, 3, 5, "Movement:")
+            self.gEngine.console_print(self.con, 22, 5, "Menus:")
+            self.gEngine.console_print(self.con, 22, 4, "Game Menu: Esc")
+            self.gEngine.console_print(self.con, 45, 5, "Actions:")
+            self.gEngine.console_print(self.con, 55, 7, "Go up: <")
+            self.gEngine.console_print(self.con, 55, 8, "Go Down: >")
+            self.gEngine.console_print(self.con, int(self.width / 5 - 1), 5, chr(libtcod.CHAR_TEEN))
+            self.gEngine.console_print(self.con, int(self.width / 5 - 2), 6, chr(libtcod.CHAR_TEEW) + '@' + chr(libtcod.CHAR_TEEE))
+            self.gEngine.console_print(self.con, int(self.width / 5 - 1), 7, chr(libtcod.CHAR_TEES))
+            ##################################################################################3
+            for widgets in self.widget_groups:
+                if self.active:
+                    widgets.run(key, mouse)
+            for widget in self.widgets:
+                if self.active:
+                    widget.run(key, mouse)
+            for buttons in self.keymap_widgets:
+                if self.active:
+                    buttons.run(key, mouse)
 
     def save(self):
         """ commit changes to options.toml, pass new options to options.py """
@@ -40,6 +100,7 @@ class Options(window_widget.WindowWidget):
         with open('options.toml', mode='w') as w:
             w.writelines(toml_string)
         # TODO pass the new settings to options.py
+        self.close()
 
     def restore_defaults(self):
         """ establish a default setting for each imported setting here """
@@ -49,10 +110,10 @@ class Options(window_widget.WindowWidget):
 
     def get_options_from_file(self):
         """ loads the options settings from options.toml """
-        if self.gEngine.RELEASE:
-            path = getattr(sys, "_MEIPASS", ".")
-        else:
-            path = sys.path[0]
+        #if self.gEngine.RELEASE:
+         #   path = getattr(sys, "_MEIPASS", ".")
+        #else:
+        path = sys.path[0]
         f = open(os.path.join(path, 'options.toml'))
         self.options_file = f.read()
         f.close()
@@ -78,49 +139,64 @@ class Options(window_widget.WindowWidget):
         self.key_help = self.content['keys'][key_map]['key_help']
         self.key_drop = self.content['keys'][key_map]['key_drop']
         self.key_character = self.content['keys'][key_map]['key_character']
-        self.key_char_stat = self.content['keys'][key_map]['key_char_stats']
+        self.key_char_stat = self.content['keys'][key_map]['key_char_stat']
+        self.key_perks = self.content['keys'][key_map]['key_perks']
+        self.dynamic_content_setup()
 
-    def set_custom_keys(self, key):
-        user_input = None  # TODO create a pop up asking for a character to be entered
-        self.content['keys']['custom'][key] = user_input
+    def get_popup_input(self, key_name, key_input):
+        self.content['keys'][self.selected_key_set][key_name] = key_input
+        self.set_keymap_keys(self.selected_key_set)
+        self.key_popup = None
 
-    def content_setup(self):
-        self.gEngine.console_print(self.con, 1, 1, "Key Mapping:")
-        # TODO set as button group: ###########################################
-        self.wasd_button = button_widget.ButtonWidget(self, 1, 2, "Right Handed", self.set_keymap_keys, ['wasd'])
-        self.arrows_button = button_widget.ButtonWidget(self, 14, 2, "Left Handed", self.set_keymap_keys, ['arrows'])
-        self.custom_button = button_widget.ButtonWidget(self, 21, 2, "Custom setting", self.set_keymap_keys, ['custom'])
-	    #######################################################################
+    def set_custom_keys(self, key, key_name):
+        self.key_popup = KeySelectPopup(self.gEngine, None, self.width / 2, self.height / 3, 35, 7, "Remap Key")
+        self.key_popup.setup(self, key, key_name, self.selected_key_set)
+        self.gEngine.add_module(self.key_popup)
 
-        if self.selected_key_set == 'wasd' or self.selected_key_set == 'arrows': # selected button is wasd or arrows after button group finished
-            lines = ["Move Up: " + self.content['keys'][self.selected_key_set]['key_north'],
-                     "Move Left:" + self.content['keys'][self.selected_key_set]['key_east'],
-                     "Move Down:" + self.content['keys'][self.selected_key_set]['key_south'],
-                     "Move Right:" + self.content['keys'][self.selected_key_set]['key_west'],
-                     "Open Inventory:" + self.content['keys'][self.selected_key_set]['key_inventory'],
-                     "Pick up items:" + self.content['keys'][self.selected_key_set]['key_pickups'],
-                     "Open help screen:" + self.content['keys'][self.selected_key_set]['key_help'],
-                     "Drop item:" + self.content['keys'][self.selected_key_set]['key_drop'],
-                     "Open character stats:" + self.content['keys'][self.selected_key_set]['key_character'],
-                     "*Bonus* menu:" + self.content['keys'][self.selected_key_set]['key_char_stat']
-                    ]
-            self.print_lines(lines, y=3)
-        if self.selected_key_set == 'custom':  # if selected button is custom we need each one to be clickable and call self.set_custom_keys passing in the key
-            lines = ["Move Up: " + text_button_widget.TextButtonWidget(self, 1, 3, self.content['keys'][self.selected_key_set]['key_north'], self.set_custom_keys, ['key_north']),
-                "Move Left:" + text_button_widget.TextButtonWidget(self, 1, 3, self.content['keys'][self.selected_key_set]['key_east'],
-                 "Move Down:" + text_button_widget.TextButtonWidget(self, 1, 3, self.content['keys'][self.selected_key_set]['key_south'],
-                 "Move Right:" + text_button_widget.TextButtonWidget(self, 1, 3, self.content['keys'][self.selected_key_set]['key_west'],
-                 "Open Inventory:" + text_button_widget.TextButtonWidget(self, 1, 3, self.content['keys'][self.selected_key_set]['key_inventory'],
-                 "Pick up items:" + text_button_widget.TextButtonWidget(self, 1, 3, self.content['keys'][self.selected_key_set]['key_pickups'],
-                 "Open help screen:" + text_button_widget.TextButtonWidget(self, 1, 3, self.content['keys'][self.selected_key_set]['key_help'],
-                 "Drop item:" + text_button_widget.TextButtonWidget(self, 1, 3, self.content['keys'][self.selected_key_set]['key_drop'],
-                 "Open character stats:" + text_button_widget.TextButtonWidget(self, 1, 3, self.content['keys'][self.selected_key_set]['key_character'],
-                 "*Bonus* menu:" + text_button_widget.TextButtonWidget(self, 1, 3, self.content['keys'][self.selected_key_set]['key_char_stat']
-                ]
+    def static_content_setup(self):
+        self.keyset_button_group = button_group.ButtonGroupWidget(self, int(self.width / 5), 2, 55, 1)
+        self.keyset_button_group.add_button(button_group.GroupButton(self.keyset_button_group, 1, 0, "Right Handed", self.set_keymap_keys, ['wasd']))
+        self.keyset_button_group.add_button(button_group.GroupButton(self.keyset_button_group, 1, 0, "Left Handed", self.set_keymap_keys, ['arrows']))
+        self.keyset_button_group.add_button(button_group.GroupButton(self.keyset_button_group, 1, 0, "Custom setting", self.set_keymap_keys, ['custom']))
+        self.widget_groups.append(self.keyset_button_group)
+        for button in self.keyset_button_group.buttons:
+            if button.original_label == "Right Handed" and self.selected_key_set == "wasd":
+                button.enabled = True
+                button.active = True
+            elif button.original_label == "Left Handed" and self.selected_key_set == "arrows":
+                button.enabled = True
+                button.active = True
+            elif button.original_label == "Custom setting" and self.selected_key_set == "custom":
+                button.enabled = True
+                button.active = True
 
-        self.save_button = button_widget.ButtonWidget(self, self.width / 2, 4, "Save and exit", self.save)
-        self.default_button = button_widget.ButtonWidget(self, self.width / 2, 5, "Restore defaults",
-                                                         self.restore_defaults)
-        self.exit_button = button_widget.ButtonWidget(self, self.width / 2, 6, "Exit without save", self.close)
+        self.save_button = button_widget.ButtonWidget(self, 7, 15, "Save and exit", self.save)
+        self.default_button = button_widget.ButtonWidget(self, 25, 15, "Restore defaults", self.restore_defaults)
+        self.exit_button = button_widget.ButtonWidget(self, 45, 15, "Exit without save", self.close)
 
-    def print_lines(self, y=0, custom=False):
+        self.widgets.append(self.save_button)
+        self.widgets.append(self.default_button)
+        self.widgets.append(self.exit_button)
+
+        # libtcod.sys_save_screenshot()
+
+    def dynamic_content_setup(self):
+        if len(self.keymap_widgets) > 0:
+            for button in self.keymap_widgets:
+                if self.active:
+                    button.close()
+        self.keymap_widgets.clear()
+
+        self.keymap_widgets.append(button_widget.TextButtonWidget(self, int(self.width/5 - 1), 4, self.key_north, self.set_custom_keys, [self.key_north, 'key_north']))
+        self.keymap_widgets.append(button_widget.TextButtonWidget(self, int(self.width/5 + 1), 6, self.key_east, self.set_custom_keys, [self.key_east, 'key_east']))
+        self.keymap_widgets.append(button_widget.TextButtonWidget(self, int(self.width/5 - 1), 8, self.key_south, self.set_custom_keys, [self.key_south, 'key_south']))
+        self.keymap_widgets.append(button_widget.TextButtonWidget(self, int(self.width/5 - 3), 6, self.key_west, self.set_custom_keys, [self.key_west, 'key_west']))
+
+        self.keymap_widgets.append(button_widget.TextButtonWidget(self, 29, 5, "Inventory: ".ljust(12) + self.key_inventory, self.set_custom_keys, [self.key_inventory, 'key_inventory']))
+        self.keymap_widgets.append(button_widget.TextButtonWidget(self, 55, 5, "Pick up: ".ljust(12) + self.key_pickups, self.set_custom_keys, [self.key_pickups, 'key_pickups']))
+        self.keymap_widgets.append(button_widget.TextButtonWidget(self, 29, 6, "Help: ".ljust(12) + self.key_help, self.set_custom_keys, [self.key_help, 'key_help']))
+        self.keymap_widgets.append(button_widget.TextButtonWidget(self, 55, 6, "Drop item: ".ljust(12) + self.key_drop, self.set_custom_keys, [self.key_drop, 'key_drop']))
+        self.keymap_widgets.append(button_widget.TextButtonWidget(self, 29, 7, "Character: ".ljust(12) + self.key_character, self.set_custom_keys, [self.key_character, 'key_character']))
+        self.keymap_widgets.append(button_widget.TextButtonWidget(self, 29, 8, "*Bonus* menu:".ljust(12) + self.key_char_stat, self.set_custom_keys, [self.key_char_stat, 'key_char_stat']))
+        self.keymap_widgets.append(button_widget.TextButtonWidget(self, 29, 9, "Perks: ".ljust(12) + self.key_perks, self.set_custom_keys, [self.key_perks, 'key_perks']))
+

@@ -1,42 +1,43 @@
-#options can and should be changed ingame
-
 [game_options]
-    fullscreen = false
-    key_set = 'wasd'
-    fps = 30
+fullscreen = false
+key_set = "wasd"
+fps = 30
 
-    [keys.wasd]
-        key_north = "w"
-        key_east = "d"
-        key_south = "s"
-        key_west = "a"
-        key_inventory = "i"
-        key_pickups = "e"
-        key_help = "?"
-        key_drop = "f"
-        key_character = "c"
-        key_char_stat = "x"
+[keys.wasd]
+key_north = "w"
+key_east = "d"
+key_south = "s"
+key_west = "a"
+key_inventory = "i"
+key_pickups = "e"
+key_help = "?"
+key_drop = "f"
+key_character = "c"
+key_char_stat = "x"
+key_perks = "p"
 
-    [keys.arrows]
-        key_north = "KEY_UP"
-        key_east = "KEY_RIGHT"
-        key_south = "KEY_DOWN"
-        key_west = "KEY_LEFT"
-        key_inventory = "i"
-        key_pickups = "e"
-        key_help = "?"
-        key_drop = "f"
-        key_character = "c"
-        key_char_stat = "x"
+[keys.arrows]
+key_north = "KEY_UP"
+key_east = "KEY_RIGHT"
+key_south = "KEY_DOWN"
+key_west = "KEY_LEFT"
+key_inventory = "i"
+key_pickups = "e"
+key_help = "?"
+key_drop = "f"
+key_character = "c"
+key_char_stat = "x"
+key_perks = "p"
 
-    [keys.custom]
-        key_north = "w"
-        key_east = "d"
-        key_south = "s"
-        key_west = "a"
-        key_inventory = "i"
-        key_pickups = "e"
-        key_help = "?"
-        key_drop = "f"
-        key_character = "c"
-        key_char_stat = "x"
+[keys.custom]
+key_north = "w"
+key_east = "d"
+key_south = "s"
+key_west = "a"
+key_inventory = "q"
+key_pickups = "u"
+key_help = "e"
+key_drop = "j"
+key_character = "r"
+key_char_stat = "t"
+key_perks = "y"

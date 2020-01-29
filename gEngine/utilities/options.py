@@ -29,10 +29,21 @@ class GameOptions:
         self.key_drop = None
         self.key_character = None
         self.key_char_stat = None
+        self.key_perks = None
 
         self.load_options()
 
         #self.options.close()
+
+    def reload_options(self):
+        if gEngine.RELEASE:
+            path = getattr(sys, "_MEIPASS", ".")
+        else:
+            path = sys.path[0]
+        f = open(os.path.join(path, 'options.toml'))
+        self.options = f.read()
+        f.close()
+        self.load_options()
 
     def load_options(self):
         options = toml.loads(self.options)
@@ -74,4 +85,5 @@ class GameOptions:
         self.key_drop = keys.get('key_drop')
         self.key_character = keys.get('key_character')
         self.key_char_stat = keys.get('key_char_stat')
+        self.key_perks = keys.get('key_perks')
 

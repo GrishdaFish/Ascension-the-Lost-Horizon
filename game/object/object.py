@@ -6,6 +6,7 @@ import logging
 
 from game.object.gear_panel import GearPanel
 from game.object.item import Equipment, Item
+from game.object.perks import PerkTree
 from game.object.stat_panel import StatPanel
 
 sys.path.append(sys.path[0])
@@ -225,6 +226,7 @@ class Fighter:
     # combat-related properties and methods (monster, player, NPC).
     def __init__(self, death_function=None, money=0, ticker=None, xp_value=0):
 
+        self.perks = PerkTree(self)
         self.stat = StatPanel()      # damage, resistance, effects and conditions
         self.gear = GearPanel(self)  # equipped items and related controls
 

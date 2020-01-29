@@ -10,7 +10,6 @@ class StatPanel:
     def __init__(self):
         # panel will maintain a working reference to all modifiable/persistent stats and has getters and setters
         # never make changes to the panel directly and it will always work the right way
-        #             "Light-based effects" : Not sure yet #TODO  <- consider how id like to do this
         self.panel = {
             "modifiers": {
                 "key": ["Penalty", "Modifier", "Base"],
@@ -95,7 +94,7 @@ class StatPanel:
         if effect.panel_group == 'modifiers':
             if effect.index == 0:  # 0 is penalty index,
                 self.set_stat_base(effect.effect_name, (self.get_stat_base(effect.effect_name) + effect.amount))  # add to total
-                self.set_stat_pen(effect.effect_name, (self.get_stat_pen(effect.effect_name) - effect.amount))  # add to mod amount
+                self.set_stat_pen(effect.effect_name, (self.get_stat_pen(effect.effect_name) - effect.amount))  # add to pen amount
             if effect.index == 1:  # 1 is modifier index
                 self.set_stat_base(effect.effect_name, (self.get_stat_base(effect.effect_name) - effect.amount))  # add to total
                 self.set_stat_mod(effect.effect_name, (self.get_stat_mod(effect.effect_name) - effect.amount))   # add to mod amount
@@ -122,17 +121,16 @@ class StatPanel:
         if effect.panel_group == 'modifiers':
             if effect in self.modifiers:
                 return True
-        elif effect.panel_group == 'elemental':
+        if effect.panel_group == 'elemental':
             if effect in self.elemental_effects:
                 return True
-        elif effect.panel_group == 'conditions':
+        if effect.panel_group == 'conditions':
             if effect in self.conditions:
                 return True
-        else:
-            return False
+        return False
 
     def apply_condition(self, effect):
-
+        """ checks for stacking and afflicts condition """
         stacked_conditions = []
         for fx in self.active_conditions:
             if fx.effect_name == effect.effect_name:
@@ -143,6 +141,7 @@ class StatPanel:
         effect.add_turn()
 
     def find_lowest_duration(self, stack):
+        """ checks which of your afflicted conditions has the lowest duration remaining """
         lowest_duration = None
         for fx in stack:
             if lowest_duration is None or fx.duration < lowest_duration.duration:
@@ -150,6 +149,7 @@ class StatPanel:
         return lowest_duration
 
     def remove_condition(self, effect):
+        """ removes an afflicted condition """
         if effect in self.active_conditions:
             self.active_conditions.remove(effect)
 
@@ -167,7 +167,7 @@ class StatPanel:
         return total_stat
 
     def set_stat_base(self, name, amount):
-        """     If you want to add to the value, feel free to use get_stat first >;)
+        """ the base is for permanent changes: potion of permanent reduce strength, level up, etc.
         :param name: name of the base stat in self.panel['modifiers'] to change
         :param amount: amount to set it to
         """
@@ -175,7 +175,7 @@ class StatPanel:
             self.panel['modifiers'][name][2] = amount
 
     def get_stat_base(self, name):
-        """
+        """ returns the base amount for the named stat
         :param name: name of the base stat in self.panel['modifiers'] to get
         :return: current value of 'name' stat
         """
@@ -183,23 +183,27 @@ class StatPanel:
             return self.panel['modifiers'][name][2]
 
     def set_stat_mod(self, name, amount):
+        """ the modifier is for all beneficial non-permanent changes from items, potions, spells etc. """
         if name in self.panel['modifiers'].keys():
             self.panel['modifiers'][name][1] = amount
 
     def get_stat_mod(self, name):
+        """ returns the current modifier amount for the named stat """
         if name in self.panel['modifiers'].keys():
             return self.panel['modifiers'][name][1]
 
     def set_stat_pen(self, name, amount):
+        """ the oenalty holds all negative non-permanent changes to a stat from items, potions, spells etc. """
         if name in self.panel['modifiers'].keys():
             self.panel['modifiers'][name][0] = amount
 
     def get_stat_pen(self, name):
+        """ returns the current penalty for the named stat """
         if name in self.panel['modifiers'].keys():
             return self.panel['modifiers'][name][0]
 
     def get_all_base_stats(self):
-        """ called to get data before pickling and passing to server """
+        """ called to get data before packing and passing to server """
         stat_array = []
         for stat in list(self.panel['modifiers'].keys()):
             if stat != "key":
@@ -215,27 +219,34 @@ class StatPanel:
                 i += 1
 
     ###################################################################################################################
-    # self.panel.elemental access ########################################################################################
+    # self.panel.elemental access #####################################################################################
+    # *the following functions take only the name, not the effect object. #############################################
     ###################################################################################################################
     def get_total_elemental_damage(self):
+        """ gets damage total for all elements """
+        # TODO this isn't finished O.o
         total_damage = 0
         for key, val in self.panel['elemental']:
             if key != "key" and isinstance(val[0], int):
                 total_damage += val[0]
 
     def set_elemental_damage(self, name, amount):
+        """ sets new damage amount, overwrites - does not add """
         if name in self.panel['elemental'].keys():
             self.panel['elemental'][name][0] = amount
 
     def get_elemental_damage(self, name):
+        """ gets damage total for single element """
         if name in self.panel['elemental'].keys():
             return self.panel['elemental'][name][0]
 
     def set_elemental_resist(self, name, amount):
+        """ sets new resistance amount, overwrites - does not add """
         if name in self.panel['elemental'].keys():
             self.panel['elemental'][name][1] = amount
 
     def get_elemental_resist(self, name):
+        """ gets resist amount for a single element """
         if name in self.panel['elemental'].keys():
             return self.panel['elemental'][name][1]
 
@@ -253,28 +264,35 @@ class StatPanel:
 
     ###################################################################################################################
     # self.panel.conditions access ####################################################################################
+    # *the following functions take only the name, not the effect object. #############################################
     ###################################################################################################################
     def set_condition_damage(self, name, amount):
+        """ sets new damage amount, overwrites - does not add """
         if name in self.panel['conditions'].keys():
             self.panel['conditions'][name][0] = amount
 
     def get_condition_damage(self, name):
+        """ gets damage total """
         if name in self.panel['conditions'].keys():
             return self.panel['conditions'][name][0]
 
     def set_condition_resist(self, name, amount):
+        """ sets new resistance amount, overwrites - does not add """
         if name in self.panel['conditions'].keys():
             self.panel['conditions'][name][1] = amount
 
     def get_condition_resist(self, name):
+        """ get resistance amount """
         if name in self.panel['conditions'].keys():
             return self.panel['conditions'][name][1]
 
     def set_condition_rate(self, name, amount):
+        """ sets new probability of landing, overwrites - does not add """
         if name in self.panel['conditions'].keys():
             self.panel['conditions'][name][2] = amount
 
     def get_condition_rate(self, name):
+        """ get probability of landing """
         if name in self.panel['conditions'].keys():
             return self.panel['conditions'][name][2]
 
@@ -294,6 +312,13 @@ class StatPanel:
         if effect.panel_group == 'conditions':
             return self.panel['conditions'][effect.effect_name][3]
 
-    # stupid display assist function called by character.py
     def get_category_count(self, category):
+        """ stupid display assist function called by character.py """
         return len(self.panel[category])
+
+    def destroy(self):
+        """ set object containers to none, call when monsters die """
+        self.active_conditions = None
+        self.elemental_effects = None
+        self.modifiers = None
+        self.conditions = None
