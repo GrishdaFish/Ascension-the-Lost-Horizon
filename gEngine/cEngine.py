@@ -134,8 +134,17 @@ class gEngine(object):
     def mGetHeightRect(self, c, x, y, w, h, fmt):
         return _cEngine.gEngine_mGetHeightRect(self, c, x, y, w, h, fmt)
 
+    def mHLine(self, c, x, y, l, f=1):
+        return _cEngine.gEngine_mHLine(self, c, x, y, l, f)
+
+    def mVLine(self, c, x, y, l, f=1):
+        return _cEngine.gEngine_mVLine(self, c, x, y, l, f)
+
     def mPrintFrame(self, c, x, y, w, h, clear, f, fmt):
         return _cEngine.gEngine_mPrintFrame(self, c, x, y, w, h, clear, f, fmt)
+
+    def mSaveScreenshot(self, filename):
+        return _cEngine.gEngine_mSaveScreenshot(self, filename)
 
     def mCreateImage(self, w, h):
         return _cEngine.gEngine_mCreateImage(self, w, h)
@@ -271,6 +280,9 @@ class gEngine(object):
 
     def mFatalError(self, message):
         return _cEngine.gEngine_mFatalError(self, message)
+
+    def mMapAsciiCodeToFont(self, code, x, y):
+        return _cEngine.gEngine_mMapAsciiCodeToFont(self, code, x, y)
     __swig_destroy__ = _cEngine.delete_gEngine
 
 # Register gEngine in _cEngine:

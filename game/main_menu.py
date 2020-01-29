@@ -14,6 +14,7 @@ import sys
 from gEngine import gEngine as _gEngine
 import time
 import webbrowser
+from gEngine import custom_font
 
 
 class MainMenu:
@@ -46,7 +47,6 @@ class MainMenu:
 
         self.menu_widget.setup()
         self.menu_widget.deactivate()
-
 
     def activate(self):
         self.active = True
@@ -111,7 +111,7 @@ class MainMenu:
 
         self.gEngine.console_set_default_foreground(0, r, g, b)
         self.gEngine.console_print(0, int(self.gEngine.SCREEN_WIDTH / 2 - 11),
-                                   int(self.gEngine.SCREEN_HEIGHT -15),
+                                   int(self.gEngine.SCREEN_HEIGHT - 15),
                                    self.print_name)
 
         self.gEngine.console_set_default_background(0, 0, 0, 0)
@@ -142,7 +142,7 @@ class MainMenu:
                     self.menu_widget.buttons.append(LogoutButton(self.menu_widget, 1, 6, "Logout", None))
             elif not self.gEngine.player_id:
                 login = False
-                for  button in self.menu_widget.buttons:
+                for button in self.menu_widget.buttons:
                     if button.original_label == "Login":
                         login = True
                         break
@@ -153,7 +153,6 @@ class MainMenu:
                             self.menu_widget.buttons.remove(button)
                             break
                     self.menu_widget.buttons.append(Login(self.menu_widget, 1, 6, "Login", None))
-
 
             self.menu_widget.activate()
 
@@ -177,9 +176,9 @@ class MenuWidget(window_widget.WindowWidget):
         self.buttons.append(DiscordButton(self, 1, 7, "Join Discord", None))
 
         self.button_group = button_group.ButtonGroupWidget(self, 1, 8, 5, 1)
-        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, "Test1"))
-        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, "Test2"))
-        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, "Test3"))
+        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, chr(custom_font.CHAR_ARROW_N)))
+        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, chr(custom_font.CHAR_ARROW2_N)))
+        self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, chr(custom_font.CHAR_DARROW_H)))
 
     def update(self, key, mouse):
         self.button_group.run(key, mouse)
@@ -195,7 +194,9 @@ class NewGame(button_widget.TextButtonWidget):
         self.gEngine.remove_module(self.gEngine.get_module_by_name("MainMenu"))
 
         self.gEngine.log_close_block()
-
+        self.gEngine.modules = []
+        self.gEngine.additional_modules = []
+        self.gEngine.module_adjust_list = []
         g = game.Game(self.gEngine)
         g.new_game()
         self.gEngine.add_module(g)

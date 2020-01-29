@@ -38,7 +38,7 @@ from gEngine.utilities import options as _options
 from gEngine.utilities import config
 from gEngine import tcod_event
 from gEngine.animation import animations
-
+from gEngine import custom_font
 
 def in_rect(x, y, w, h):
     return x < w and y < h
@@ -125,7 +125,9 @@ class gEngine:
             #self.network = NetworkDummy()
         self.additional_modules = []
         self.modules_to_remove = []
+        self.module_adjust_list = []
         self.player_id = None
+        self.zdepth = 0
 
     def run(self):
         is_closed = None
@@ -140,6 +142,11 @@ class gEngine:
             for module in self.modules:
                 if module.active is True:
                     module.run(key, mouse)
+            if len(self.module_adjust_list) > 0:
+                self.modules.clear()
+                for module in self.module_adjust_list:
+                    self.modules.append(module)
+                self.module_adjust_list.clear()
 
     def render_all(self):
         self.console_flush()
@@ -164,6 +171,12 @@ class gEngine:
             return module.active
         else:
             return None
+
+    def bring_module_to_front(self, module):
+        for m in self.modules:
+            if m != module:
+                self.module_adjust_list.append(m)
+        self.module_adjust_list.append(module)
 
     def activate_module(self, name):
         module = self.get_module_by_name(name)
@@ -298,6 +311,7 @@ class gEngine:
             self.console_dict[self.console_id_counter] = self.root
             self.console_id_counter += 1
         self.animation_engine.load_animations()
+        self.load_custom_font_chars()
         # self.map_image = self.image_new(self.w, self.h)
         # self.subcell_map_image = self.image_new(self.w * 2, self.h * 2)
         # self.light_map = self.image_new(self.w, self.h)
@@ -308,6 +322,9 @@ class gEngine:
             return self.engine.mSysGetFPS()
         else:
             return libtcod.sys_get_fps()
+
+    def sys_save_screenshot(self, path):
+        self.engine.mSaveScreenshot(path)
 
     # @staticmethod
     def console_set_custom_font(self, font_file, flags=libtcod.FONT_LAYOUT_ASCII_INCOL, h=0, v=0):
@@ -394,6 +411,12 @@ class gEngine:
             self.engine.mPrintFrame(con, int(x), int(y), int(width), int(height), clear, 1, title)
         else:
             libtcod.console_print_frame(self.console_dict[con], int(x), int(y), int(width), int(height), clear)
+
+    def console_hline(self, con, x, y, l, f=1):
+        self.engine.mHLine(con, x, y, l, f)
+
+    def console_vline(self, con, x, y, l, f=1):
+        self.engine.mVLine(con, x, y, l, f)
 
     def console_print_rect(self, con, x, y, width, height, fmt):
         if cEngine:
@@ -952,3 +975,7 @@ class gEngine:
 
     def network_send_package(self, type, package):
         return self.network.send_package(type, package)
+
+    def load_custom_font_chars(self):
+        for name, pos in custom_font.Fonts.items():
+            self.engine.mMapAsciiCodeToFont(name, pos[0], pos[1])

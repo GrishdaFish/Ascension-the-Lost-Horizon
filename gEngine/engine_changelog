@@ -1,0 +1,6 @@
+Changelog starting on 1 - 28 - 2020
+1 - 28 - 2020 - GrishdaFish
+Wrapped TCODSystem::saveScreenshot
+Wrapped TCODConsole::hline()
+Wrapped TCODConsole::vline()
+WindowWidget overlap detection
