@@ -11,7 +11,8 @@ class HelpModule(window_widget.WindowWidget):
     def setup(self):
         # define all the shit we want to show
         self.exit_label = "Back"
-        self.exit_button = button_widget.ButtonWidget(self, len(self.exit_label)+2, 1, self.exit_label, self.close)
+        self.exit_button = button_widget.ButtonWidget(self, len(self.exit_label)+2, 40, self.exit_label, self.close)
+        self.alpha_disclaimer = "ALPHA VERSION! Be aware bugs may exist, you can help by reporting at criricalmiss-studios.com"
         pass
 
     def update(self, key, mouse):
