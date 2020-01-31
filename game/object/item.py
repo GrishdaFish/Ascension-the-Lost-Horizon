@@ -121,6 +121,7 @@ class Equipment:
         self.max_fuel = fuel
         self.torch_color = color
         self.torch_intensity = intensity
+        self.mat = None
 
         self.effects = []
 

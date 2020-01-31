@@ -87,6 +87,28 @@ class Effect:
     def deactivate_condition(self):
         self.target.stat.remove_condition(self)
 
+    def get_effect_package(self):
+        """ builds its stats into a package to be rebuilt later """
+        return [self.effect_name,
+                self.amount,
+                self.persist,
+                self.probability,
+                self.duration,
+                self.can_cancel,
+                self.speed,
+                self.max_stack
+                ]
+
+    def set_from_effect_package(self, package):
+        """ restores from package, see above for definition """
+        self.amount = int(package[1])
+        self.persist = bool(package[2])
+        self.probability = int(package[3])
+        self.duration = int(package[4])
+        self.can_cancel = bool(package[5])
+        self.speed = int(package[6])
+        self.max_stack = int(package[7])
+
     ##################################################################
     # COMBAT #########################################################
     ##################################################################

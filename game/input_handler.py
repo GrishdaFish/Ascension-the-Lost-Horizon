@@ -1,4 +1,5 @@
 from game import esc_menu
+from game.modules import help_module
 from game.user_interface import character
 from game.user_interface import inventory
 from gEngine.utilities.user_interface import dialog_box
@@ -15,6 +16,7 @@ def handle_keys(key, game):
         turn = handle_pickup(key, game, turn)
         turn = handle_character(key, game, turn)
         turn = handle_char_stats(key, game, turn)
+        turn = handle_perk_screen(key, game, turn)
         turn = handle_inventory(key, game, turn)
         turn = handle_drop(key, game, turn)
         turn = handle_stairs(key, game, turn)
@@ -77,9 +79,17 @@ def handle_character(key, game, turn):
         character.character_info(0, game.screen_width, game.screen_height, game)
     return turn
 
+
 def handle_char_stats(key, game, turn):
     if key.c is ord(game.keys.key_char_stat):
         character.stat_panel_info(0, game.screen_width, game.screen_height, game)
+    return turn
+
+
+def handle_perk_screen(key, game, turn):
+    if key.c is ord(game.keys.key_perks):
+        # insert module here
+        pass
     return turn
 
 def handle_inventory(key, game, turn):
@@ -147,6 +157,13 @@ def handle_quit(key, game, turn):
                 else:
                     d_box.destroy_box()
                     return 'didnt-take-turn'
+
+def handle_help_screen(key, game, turn):
+    if key.c is ord(game.keys.key_help):
+        help_mod = help_module.HelpModule(game.gEngine, game, 0, 0, 25, 7, "Help")
+        help_mod.setup()
+        game.gEngine.add_module(help_mod)
+    return turn
 
 def handle_esc_menu(key, game, turn):
     if key.vk == libtcod.KEY_ESCAPE and game.active:

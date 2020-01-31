@@ -56,7 +56,7 @@ class EngineConfig:
             default_config = ("[engine_config] \n"
                               "screen_width = 80 \n" 
                               "screen_height = 55 \n" 
-                              "font = 'terminal10x10_gs_tc.png'")
+                              "font = 'dejavu_wide16x16_gs_tc.png'")
 
             with open(os.path.join(path, 'gEngine', 'config.toml'), 'w') as f:
                 f.write(default_config)

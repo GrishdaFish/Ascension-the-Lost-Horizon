@@ -4,7 +4,7 @@ from game import dev_mode
 from game.debug_modules import module_list
 from game.debug_modules import dungeon_status
 from game.debug_modules import spawning_tool
-from game.modules import login_module
+from game.modules import login_module, options_module
 from gEngine.utilities.user_interface.menu import Menus
 from gEngine.utilities.widget import button_widget
 from gEngine.utilities.widget import window_widget
@@ -243,7 +243,11 @@ class DevMode(button_widget.TextButtonWidget):
 
 class Options(button_widget.TextButtonWidget):
     def trigger(self):
-        pass
+        self.gEngine.log_message('Loading options')
+        option = options_module.OptionsModule(self.gEngine, None, 0, 0, 25, 7, "Options")
+        option.setup()
+        self.gEngine.add_module(option)
+        self.parent.deactivate()
 
 
 class Login(button_widget.TextButtonWidget):

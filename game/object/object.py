@@ -6,6 +6,7 @@ import logging
 
 from game.object.gear_panel import GearPanel
 from game.object.item import Equipment, Item
+from game.object.perks import PerkTree
 from game.object.stat_panel import StatPanel
 
 sys.path.append(sys.path[0])
@@ -223,17 +224,15 @@ class Object:
 
 class Fighter:
     # combat-related properties and methods (monster, player, NPC).
-    def __init__(self, hp, defense, power, death_function=None, Con=10, Str=10, Dex=10, Int=10, money=0, ticker=None,
-                 speed=0, xp_value=0):
+    def __init__(self, death_function=None, money=0, ticker=None, xp_value=0):
 
+        self.perks = PerkTree(self)
         self.stat = StatPanel()      # damage, resistance, effects and conditions
         self.gear = GearPanel(self)  # equipped items and related controls
-        # Achievement tracker will go here if implemented
 
         self.death_function = death_function
         self.type = 'melee'
         self.money = money
-        # self.speed = speed  # TODO REFACTOR this is in skill panel now
         self.level = 1
         self.current_xp = xp_value
         self.xp_to_next_level = 1  # if you don't set this to something before you use log, you gonna die.
@@ -241,48 +240,27 @@ class Fighter:
         self.inventory = []
         self.owner = None
         self.ticker = ticker
-        # self.stats = [Str, Dex, Int, Con]   # TODO REFACTOR this is in skill panel now
         self.unused_skill_points = 2
-        # self.defense = 0    # TODO REFACTOR in skill panel, not implemented
 
         self.depth = 0
         self.threat = 0.0
 
-        self.max_hp = self.stat.get_stat("HP")  # REFACTOR get hp from stats now
+        self.max_hp = self.stat.get_stat("HP")
         self.hp = self.max_hp
-        # self.hp = hp
-
-        # self.armor_bonus = 0  is now "Defense modifier" in stat panel
-        # self.armor_penalty = 0 is now "Evasion penalty" in stat panel
 
         self.skills = copy.deepcopy(combat.skill_list)  # skill list needs to have its own copies
 
-        '''self.max_mp = 1 + (2*self.stats[2])
-        mp = self.max_mp
-        self.mp = mp'''
-        ################################################################################################################
-        # TODO
-        #      .UPDATE. this should all be done now If no relics found in play test
-        #               then all this can safely be deleted
-        # logically linked to self.gear.equipped
-        #self.equipment = [ self.gear.equipped['Head'],
-        #                   self.gear.equipped['Shoulders'],
-        #                   self.gear.equipped['Arms'],
-        #                   self.gear.equipped['Hands'],
-        #                   self.gear.equipped['Torso'],
-        #                   self.gear.equipped['Legs'],
-        #                   self.gear.equipped['Feet'],
-        #                   self.gear.equipped['Cloak']
-        #                    ]
-        # logically linked to self.gear.light_source
-        #self.light_source = self.gear.light_source
-        # logically linked to self.gear.equipped
-        #self.accessories = [self.gear.equipped['Neck'],
-        #                    self.gear.equipped['Ring']
-        #                    ]
-        # logically linked to self.gear.equipped
-        #self.wielded = [self.gear.equipped['1h'], self.gear.equipped['2h']]
-        ################################################################################################################
+    def get_attribute_package(self):
+        """ sets up an array of data we want to save about the fighter """
+        return [self.money, self.current_xp, self.unused_skill_points, self.depth]
+
+    def set_attributes_from_package(self, package):
+        """ sets stats to values sent from server package """
+        # package defined above in get_attribute_package
+        self.money = int(package[0])
+        self.current_xp = int(package[1])
+        self.unused_skill_points = int(package[2])
+        self.depth = int(package[3])
 
     def get_xp_tnl(self):       # TODO TESTING make sure values are stable and realistic
         lv_basis = self.level*2    # ARBITRARY BASIS FOR SCALING
@@ -320,34 +298,13 @@ class Fighter:
         self.stat.set_stat_base("Constitution", (self.stat.get_stat_base("Constitution") + libtcod.random_get_int(0, 0, 2)))
         self.stat.set_stat_base("Intelligence", (self.stat.get_stat_base("Intelligence") + libtcod.random_get_int(0, 0, 2)))
 
-
+    # TODO this doesnt do anything right now
     def apply_skill_points(self, skill):
         if isinstance(skill, str):
             skill = self.get_skill(skill)
         self.unused_skill_points = skill.increase_level(self.unused_skill_points)
 
-    """
-    def set_armor_bonus(self):
-        bonus = 0
-        for item in self.equipment:
-            if item is not None:
-                bonus += item.item.equipment.bonus
-        self.armor_bonus = bonus
-
-    def get_armor_bonus(self):
-        return self.armor_bonus
-
-    def get_armor_penalty(self):
-        return self.armor_penalty
-
-    def set_armor_penalty(self):
-        penalty = 0
-        for item in self.equipment:
-            if item is not None:
-                penalty += item.item.equipment.penalty
-        penalty -= self.get_skill('Armor').get_bonus()
-        self.armor_penalty = penalty
-    """
+    # TODO this doesnt do anything right now
     def get_skill(self, name):
         for skill in self.skills:
             if skill.get_name() == name:
@@ -355,103 +312,10 @@ class Fighter:
         return None
 
     def attack(self, target=None, player=False, direction=None, game=None, force_attack=False):
-        print("Attacking")
         if force_attack:
             combat_controller.attack(self, target, direction=None, force_attack_target=target)
         else:
             combat_controller.attack(self, target, direction)
-
-        """if not player:
-            col = 2
-        else:
-            col = 5
-
-        attack_roll = libtcod.random_get_int(0, 1, 20)
-        attack_roll += combat.get_melee_bonus(self.owner)
-
-        evasion_roll = combat.get_evasion_class(target)
-        deflection_roll = combat.get_deflection_class(target)
-        blocking_roll = combat.get_blocking_class(target)
-
-        # msg = "A: %d, E:%d" % (attack_roll, evasion_roll)
-        # self.owner.message.message(msg)
-        msg = ''
-        if evasion_roll > attack_roll:
-            msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' but the attack was evaded!'
-        elif deflection_roll > attack_roll:  # need to check for a weapon or something that can deflect
-            msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' but the attack was deflected!'
-        elif blocking_roll > attack_roll:  # need to check for shield
-            msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' but the attack was blocked!'
-        else:
-            dmg = 0
-            if self.gear.equipped['1h'] is not None:
-                skill = self.get_skill(self.gear.equipped['1h'].item.equipment.damage_type)
-                if skill is not None:
-                    dmg = skill.get_bonus()
-                if dmg is None:
-                    dmg = 0
-                dmg += self.gear.equipped['1h'].item.equipment.calc_damage()
-                if self == game.player.fighter: # TODO this should apply to mobs, but for now just player because monster melee doesnt level
-                    self.gear.add_w_xp(self.gear.equipped['1h'].item.equipment.subtype, 100)  # TODO 100 xp per strike for now
-                # TODO if duals get that damage calc too, quick and dirty below:
-                dmg2 = None
-                if self.gear.equipped['2h'] is not None:
-                    skill = self.get_skill(self.gear.equipped['2h'].item.equipment.damage_type)
-                    if skill is not None:
-                        dmg2 = skill.get_bonus()
-                    if dmg2 is None:
-                        dmg2 = 0
-                    dmg2 += self.gear.equipped['2h'].item.equipment.calc_damage()
-                    if self == game.player.fighter:  # TODO this should apply to mobs, but for now just player
-                        self.gear.add_w_xp(self.gear.get_quipped_weapon_type(off_hand=True), 100)
-                # TODO also, shield defense, the above makes shiedls do damage, WOOT !
-                if dmg2: # if dealing 2h damage
-                    dmg = int(dmg + dmg2)
-                else:
-                    dmg = int(dmg)
-            else:
-                # For empty slots
-                pass
-            if dmg > 0:
-                if attack_roll < 10 + self.gear.get_stat("Defense"):  # armor_bonus:
-                    dmg *= 0.25
-                    dmg = int(dmg)
-                # TODO CONSIDER this is where conditions are applied currently
-                if self.stat.conditions:
-                    for fx in self.stat.conditions:
-                        fx.inflict_condition(target.fighter)
-                # make the target take some damage
-                target.fighter.take_damage(dmg, self.owner, game)
-                msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' for ' + str(dmg) + '!'
-            else:
-                if libtcod.random_get_int(0, 0, 100) < 25:  # 25% chance to always do at least 1 damage
-                    dmg = 1
-                    target.fighter.take_damage(dmg, self.owner, game)
-                    msg = self.owner.name.capitalize() + ' scratches ' + target.name + ' for ' + str(dmg) + '!'
-                else:
-                    msg = self.owner.name.capitalize() + ' attacks ' + target.name + ' but it has no effect!'
-        if game:
-            game.message.message(msg, col)
-            # TODO REFACTOR isolate and build
-        # expand on this for different attack patterns, right now its a 1x3 area in front of the player
-        if direction and player:
-            t = None
-            if direction == "north" or direction == 'south':
-                t = game.check_for_target(target.x + 1, target.y)
-                if t:
-                    game.player.fighter.attack(t, player=True, game=game)
-                    t = None
-                t = game.check_for_target(target.x - 1, target.y)
-                if t:
-                    game.player.fighter.attack(t, player=True, game=game)
-            elif direction == "east" or direction == 'west':
-                t = game.check_for_target(target.x, target.y + 1)
-                if t:
-                    game.player.fighter.attack(t, player=True, game=game)
-                    t = None
-                t = game.check_for_target(target.x - 1, target.y - 1)
-                if t:
-                    game.player.fighter.attack(t, player=True, game=game)"""
 
     def take_damage(self, damage, attacker, game):
         # apply damage if possible
@@ -522,13 +386,11 @@ class Torch:    # TODO REFACTOR move torch to item.py
                 self.owner.fighter.gear.light_source = None
 
 
-
-
+## TODO REFACTOR move AI class and functions to their own package
 
 # x,y offsets for co-ords next to the player
 offsets = [(1, 0), (0, 1), (-1, 0), (0, -1),
            (1, 1), (-1, 1), (-1, -1), (1, -1)]
-
 
 def get_next_to_player(mob, player, map):
     d = 100
@@ -541,8 +403,6 @@ def get_next_to_player(mob, player, map):
                 d = mob.owner.distance(player.x + px, player.y + py)
     return dx, dy
 
-
-    ## TODO REFACTOR move AI class and functions to their own package
 
 class AI_Base:
     def __init__(self):

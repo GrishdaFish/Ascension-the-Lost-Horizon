@@ -46,7 +46,6 @@ class AiDirector:
             'fastest level': 0,
             'longest level': 0,
 
-
         }
         self.care_packages = [
             self.add_potion,
@@ -128,7 +127,7 @@ class AiDirector:
         with open(path, 'w') as file:
             for item in self.player_stats:
                 file.write(item + " " + str(self.player_stats[item]) + "\n")
-        self.gEngine.network_send_data('add_session', self.player_stats)
+        self.gEngine.network_send_package('add_session', self.player_stats)
 
 if __name__ == "__main__":
     ad = AiDirector(None, None)

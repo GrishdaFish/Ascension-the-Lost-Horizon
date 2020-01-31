@@ -256,6 +256,7 @@ class GameObjects:
             'monster_melee': self.monster_weapons[libtcod.random_get_int(0, 0, len(self.monster_weapons) - 1)],
             'armor': self.armor[libtcod.random_get_int(0, 0, (len(self.armor) - 1))],
         }
+
         if mat:
             mat = self.get_mat_from_name(mat)
         else:
@@ -274,6 +275,7 @@ class GameObjects:
 
         equip_component = Equipment()
         equip_component.type = eq.type
+        equip_component.mat = mat.name
         # equip_component.threat_level = eq.threat_level
 
         # todo revist after ranged weapons are in place
@@ -305,7 +307,7 @@ class GameObjects:
         equip.message = game.message
         equip.objects = game.objects
 
-        # lets check out some enchants motherf^(!%3r!!!  ## TODO: REFACTOR currently all items get an effect while testing
+             ## TODO: REFACTOR - currently all items get an effect while testing
         effect = Effect(equip.item)                  # generate 2 effects randomly, linking them to the item
         effect_two = Effect(equip.item)
         equip.item.equipment.effects.append(effect)

@@ -5,7 +5,12 @@ from gEngine.utilities.user_interface.menu import Menus
 import os
 import sys
 from gEngine import gEngine as _gEngine
+import game.input_handler as iph
 import time
+
+from game.modules import options_module, help_module
+from game.object.effects import Effect
+
 
 class EscMenu:
     def __init__(self, gEngine, game):
@@ -21,8 +26,8 @@ class EscMenu:
         #path = path.replace('core.exe', '')
         # self.img = self.gEngine.image_load(os.path.join(path, 'img', 'menu_background_2.png'))
         self.m_menu = Menus(self.gEngine, int(self.gEngine.SCREEN_HEIGHT / 2 + 22),
-                            int(self.gEngine.SCREEN_WIDTH), 24, '',  # TODO: remove magic numbers
-                            ['Return to Game', 'Options (not working)', 'Quit to Menu', 'Quit Game'],
+                            int(self.gEngine.SCREEN_WIDTH), 24, 'Game Menu',
+                            ['Return to Game', 'Options', 'Help', 'Quit to Menu', 'Quit Game (You can\'t)'],
                             self.con)
 
     def activate(self):
@@ -52,44 +57,44 @@ class EscMenu:
             self.gEngine.console_flush()
             self.gEngine.console_clear(self.con)
             self.gEngine.console_clear(0)
-            if choice == 0:  # return to game
+            if choice == 0:
                 self.gEngine.log_message('Returning to game')
                 self.gEngine.remove_module(self)
                 self.gEngine.console_remove_console(self.con)
                 self.gEngine.log_close_block()
                 self.game.activate()
-                # g = game.Game(self.gEngine)
-                # g.new_game()
-                # self.gEngine.add_module(g)
                 return
-                # self.new_game()
-                # self.play_game()
-                # self.main_menu()
-            if choice == 1:  # options
+            if choice == 1:
                 self.gEngine.log_message('Loading options')
+                option = options_module.OptionsModule(self.gEngine, self.game, 0, 0, 25, 7, "Options")
+                option.setup()
+                self.gEngine.add_module(option)
                 self.gEngine.remove_module(self)
                 self.gEngine.log_close_block()
                 return
-                # try:
-                # self.load_game()
-                # except:
-                #    msgbox('\n No saved game to load.\n', 24)
-                #    continue
-                # self.play_game()
-                # self.main_menu()
+            if choice == 2:
+                self.gEngine.log_message('Loading help')
+                help_mod = help_module.HelpModule(self.gEngine, self.game, 0, 0, 25, 7, "Help")
+                help_mod.setup()
+                self.gEngine.add_module(help_mod)
+                self.gEngine.remove_module(self)
+                self.gEngine.log_close_block()
             if choice == 3:
                 self.gEngine.log_message('Quit to menu')
-                self.gEngine.remove_module(self)
-                self.gEngine.log_close_block()
+                class ShoeHorn():
+                    def __init__(self):
+                        self.vk = libtcod.KEY_ESCAPE
+                k = ShoeHorn()
+                result = iph.handle_quit(k, self.game, None)
+                if result == 'exit':
+                    self.game.return_to_main_menu()
+                    self.gEngine.remove_module(self)
+                    self.gEngine.log_close_block()
                 return
-
-            if choice == 4:  # dev mode
+            if choice == 4:
                 self.gEngine.log_message('Quit game')
                 self.gEngine.remove_module(self)
                 self.gEngine.log_close_block()
                 return True
-                # self.dev_mode.run()
-                # self.main_menu()
             # if choice == 5:
-            #     self.gEngine.log_message('Sending to Discord...')
         return True

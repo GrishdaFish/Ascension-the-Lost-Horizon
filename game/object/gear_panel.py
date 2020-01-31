@@ -77,28 +77,28 @@ class GearPanel:
         self.weapon_panel_key = ['Combat Type', 'Damage Type', 'Can Dual', 'Can Shield', 'Level', 'EXP', 'Can Parry', '2h override']
         self.weapon_panel = { # do not change indexes of values, add new values to end of arrays, TY!
             #   Key:        [combat_type, damage_type, can_dual, can_shield, level, xp, can_parry, handed_override}
-            "Shield":       ['melee', 'Shield', False, True, 1, 0, True],     #
-            "Short Sword":  ['melee', 'Slash', True, True, 1, 0, False],       #
-            "Long Sword":   ['melee', 'Slash', False, False, 1, 0, False],     #
-            "Great Sword":  ['melee', 'Slash', False, False, 1, 0, False],     #
-            "Hand Axe":     ['melee', 'Slash', True, True, 1, 0, False],       #
-            "Battle Axe":   ['melee', 'Slash', False, False, 1, 0, False],     #
-            "Throwing Axe": ['ranged', 'Slash', False, False, 1, 0, False],    #
-            "Mace":         ['melee', 'Smash', False, True, 1, 0, False],      #
-            "Hammer":       ['melee', 'Smash', False, True, 1, 0, False],      #
-            "Great Hammer": ['melee', 'Smash', False, False, 1, 0, False],     #
-            "Flail":        ['melee', 'Smash', False, False, 1, 0, False],     #
-            "Staff":        ['melee', 'Smash', False, False, 1, 0, False],     #
-            "Sling":        ['ranged', 'Smash', False, True, 1, 0, False],     #
-            "Bow":          ['ranged', 'Stab', False, False, 1, 0, False],     #
-            "Crossbow":     ['ranged', 'Stab', True, True, 1, 0, False],      #
-            "Dagger":       ['melee', 'Stab', True, True, 1, 0, False],        #
-            "Throw Dagger": ['ranged', 'Stab', False, False, 1, 0, False],     #
-            "Polearm":      ['melee', 'Stab', False, False, 1, 0, False],      #
-            "Javelin":      ['ranged', 'Stab', False, False, 1, 0, False],     #
+            "Shield":       ['melee', 'Shield', False, True, 1, 0, True, False],     #
+            "Short Sword":  ['melee', 'Slash', True, True, 1, 0, False, False],       #
+            "Long Sword":   ['melee', 'Slash', False, False, 1, 0, False, False],     #
+            "Great Sword":  ['melee', 'Slash', False, False, 1, 0, False, False],     #
+            "Hand Axe":     ['melee', 'Slash', True, True, 1, 0, False, False],       #
+            "Battle Axe":   ['melee', 'Slash', False, False, 1, 0, False, False],     #
+            "Throwing Axe": ['ranged', 'Slash', False, False, 1, 0, False, False],    #
+            "Mace":         ['melee', 'Smash', False, True, 1, 0, False, False],      #
+            "Hammer":       ['melee', 'Smash', False, True, 1, 0, False, False],      #
+            "Great Hammer": ['melee', 'Smash', False, False, 1, 0, False, False],     #
+            "Flail":        ['melee', 'Smash', False, False, 1, 0, False, False],     #
+            "Staff":        ['melee', 'Smash', False, False, 1, 0, False, False],     #
+            "Sling":        ['ranged', 'Smash', False, True, 1, 0, False, False],     #
+            "Bow":          ['ranged', 'Stab', False, False, 1, 0, False, False],     #
+            "Crossbow":     ['ranged', 'Stab', True, True, 1, 0, False, False],      #
+            "Dagger":       ['melee', 'Stab', True, True, 1, 0, False, False],        #
+            "Throw Dagger": ['ranged', 'Stab', False, False, 1, 0, False, False],     #
+            "Polearm":      ['melee', 'Stab', False, False, 1, 0, False, False],      #
+            "Javelin":      ['ranged', 'Stab', False, False, 1, 0, False, False],     #
         }
 
-        self.equipped = {  # Key: 'location' : item     # placed here so you can compare to weapons ^ / armor V
+        self.equipped = {  # Key: 'location' : item     #  compare to weapons ^ / armor V
             '1h': None,
             '2h': None,
             'Head': None,
@@ -215,7 +215,8 @@ class GearPanel:
         # self.activate_mods(gear)
         # self.activate_perks(gear)
         if self.owner.game.player.fighter == self.owner:
-            self.owner.inventory.remove(gear)  # TODO CONSIDER:should only do this if equip is successful? is that an issue?
+            if gear in self.owner.inventory:
+                self.owner.inventory.remove(gear)  # TODO CONSIDER:should only do this if equip is successful? is that an issue?
             self.owner.game.message.message(gear.name + " equipped.", 1)  # this is getting sent to flavor_country
 
     def unquip_it(self, gear):
@@ -275,39 +276,33 @@ class GearPanel:
     # UTILITY ##########################
     ####################################
     def gimmie_da_quips(self):
-        """
-        :return: array of equipment objects, sort it yourself!
-        """
+        """ :return: array of equipment objects, sort it yourself! """
         return list(self.equipped.values())
 
     def gimmie_da_weapon(self, off_hand=False):
-        """
-        :return:  da weapon, pick a hand!
-        """
+        """ :return:  da weapon, pick a hand! """
         if off_hand and self.equipped['2h'] is not None:
             return self.equipped['2h']
         elif self.equipped['1h'] is not None:
             return self.equipped['1h']
 
     def gimmie_da_armors(self):
-        """
-        :return:  you guessed it
-        """
+        """ :return:  you guessed it """
         da_armors = []
         for slot_location in self.armor_panel.keys():
             da_armors.append(self.equipped[slot_location])
         return da_armors  # to me now!
 
     def gimmie_da_slots(self):
-        """
-        :return: list of armor slots
-        """
+        """ :return: list of armor slots """
         return list(self.armor_panel.keys())
 
+    def gimmie_da_slots_all(self):
+        """ ;:return: list of equipment slots, weapons and armor"""
+        return list(self.equipped.keys())
+
     def get_quipped_weapon_type(self, off_hand=False):
-        """
-        :return:  the type of weapon the fighter has
-        """
+        """ :return:  the type of weapon the fighter has """
         if off_hand and self.equipped['2h'] is not None:
             return self.equipped['2h'].item.equipment.subtype
         elif self.equipped['1h'] is not None:
@@ -364,9 +359,14 @@ class GearPanel:
             if gear.item.equipment.type == 'light_source':
                 return True
 
+    def get_2h_override(self, gear):
+        if gear:
+            if self.is_weapon(gear) or self.is_shield(gear):
+                return self.weapon_panel[gear.item.equipment.subtype][7]
+
     # GET WEAPON EXP TO NEXT LEVEL
     def get_w_xptnl(self, wep_type):
-        return (self.get_w_lvl(wep_type) * 500)
+        return (self.get_w_lvl(wep_type) * 500)  # TODO change weapon xp tnl calc
 
     # GET WEAPON CURRENT XP AMOUNT
     def get_w_xp(self, wep_type):
@@ -395,8 +395,8 @@ class GearPanel:
                 self.w_lvl_up(self.get_quipped_weapon_type(off_hand=True))
 
     def w_lvl_up(self, wep_type):
-        self.weapon_panel[wep_type][4] += 1
-        self.weapon_panel[wep_type][5] = 0
+        self.weapon_panel[wep_type][4] += 1  # add to level
+        self.weapon_panel[wep_type][5] = 0   # reset exp
 
     #########################################
     # COMBAT ################################
