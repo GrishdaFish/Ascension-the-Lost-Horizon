@@ -7,14 +7,17 @@ class StatPanel:
     """
         StatPanel is attached to all instances of fighter to track and adjust effects and conditions.
     """
-    def __init__(self):
+    def __init__(self, owner=None):
+        self.owner = owner
         # panel will maintain a working reference to all modifiable/persistent stats and has getters and setters
         # never make changes to the panel directly and it will always work the right way
         self.panel = {
             "modifiers": {
                 "key": ["Penalty", "Modifier", "Base"],
-                "HP": [0, 0, 999999],
-                "Regen": [0, 0, 0],
+                "HP": [0, 0, 30],
+                "Regen": [0, 0, 0],  # TODO implement regen
+                "Damage": [0, 0, 0],  # TODO implement damage here
+                "Crit Rate": [0, 0, 0],  # TODO implement crits
                 "Accuracy": [0, 0, 1],
                 "Defense": [0, 0, 1],
                 "Block": [0, 0, 0],
@@ -57,7 +60,8 @@ class StatPanel:
                 "Blind": [0, 0, 0, libtcod.lightest_gray],
             }
         }
-
+        # add a check for stats we dont want to create effects for
+        # self.modifiable_by_effect = ["HP", "Damage", ...]
         self.active_conditions = []     # tracks afflicted conditions
         self.elemental_effects = []     # tracks actor's equipped elemental effects
         self.modifiers = []             # tracks actor's equipped modifiers
@@ -174,6 +178,10 @@ class StatPanel:
         if name in self.panel['modifiers'].keys():
             self.panel['modifiers'][name][2] = amount
 
+        if name == "HP":
+            if self.owner.hp > self.get_stat("HP"):
+                self.owner.hp = self.get_stat("HP")
+
     def get_stat_base(self, name):
         """ returns the base amount for the named stat
         :param name: name of the base stat in self.panel['modifiers'] to get
@@ -187,6 +195,10 @@ class StatPanel:
         if name in self.panel['modifiers'].keys():
             self.panel['modifiers'][name][1] = amount
 
+        if name == "HP":
+            if self.owner.hp > self.get_stat("HP"):
+                self.owner.hp = self.get_stat("HP")
+
     def get_stat_mod(self, name):
         """ returns the current modifier amount for the named stat """
         if name in self.panel['modifiers'].keys():
@@ -196,6 +208,10 @@ class StatPanel:
         """ the oenalty holds all negative non-permanent changes to a stat from items, potions, spells etc. """
         if name in self.panel['modifiers'].keys():
             self.panel['modifiers'][name][0] = amount
+
+        if name == "HP":
+            if self.owner.hp > self.get_stat("HP"):
+                self.owner.hp = self.get_stat("HP")
 
     def get_stat_pen(self, name):
         """ returns the current penalty for the named stat """

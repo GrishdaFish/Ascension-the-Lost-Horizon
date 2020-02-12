@@ -337,6 +337,8 @@ class Game:
         self.toolbar = self.gEngine.console_new(self.screen_width, 5)  # for the hotbar
         self.hotbar.reinit_all(self.toolbar)'''
         self.ambient -= 0.025
+        if self.ambient < 0:
+            self.ambient = 0
         self.gEngine.lightmask_set_ambient(self.ambient)
         self.bark_manager.empty(self.gEngine)
         left_over_items = 0
@@ -392,6 +394,7 @@ class Game:
 
 
     def prev_level(self):
+        self.ambient += 0.025
         self.objects = []
         self.ticker.clear_ticker()
         self.depth -= 1

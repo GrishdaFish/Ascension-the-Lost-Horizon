@@ -1,5 +1,8 @@
+from game.object.gear_system.modifier_template import DamageType
+
 __author__ = 'noobspanker'
 import tcod as libtcod
+
 """
 [["armor"]]
     name = "plate helm"
@@ -27,78 +30,85 @@ import tcod as libtcod
     size="tiny"     -------------------------imp. loc. Under consideration
 #    damage = [2, 10, 1, 0] # min damage, max damage, mutliplier, bonus (2d10*1+0)
 #    accuracy = 0 # accuracy bonus or penalty
-
-[["light_source"]]
-    name="lantern"
-    cell="|"
-    max_fuel=540
-    color = [225, 225, 0]
-    effect_color=[225, 225, 0]
-    value=50
-    intensity=0.9
-
-
-self.crit_bonus = crit_bonus
-self.defense = defense
-self.type = type
-self.location = location
-
-
-self.handed = handed
-self.dual_wield = dual_wield
-self.damage_type = damage_type
-self.threat_level = threat_level
-self.allowed_materials = allowed_materials
-
-self.bonus = bonus
-self.penalty = penalty
-self.description = description
-self.accuracy = accuracy
-self.damage = damage
-
-self.torch = None
-self.fuel = fuel
-self.max_fuel = fuel
-self.torch_color = color
-self.torch_intensity = intensity
-
-self.effects = []
 """
 
-class GearPanel:
-    """
-        Will hold and manage all gear equipped on a figher
-    """
-    def __init__(self, owner):
+class WeaponType:
+    """ maintain personal upgrade and base details about weapon usage """
+    def __init__(self, owner, name, combat_type, damage_type, can_dual, can_shield, can_parry, handed_override):
+        self.owner = owner
+        self.name = name
+        self.level = 1
+        self.xp = 0
+        self.combat_type = combat_type  # melee / ranged
+        self.damage_type = damage_type  # shield / slash / smash / stab
+        self.can_dual = can_dual
+        self.can_shield = can_shield
+        self.can_parry = can_parry
+        self.handed_override = handed_override
+        # self.perk_tree = owner.perks.get_tree(self.name)
 
+class GearPanel:
+    """ Will hold and manage all aspects of gear equipped on a figher """
+
+    def __init__(self, owner):
         self.owner = owner
         self.light_source = None
 
-        self.weapon_panel_key = ['Combat Type', 'Damage Type', 'Can Dual', 'Can Shield', 'Level', 'EXP', 'Can Parry', '2h override']
-        self.weapon_panel = { # do not change indexes of values, add new values to end of arrays, TY!
-            #   Key:        [combat_type, damage_type, can_dual, can_shield, level, xp, can_parry, handed_override}
-            "Shield":       ['melee', 'Shield', False, True, 1, 0, True, False],     #
-            "Short Sword":  ['melee', 'Slash', True, True, 1, 0, False, False],       #
-            "Long Sword":   ['melee', 'Slash', False, False, 1, 0, False, False],     #
-            "Great Sword":  ['melee', 'Slash', False, False, 1, 0, False, False],     #
-            "Hand Axe":     ['melee', 'Slash', True, True, 1, 0, False, False],       #
-            "Battle Axe":   ['melee', 'Slash', False, False, 1, 0, False, False],     #
-            "Throwing Axe": ['ranged', 'Slash', False, False, 1, 0, False, False],    #
-            "Mace":         ['melee', 'Smash', False, True, 1, 0, False, False],      #
-            "Hammer":       ['melee', 'Smash', False, True, 1, 0, False, False],      #
-            "Great Hammer": ['melee', 'Smash', False, False, 1, 0, False, False],     #
-            "Flail":        ['melee', 'Smash', False, False, 1, 0, False, False],     #
-            "Staff":        ['melee', 'Smash', False, False, 1, 0, False, False],     #
-            "Sling":        ['ranged', 'Smash', False, True, 1, 0, False, False],     #
-            "Bow":          ['ranged', 'Stab', False, False, 1, 0, False, False],     #
-            "Crossbow":     ['ranged', 'Stab', True, True, 1, 0, False, False],      #
-            "Dagger":       ['melee', 'Stab', True, True, 1, 0, False, False],        #
-            "Throw Dagger": ['ranged', 'Stab', False, False, 1, 0, False, False],     #
-            "Polearm":      ['melee', 'Stab', False, False, 1, 0, False, False],      #
-            "Javelin":      ['ranged', 'Stab', False, False, 1, 0, False, False],     #
+        self.damage_types = {
+            'Shield': DamageType('Shield', self.owner),
+            'Slash':  DamageType('Slash', self.owner),
+            'Smash':  DamageType('Smash', self.owner),
+            'Stab':   DamageType('Stab', self.owner)
         }
 
-        self.equipped = {  # Key: 'location' : item     #  compare to weapons ^ / armor V
+        self.weapon_panel = {  # combat_type, damage_type, can_dual, can_shield, can_parry, handed_override
+            "Shield":       WeaponType(self.owner, 'Shield', 'melee', 'Shield', False, True, True, False),
+            "Short Sword":  WeaponType(self.owner, 'Short Sword', 'melee', 'Slash', True, True, False, False),
+            "Long Sword":   WeaponType(self.owner, 'Long Sword', 'melee', 'Slash', False, False, False, False),
+            "Great Sword":  WeaponType(self.owner, 'Great Sword','melee', 'Slash', False, False, False, False),
+            "Hand Axe":     WeaponType(self.owner, 'Hand Axe', 'melee', 'Slash', True, True, False, False),
+            "Battle Axe":   WeaponType(self.owner, 'Battle Axe', 'melee', 'Slash', False, False, False, False),
+            "Throwing Axe": WeaponType(self.owner, 'Throwing Axe', 'ranged', 'Slash', False, False, False, False),
+            "Mace":         WeaponType(self.owner, 'Mace', 'melee', 'Smash', False, True, False, False),
+            "Hammer":       WeaponType(self.owner, 'Hammer', 'melee', 'Smash', False, True, False, False),
+            "Great Hammer": WeaponType(self.owner, 'Great Hammer', 'melee', 'Smash', False, False, False, False),
+            "Flail":        WeaponType(self.owner, 'Flail', 'melee', 'Smash', False, False, False, False),
+            "Staff":        WeaponType(self.owner, 'Staff', 'melee', 'Smash', False, False, False, False),
+            "Sling":        WeaponType(self.owner, 'Sling', 'ranged', 'Smash', False, True, False, False),
+            "Bow":          WeaponType(self.owner, 'Bow', 'ranged', 'Stab', False, False, False, False),
+            "Crossbow":     WeaponType(self.owner, 'Crossbow', 'ranged', 'Stab', True, True, False, False),
+            "Dagger":       WeaponType(self.owner, 'Dagger', 'melee', 'Stab', True, True, False, False),
+            "Throw Dagger": WeaponType(self.owner, 'Throw Dagger', 'ranged', 'Stab', False, False, False, False),
+            "Polearm":      WeaponType(self.owner, 'Polearm', 'melee', 'Stab', False, False, False, False),
+            "Javelin":      WeaponType(self.owner, 'Javelin', 'ranged', 'Stab', False, False, False, False),
+        }
+
+        # self.weapon_panel_key = ['Combat Type', 'Damage Type', 'Can Dual', 'Can Shield', 'Level', 'EXP', 'Can Parry',
+        #                          '2h override']
+        # self.weapon_panel = {  # do not change indexes of values, add new values to end of arrays, TY!
+        #     #   Key:        [combat_type, damage_type, can_dual, can_shield, level, xp, can_parry, handed_override}
+        #     "Shield": ['melee', 'Shield', False, True, 1, 0, True, False],  #
+        #     "Short Sword": ['melee', 'Slash', True, True, 1, 0, False, False],  #
+        #     "Long Sword": ['melee', 'Slash', False, False, 1, 0, False, False],  #
+        #     "Great Sword": ['melee', 'Slash', False, False, 1, 0, False, False],  #
+        #     "Hand Axe": ['melee', 'Slash', True, True, 1, 0, False, False],  #
+        #     "Battle Axe": ['melee', 'Slash', False, False, 1, 0, False, False],  #
+        #     "Throwing Axe": ['ranged', 'Slash', False, False, 1, 0, False, False],  #
+        #     "Mace": ['melee', 'Smash', False, True, 1, 0, False, False],  #
+        #     "Hammer": ['melee', 'Smash', False, True, 1, 0, False, False],  #
+        #     "Great Hammer": ['melee', 'Smash', False, False, 1, 0, False, False],  #
+        #     "Flail": ['melee', 'Smash', False, False, 1, 0, False, False],  #
+        #     "Staff": ['melee', 'Smash', False, False, 1, 0, False, False],  #
+        #     "Sling": ['ranged', 'Smash', False, True, 1, 0, False, False],  #
+        #     "Bow": ['ranged', 'Stab', False, False, 1, 0, False, False],  #
+        #     "Crossbow": ['ranged', 'Stab', True, True, 1, 0, False, False],  #
+        #     "Dagger": ['melee', 'Stab', True, True, 1, 0, False, False],  #
+        #     "Throw Dagger": ['ranged', 'Stab', False, False, 1, 0, False, False],  #
+        #     "Polearm": ['melee', 'Stab', False, False, 1, 0, False, False],  #
+        #     "Javelin": ['ranged', 'Stab', False, False, 1, 0, False, False],  #
+        # }
+
+        self.equipped = {  # Key: 'location' : item
             '1h': None,
             '2h': None,
             'Head': None,
@@ -111,6 +121,12 @@ class GearPanel:
             'Cloak': None,
             'Neck': None,
             'Ring': None
+        }
+        self.impaled = {
+            'Torso': [],
+            'Head':  [],
+            'Arms':  [],
+            'Legs':  []
         }
         self.armor_panel = {
             #   Key:
@@ -125,7 +141,7 @@ class GearPanel:
             "Neck": [],
             "Ring": [],
         }
-        self.ammo_types_key = [] # TODO add things like skill based range modifiers or flags for ammo type bonuses
+        self.ammo_types_key = []  # TODO add things like skill based range modifiers or flags for ammo type bonuses
         self.ammo_types = {
             # "Throwing Axe": [],
             "Sling": [],
@@ -150,12 +166,7 @@ class GearPanel:
             "None": [1, 0]
         }
         # using a weapon of a particular size will make you better with that size
-        self.gear_sizes = {"tiny": 0,
-                           "small": 0,
-                           "normal": 0,
-                           "large": 0,
-                           "huge": 0
-        }
+        self.gear_sizes = ["tiny", "small", "normal", "large", "huge"]
 
     ############################################################
     # EQUIP / UNEQUIP + ACTIVATE / DEACTIVATE ##################
@@ -171,7 +182,7 @@ class GearPanel:
             self.light_source = gear
 
         elif self.is_weapon(gear):
-            if self.is_two_hander(gear): #emtpy both hands and equip
+            if self.is_two_hander(gear):  # emtpy both hands and equip
                 if self.equipped['1h'] is not None:
                     self.unquip_it(self.equipped['1h'])
                 if self.equipped['2h'] is not None:
@@ -185,7 +196,7 @@ class GearPanel:
                         if self.equipped['2h'] is not None:
                             self.unquip_it(self.equipped['2h'])
                         hand_to_equip = '2h'
-                    elif self.is_shield(gear): # must remove shield to dual
+                    elif self.is_shield(gear):  # must remove shield to dual
                         if self.equipped['2h'] is not None:
                             self.unquip_it(self.equipped['2h'])
                         hand_to_equip = '2h'
@@ -213,10 +224,11 @@ class GearPanel:
         if len(gear.item.equipment.effects) > 0:
             self.activate_effects(gear)
         # self.activate_mods(gear)
-        # self.activate_perks(gear)
+        # self.activate_perks(gear) # TODO WE GOT PERKS BITCH
         if self.owner.game.player.fighter == self.owner:
             if gear in self.owner.inventory:
-                self.owner.inventory.remove(gear)  # TODO CONSIDER:should only do this if equip is successful? is that an issue?
+                # TODO CONSIDER:should only do this if equip is successful? is that an issue?
+                self.owner.inventory.remove(gear)
             self.owner.game.message.message(gear.name + " equipped.", 1)  # this is getting sent to flavor_country
 
     def unquip_it(self, gear):
@@ -224,7 +236,7 @@ class GearPanel:
             nothing lasts forever
         :param gear: the gear to unquip
         """
-        #if gear not in self.equipped.values(): # don't do anything if the gear to unequip is not equipped
+        # if gear not in self.equipped.values(): # don't do anything if the gear to unequip is not equipped
         #    return
 
         if len(gear.item.equipment.effects) > 0:
@@ -244,19 +256,22 @@ class GearPanel:
             self.activate_armor(gear)
 
         # self.deactivate_mods(gear)
-        # self.deactivate_perks(gear)
+        # self.deactivate_perks(gear)  # TODO WE GOT PERKS BITCH
         self.owner.inventory.append(gear)
-        self.owner.game.message.message(gear.name + " unequipped.", 1) # this is getting sent to flavor_country
+        self.owner.game.message.message(gear.name + " unequipped.", 1)  # this is getting sent to flavor_country
 
     def activate_effects(self, gear):
+        """ activates all the effects on a passed gear to the owner's stat panel """
         for effect in gear.item.equipment.effects:
             effect.activate_effect(self.owner)
 
     def deactivate_effects(self, gear):
+        """ deactivates all the effects on a passed gear from the owner's stat panel """
         for effect in gear.item.equipment.effects:
             effect.deactivate_effect()
 
     def activate_armor(self, gear):
+        """ adds an armor's defense and evasion amounts to stat panel """
         armor_bonus = gear.item.equipment.bonus if gear in self.equipped.values() else gear.item.equipment.bonus * -1
         armor_pen = gear.item.equipment.penalty if gear in self.equipped.values() else gear.item.equipment.penalty * -1
 
@@ -266,6 +281,7 @@ class GearPanel:
         self.owner.stat.set_stat_pen("Evasion", new_pen)
 
     def activate_shield(self, gear):
+        """ adds a shield's block amount to stat panel """
         block_chance = gear.item.equipment.accuracy if gear in self.equipped.values() else gear.accuracy * -1
 
         new_block = self.owner.stat.get_stat_mod("Block") + block_chance
@@ -294,11 +310,11 @@ class GearPanel:
         return da_armors  # to me now!
 
     def gimmie_da_slots(self):
-        """ :return: list of armor slots """
+        """ :return: list of armor slots only (not actual gear) """
         return list(self.armor_panel.keys())
 
     def gimmie_da_slots_all(self):
-        """ ;:return: list of equipment slots, weapons and armor"""
+        """ :return: list of equipment slots, weapons and armor (not the actual gear) """
         return list(self.equipped.keys())
 
     def get_quipped_weapon_type(self, off_hand=False):
@@ -309,10 +325,11 @@ class GearPanel:
             return self.equipped['1h'].item.equipment.subtype
 
     def get_weapon_damage_type(self, gear):
-        return self.weapon_panel[gear.item.equipment.subtype][1]
+        return self.weapon_panel[gear.item.equipment.subtype].damage_type
 
-    # JUST TELL ME IF ITS A FUCKING WEAPON PLX
     def is_weapon(self, gear):
+        """ returns true if the passed gear has an associated weapon type
+            *NOTE* monster melee will returns false """
         if gear:
             if hasattr(gear.item.equipment, 'subtype'):
                 if gear.item.equipment.subtype in self.weapon_panel.keys() and gear.item.equipment.subtype != "Shield":
@@ -320,8 +337,8 @@ class GearPanel:
             else:
                 print("Definitely not a weapon")
 
-    # TELLS ME IF ITS A SHIELD
     def is_shield(self, gear):
+        """ returns true if the passed gear is a shield... fuck """
         if gear:
             if hasattr(gear.item.equipment, 'subtype'):
                 if gear.item.equipment.subtype == "Shield":
@@ -329,110 +346,149 @@ class GearPanel:
             else:
                 print("Definitely not a shield")
 
-    # WEAPON IS A 2H
     def is_two_hander(self, gear):
+        """ return true if the base weapon is a zweihander - *does nothing with 2h override* """
         if gear:
             if gear.item.equipment.handed == 2:
                 return True
 
-    # WEAPON CAN BE DUAL EQUIPPED
     def can_dual(self, gear):
+        """ returns true if the gear passed can be equipped as dual weapons """
         if gear:
             if hasattr(gear.item.equipment, 'subtype'):
-                return self.weapon_panel[gear.item.equipment.subtype][3]
+                return self.weapon_panel[gear.item.equipment.subtype].can_dual
 
-    # IS THIS ACTOR ABLE TO PARRY WITH THIS WEAPON
     def can_parry(self, gear):
+        """ returns true if the passed gear can parry """
         if gear:
             if hasattr(gear.item.equipment, 'subtype') and gear.item.equipment.type != 'monster_melee':
-                return self.weapon_panel[gear.item.equipment.subtype][6]
+                return self.weapon_panel[gear.item.equipment.subtype].can_parry
 
-    # TELLS ME IF ITS AN ARMOR TYPE
     def is_armor(self, gear):
+        """ returns true if the passed gear is an armor type """
         if gear:
             if gear.item.equipment.location in self.armor_panel.keys():
                 return True
 
-    # IS IT A LIGHT
     def is_light(self, gear):
+        """ returns true if the passed gear is a light """
         if gear:
             if gear.item.equipment.type == 'light_source':
                 return True
 
     def get_2h_override(self, gear):
+        """ returns weapon's equip type override """
         if gear:
             if self.is_weapon(gear) or self.is_shield(gear):
-                return self.weapon_panel[gear.item.equipment.subtype][7]
+                return self.weapon_panel[gear.item.equipment.subtype].handed_override
 
-    # GET WEAPON EXP TO NEXT LEVEL
     def get_w_xptnl(self, wep_type):
-        return (self.get_w_lvl(wep_type) * 500)  # TODO change weapon xp tnl calc
+        """ calculates exp tnl based on current level """
+        # TODO BALANCING change weapon xp tnl calc, if changed here also change in w_lvl_up
+        return (self.get_w_lvl(wep_type) * 500)
 
-    # GET WEAPON CURRENT XP AMOUNT
     def get_w_xp(self, wep_type):
-        return self.weapon_panel[wep_type][5]
+        """ gets current xp of weapon type """
+        return self.weapon_panel[wep_type].xp
 
-    # GET WEAPON TYPE LEVEL
     def get_w_lvl(self, wep_type):
+        """ pass weapon type, get it's level """
         if wep_type in self.weapon_panel:
-            return self.weapon_panel[wep_type][4]
-
-    # ADD XP TO WEAPON
-    def add_w_xp(self, amount):
-        # This is probably gonna need to do something about monster melee
-        if self.is_weapon(self.equipped['1h']):
-            if self.equipped['2h'] is None or self.is_shield(self.equipped['2h']):  # 1h or 1h+shield = full exp
-                self.weapon_panel[self.get_quipped_weapon_type()][5] += amount
-                if self.is_shield(self.equipped['2h']):
-                    self.weapon_panel[self.get_quipped_weapon_type(off_hand=True)][5] += amount
-            elif self.equipped['2h'] is not None:                                   # duals split exp to each hand
-                self.weapon_panel[self.get_quipped_weapon_type()][5] += (amount / 2)
-                self.weapon_panel[self.get_quipped_weapon_type(off_hand=True)][5] += (amount / 2)
-
-            if self.weapon_panel[self.get_quipped_weapon_type()][5] > self.get_w_xptnl(self.get_quipped_weapon_type()):
-                self.w_lvl_up(self.get_quipped_weapon_type())
-            if self.weapon_panel[self.get_quipped_weapon_type(off_hand=True)][5] > self.get_w_xptnl(self.get_quipped_weapon_type(off_hand=True)):
-                self.w_lvl_up(self.get_quipped_weapon_type(off_hand=True))
+            return self.weapon_panel[wep_type].level
+        else:
+            return 1
 
     def w_lvl_up(self, wep_type):
-        self.weapon_panel[wep_type][4] += 1  # add to level
-        self.weapon_panel[wep_type][5] = 0   # reset exp
+        """ add 1 to level, reduce current exp back to 0"""
+        self.weapon_panel[wep_type].xp -= self.get_w_xptnl(wep_type)  # reset exp
+        self.weapon_panel[wep_type].level += 1  # add to level
+
+    def add_w_xp(self, amount):
+        """ pass the amount of exp earned, also adds damage type exp at a set amount
+            1h+shield = full xp to both
+            dual wield = half xp to each
+            single weapon = full exp  """
+        # This is probably gonna need to do something about monster melee
+        main_hand = self.gimmie_da_weapon()
+        main_type = self.get_quipped_weapon_type()
+        off_hand = self.gimmie_da_weapon(off_hand=True)
+        off_type = self.get_quipped_weapon_type(off_hand=True)
+
+        if main_hand and off_hand:
+            if self.is_shield(off_hand): # 1h+shield = full exp
+                self.weapon_panel[main_type].xp += amount
+                self.add_damage_type_xp(self.get_weapon_damage_type(main_hand))
+                self.weapon_panel[off_type].xp += amount
+                self.add_damage_type_xp(self.get_weapon_damage_type(off_hand))
+            else: # duals split exp to each hand
+                self.weapon_panel[main_type].xp += int(amount / 2)
+                self.weapon_panel[off_type].xp += int(amount / 2)
+                self.add_damage_type_xp(self.get_weapon_damage_type(main_hand))
+                self.add_damage_type_xp(self.get_weapon_damage_type(off_hand))
+        if main_hand and not off_hand:
+            self.weapon_panel[main_type].xp += amount
+            self.add_damage_type_xp(self.get_weapon_damage_type(main_hand))
+        if off_hand and not main_hand:
+            self.weapon_panel[off_type].xp += amount
+            self.add_damage_type_xp(self.get_weapon_damage_type(off_hand))
+
+        if self.weapon_panel[main_type].xp > self.get_w_xptnl(main_type):
+            self.w_lvl_up(main_type)
+        if self.weapon_panel[off_type].xp > self.get_w_xptnl(off_type):
+            self.w_lvl_up(off_type)
+
+    def add_damage_type_xp(self, damage_type):
+        """" adds 1 xp per kill, levels it up every 1000 """
+        self.damage_types[damage_type].xp += 1
+        self.damage_types[damage_type].check_for_level_up()
 
     #########################################
     # COMBAT ################################
     #########################################
     def get_weapon_damage(self):  # TODO consider idk if i like this here
-        min_damage = 0
-        max_damage = 0
-        if self.equipped['1h'] is None and self.equipped['2h'] is None:
-            min_damage = 0
-            max_damage = 1
-        elif self.equipped['1h'] is not None and self.is_weapon(self.equipped['1h']):
-            min_damage = self.equipped['1h'].item.equipment.damage[0] + self.get_w_lvl(self.get_quipped_weapon_type())  # adds w_lvl to damage
-            max_damage = self.equipped['1h'].item.equipment.damage[1] + self.get_w_lvl(self.get_quipped_weapon_type())  # adds w_lvl to damage
-            # TODO factor in weapon bonuses ( perks / skills / w.lvls )
-        elif self.equipped['2h'] is not None and self.is_weapon(self.equipped['2h']) and not self.is_shield(self.equipped['2h']):
-            min_damage += self.equipped['2h'].item.equipment.damage[0] + self.get_w_lvl(self.get_quipped_weapon_type(off_hand=True))  # adds w_lvl to damage
-            max_damage += self.equipped['2h'].item.equipment.damage[1] + self.get_w_lvl(self.get_quipped_weapon_type(off_hand=True))  # adds w_lvl to damage
-            # TODO factor in weapon bonuses ( perks / skills / w.lvls )
-        elif self.equipped['1h'].item.equipment.type == 'monster_melee':  # deal with monster_melee
-            min_damage = self.equipped['1h'].item.equipment.damage[0]
-            max_damage = self.equipped['1h'].item.equipment.damage[1]
+        """ gets the damage range for one or both weapons and returns a random final value """
+        main_hand = self.gimmie_da_weapon()
+        off_hand = self.gimmie_da_weapon(off_hand=True)
+        min_dmg = 0
+        max_dmg = 0
 
-            # TODO factor in weapon bonuses ( perks / skills / w.lvls )
-        final_damage = libtcod.random_get_int(0, min_damage, max_damage)
+        if not main_hand and not off_hand:
+            max_dmg = 1
+
+        if main_hand:
+            min_dmg = main_hand.item.equipment.damage[0]
+            max_dmg = main_hand.item.equipment.damage[1]
+        if off_hand and not self.is_shield(off_hand):
+            min_dmg += off_hand.item.equipment.damage[0]
+            max_dmg += off_hand.item.equipment.damage[1]
+
+            # TODO further factor in weapon bonuses ( perks / skills / w.lvls ) ??
+        final_damage = libtcod.random_get_int(0, min_dmg, max_dmg)
+        # TODO apply weapon level bonus damage to stat panel, not direct:
+        # if main_hand.type != 'monster_melee':
+        #    final_damage += + int(self.get_w_lvl(main_hand.subtype) / 4)
+
         return final_damage
 
-    def get_gear_size_modifier(self, gear_atk, gear_block):
-        gear_a_rating = self.gear_sizes.index(gear_atk.item.equipment.size)    # TODO gear doesnt have sizes importing yet, do that or bork
-        gear_b_rating = self.gear_sizes.index(gear_block.item.equipment.size)
+    def get_gear_size_modifier(self, size_a, size_b):
+        """ pass 2 sizes, returns a multiplier in the range of -4 to 4 """
+        # TODO gear doesnt have sizes importing yet, do that or bork
+        gear_a_rating = self.gear_sizes.index(size_a)
+        gear_b_rating = self.gear_sizes.index(size_b)
         modifier = gear_a_rating - gear_b_rating
         return modifier
 
     def get_combat_type(self):
+        """ returns the combat type of your main hand weapon - ranged or melee
+            if no main hand weapon, checks off hand for weapon,
+            if none returns None """
         weapon = self.gimmie_da_weapon()
+        off_hand_weapon = self.gimmie_da_weapon(off_hand=True)
         if weapon:
-            return self.weapon_panel[weapon.item.equipment.subtype][0]
+            return self.weapon_panel[weapon.item.equipment.subtype].combat_type
+        else:
+            if off_hand_weapon:  # and self.is_weapon(off_hand_weapon):
+                return self.weapon_panel[weapon.item.equipment.subtype].combat_type
         return None
 
     #######################################
@@ -443,7 +499,7 @@ class GearPanel:
             names = ["Current:"]
             if self.is_weapon(gear_to_compare):
                 names.append(self.equipped[gear_to_compare.subtype].owner.name)
-                #names.append(self.equipped)
+                # names.append(self.equipped)
             if self.is_armor(gear_to_compare):
                 names.append(self.equipped[gear_to_compare.location])
 

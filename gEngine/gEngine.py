@@ -126,6 +126,7 @@ class gEngine:
         self.additional_modules = []
         self.modules_to_remove = []
         self.module_adjust_list = []
+        self.adjusting = False
         self.player_id = None
         self.zdepth = 0
 
@@ -147,6 +148,7 @@ class gEngine:
                 for module in self.module_adjust_list:
                     self.modules.append(module)
                 self.module_adjust_list.clear()
+            self.adjusting = False
 
     def render_all(self):
         self.console_flush()
@@ -173,6 +175,9 @@ class gEngine:
             return None
 
     def bring_module_to_front(self, module):
+        if self.adjusting:
+            return
+        self.adjusting = True
         for m in self.modules:
             if m != module:
                 self.module_adjust_list.append(m)

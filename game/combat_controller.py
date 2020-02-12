@@ -14,6 +14,7 @@ def attack(attacker, target, direction, force_attack_target=None):
             targets = get_ranged_attack_pattern(attacker, target)
             multi_target(attacker, targets)
 
+
 def multi_target(attacker, targets):
     for target in targets:
         single_target(attacker, target.fighter)
@@ -97,6 +98,7 @@ def try_to_defend(target):
 def try_to_block(creature):
     if creature.gear.equipped['2h'] is not None:
         if creature.gear.equipped['2h'].item.equipment.subtype == 'Shield':
+            # TODO Compare weapon size to shield size and modify block stuff
             roll = libtcod.random_get_int(0, 1, 10)  # half of to hit roll
             roll += creature.stat.get_stat("Block")
             #roll += creature.fighter.stat.get_stat("Strength")
@@ -261,4 +263,5 @@ def get_attack_pattern(attacker, direction, pattern="default"):
 
 
 def get_ranged_attack_pattern(attacker, target):
+    # TODO no ranged attack patterns
     return [attacker.game.check_for_target(target.x, target.y)]

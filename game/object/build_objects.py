@@ -1,3 +1,5 @@
+import os
+
 from game.object.object import *
 from game.object.item import *
 from game.spells import spells

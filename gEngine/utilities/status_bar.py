@@ -2,7 +2,7 @@ import tcod as libtcod
 
 
 class StatusBar:
-    def __init__(self,size, full, empty, con, gEngine=None):
+    def __init__(self, size, full, empty, con, gEngine=None):
         self.bar = gEngine.image_new(size * 2, 2)
         self.full = full
         self.empty = empty

@@ -12,15 +12,14 @@ class Effect:
            An equipment object has an array for effects that are applied/removed @ equip / unequip
         - When instantiating an effect stick it in to item.effects[] and once equipped it is activated on the actor.
         - You can also create an effect and call effect.activate(actor) to apply it directly to the actor IF PERMANENT
-        - If the effect is applied directly to an actor with a temporary duration, 
-                it should be passed to the ConditionManager *not implemented yet*
+        - If the effect is applied directly to an actor with a temporary duration, call set_duration
         
         *** StatPanel will control tracking and containment of the effects as well as directly affecting stats ***
         ***    No actor stats should be edited directly in this file!                                          ***
          
     """ """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""" """
 
-    def __init__(self, item, effect=None, ticker=None):
+    def __init__(self, item, effect=None, amount=0, ticker=None):
         # linked objects
         self.actor = None  # owner of this effect, set during on_equip in activate_effect
                     # this reference persists on conditions so you can see who caused it if you care to
@@ -33,7 +32,7 @@ class Effect:
         self.effect_real_name = None  # name relating to stat_panel.panel[panel_group]['key'][effect_real_name] (output)
         self.index = None          # logical storage index of stat for ease of reference
 
-        self.amount = 0            # strength of effect *should support range (i.e +5 or +5-10) for damage spread
+        self.amount = amount            # strength of effect *should support range (i.e +5 or +5-10) for damage spread
 
         # Related to conditions
         self.persist = False       # is this a 1 time persistent stat modifier, like STR down or STUN?
@@ -109,6 +108,11 @@ class Effect:
         self.speed = int(package[6])
         self.max_stack = int(package[7])
 
+    def set_duration(self, duration):
+        """ call when manually creating limited time effects """
+        self.duration = duration
+        self.total_duration = self.duration
+
     ##################################################################
     # COMBAT #########################################################
     ##################################################################
@@ -128,7 +132,7 @@ class Effect:
     def inflict_damage(self):
         if self.panel_group == 'conditions' and self.index == 0 and self.target is not None:  # damage is always the first stat in the index
             damage = self.amount - self.target.stat.get_condition_resist(self.effect_name)
-            if self.target.hp > 0 and self.actor is not None:
+            if self.target is not None and self.target.hp > 0:
                 self.target.take_damage(damage, self.actor.owner, self.target.game)
 
     def get_resistance(self, effect_name):
@@ -147,7 +151,7 @@ class Effect:
         else:                               # if not, reduce duration and do stuff
             self.duration -= 1
             self.add_turn()
-            if self.amount:  # None will indicate special conditions that fire only once, like stun or reduce strength
+            if self.amount:
                 self.inflict_damage()
 
         # game.game.message stuff

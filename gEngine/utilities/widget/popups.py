@@ -76,7 +76,7 @@ class MultiConfirm(window_widget.WindowWidget):
             if len(self.message) > worst_case:
                 self.width = len(message) + 2
             else:
-                self.width = len(worst_case) + 4
+                self.width = worst_case + 4
 
             self.gEngine.console_remove_console(self.con)
             self.con = self.gEngine.console_new(self.width, self.height)

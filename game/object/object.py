@@ -1,19 +1,16 @@
 import sys
-import os
 import math
 import copy
-import logging
 
-from game.object.gear_panel import GearPanel
-from game.object.item import Equipment, Item
-from game.object.perks import PerkTree
+from game.object.gear_system.gear_panel import GearPanel
+from game.object.gear_system.perk_tree import PerkTree
 from game.object.stat_panel import StatPanel
 
 sys.path.append(sys.path[0])
 import tcod as libtcod
 from game import combat, combat_controller
 from game import bark
-from gEngine import lights
+
 
 # I might rewrite this system, the bigger the game gets, the more cumbersome this
 # system gets. :(
@@ -227,7 +224,7 @@ class Fighter:
     def __init__(self, death_function=None, money=0, ticker=None, xp_value=0):
 
         self.perks = PerkTree(self)
-        self.stat = StatPanel()      # damage, resistance, effects and conditions
+        self.stat = StatPanel(self)      # damage, resistance, effects and conditions
         self.gear = GearPanel(self)  # equipped items and related controls
 
         self.death_function = death_function
@@ -242,7 +239,7 @@ class Fighter:
         self.ticker = ticker
         self.unused_skill_points = 2
 
-        self.depth = 0
+        self.depth = 0  # TODO: erase this: deprecated?
         self.threat = 0.0
 
         self.max_hp = self.stat.get_stat("HP")
@@ -342,7 +339,7 @@ class Fighter:
 
             # check for death. if there's a death function, call it
             if self.hp <= 0:
-                if self.owner != game.player:
+                if self.owner is not game.player:
                     game.ai_director.add_player_stat('kills', 1)
                 attacker.fighter.current_xp += self.current_xp
                 function = self.death_function

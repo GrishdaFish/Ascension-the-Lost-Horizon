@@ -58,7 +58,7 @@ def character_info(con, width, height, game, x=0, y=0):
 
         player_hp_bar = status_bar.StatusBar(int(width / 2) - 10, libtcod.light_red,
                                              libtcod.darker_red, char_window, gEngine=game.gEngine)
-        player_hp_bar.render(1, 2, game.gEngine, [game.player.fighter.hp, game.player.fighter.stat.get_stat_base("HP")]
+        player_hp_bar.render(1, 2, game.gEngine, [game.player.fighter.hp, game.player.fighter.stat.get_stat("HP")]
                              , 'Hp: ')
         game.gEngine.console_set_alignment(player_hp_bar.con, int(libtcod.LEFT))
         game.gEngine.console_print(char_window, 1, 3, 'Level: %d' % game.player.fighter.level)
@@ -70,17 +70,17 @@ def character_info(con, width, height, game, x=0, y=0):
                                                   game.player.fighter.xp_to_next_level], 'Xp: ')
         game.gEngine.console_set_alignment(player_xp_bar.con, int(libtcod.LEFT))
 
-        s = color_text(str(game.player.fighter.stat.get_stat_base("Strength")), libtcod.light_gray)
-        d = color_text(str(game.player.fighter.stat.get_stat_base("Dexterity")), libtcod.light_gray)
-        i = color_text(str(game.player.fighter.stat.get_stat_base("Intelligence")), libtcod.light_gray)
-        c = color_text(str(game.player.fighter.stat.get_stat_base("Constitution")), libtcod.light_gray)
+        s = color_text(str(game.player.fighter.stat.get_stat("Strength")), libtcod.light_gray)
+        d = color_text(str(game.player.fighter.stat.get_stat("Dexterity")), libtcod.light_gray)
+        i = color_text(str(game.player.fighter.stat.get_stat("Intelligence")), libtcod.light_gray)
+        c = color_text(str(game.player.fighter.stat.get_stat("Constitution")), libtcod.light_gray)
         game.gEngine.console_print(char_window, 1, 7, 'Stats: Str [%s], Dex [%s]' % (s, d))
         game.gEngine.console_print(char_window, 1, 8, '       Int [%s], Con [%s]' % (i, c))
 
         hit_bonus = color_text(str(game.player.fighter.stat.get_stat("Accuracy")), libtcod.green)
         game.gEngine.console_print(char_window, 1, 10, 'Bonus to Hit  : [%s] ' % hit_bonus)
 
-        bonus = color_text(str(game.player.fighter.stat.get_stat_mod("Defense")), libtcod.green)
+        bonus = color_text(str(game.player.fighter.stat.get_stat("Defense")), libtcod.green)
         # bonus2 = color_text('10 +%d' % game.player.fighter.stat.get_stat("Defense"), libtcod.green)
         game.gEngine.console_print(char_window, 1, 11, 'Armor Rating  : [%s] ' % (bonus))
 
@@ -89,7 +89,7 @@ def character_info(con, width, height, game, x=0, y=0):
         parry = color_text(str(game.player.fighter.stat.get_stat("Parry")), libtcod.green)
         game.gEngine.console_print(char_window, 1, 13, 'Parry chance  : [%s] ' % parry)
 
-        penalty = color_text(str(game.player.fighter.stat.get_stat_pen("Evasion")), libtcod.red)
+        penalty = color_text(str(game.player.fighter.stat.get_stat("Evasion")), libtcod.red)
         # penalty2 = color_text('1d20 -%d' % game.player.fighter.stat.get_stat("Evasion"), libtcod.red)
         game.gEngine.console_print(char_window, 1, 14, 'Evasion Rating: [%s]' % (penalty))
 
@@ -242,8 +242,8 @@ def character_info(con, width, height, game, x=0, y=0):
                 first_print = False
             for condition in game.player.fighter.stat.active_conditions:
                 if condition.duration > 0:
-                    bar = status_bar.StatusBar(game.player.fighter, int(width / 2) - 17, condition.get_color(),
-                                               libtcod.darker_red, skill_desc_window, type='hp', gEngine=game.gEngine)
+                    bar = status_bar.StatusBar(int(width / 2) - 17, condition.get_color(),
+                                               libtcod.darker_red, skill_desc_window, gEngine=game.gEngine)
                     bar.render(1, y, game.gEngine, [condition.duration, condition.total_duration],
                                condition.effect_name)
                     game.gEngine.console_set_alignment(bar.con, int(libtcod.LEFT))
@@ -310,7 +310,7 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
         # mouse = libtcod.Mouse()
         # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
         key, mouse = game.gEngine.handle_input()
-        exit_input = exit_button.display()
+#        exit_input = exit_button.display()
 
         game.gEngine.console_blit(condition_window, 0, 0, width / 2, height / 2, 0, 0, 0, 1.0, 1.0)
         game.gEngine.console_blit(stat_window, 0, 0, width / 2, height, 0, stat_window_y_pos, 0, 1.0, 1.0)
@@ -471,10 +471,10 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
         #    if mouse.lbutton_pressed:
         #        game.player.fighter.apply_skill_points(game.player.fighter.skills[current_selection]) # use unused player skill points
 
-        for i in exit_input:
-            if i != -1:
-                key.vk = libtcod.KEY_ESCAPE
-                break
+        # for i in exit_input:
+        #     if i != -1:
+        #         key.vk = libtcod.KEY_ESCAPE
+        #         break
 
     exit_button.destroy_button()
     game.gEngine.console_remove_console(stat_desc_window)
