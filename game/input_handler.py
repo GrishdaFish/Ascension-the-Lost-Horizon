@@ -1,5 +1,5 @@
 from game import esc_menu
-from game.modules import help_module
+from game.modules import help_module, inventory_module
 from game.user_interface import character
 from game.user_interface import inventory
 from gEngine.utilities.user_interface import dialog_box
@@ -94,12 +94,29 @@ def handle_perk_screen(key, game, turn):
 
 def handle_inventory(key, game, turn):
     if key.c is ord(game.keys.key_inventory):
-        # show the inventory; if an item is selected, use it
-        chosen_item = inventory.inventory(game.dungeon_console, game.player, game)
+        if not game.gEngine.get_module_by_name("InventoryModule"):
+            inv_mod = inventory_module.InventoryModule(game.gEngine, game, 0, 0, 35, 40, "Gold:%d" % game.player.fighter.money)
+            game.gEngine.add_module(inv_mod)
+        else:
+            if game.gEngine.get_module_status("InventoryModule"):
+                game.gEngine.deactivate_module("InventoryModule")
+            else:
+                game.gEngine.activate_module("InventoryModule")
+        if not game.gEngine.get_module_by_name("EquipmentModule"):
+            eq_mod = inventory_module.EquipmentModule(game.gEngine, g, 36, 0, 35, 25, "Equipment")
+            game.gEngine.add_module(eq_mod)
+        else:
+            if game.gEngine.get_module_status("EquipmentModule"):
+                game.gEngine.deactivate_module("EquipmentModule")
+            else:
+                game.gEngine.activate_module("EquipmentModule")
 
-        if chosen_item is not None:
-            chosen_item.item.use(game.player.fighter.inventory, game.player, game)
-            turn = 'turn-used'
+    #     # show the inventory; if an item is selected, use it
+    #     chosen_item = inventory.inventory(game.dungeon_console, game.player, game)
+    #
+    #     if chosen_item is not None:
+    #         chosen_item.item.use(game.player.fighter.inventory, game.player, game)
+    #         turn = 'turn-used'
     return turn
 
 

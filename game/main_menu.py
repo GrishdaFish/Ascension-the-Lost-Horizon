@@ -4,7 +4,7 @@ from game import dev_mode
 from game.debug_modules import module_list
 from game.debug_modules import dungeon_status
 from game.debug_modules import spawning_tool
-from game.modules import login_module, options_module
+from game.modules import login_module, options_module, inventory_module
 from gEngine.utilities.user_interface.menu import Menus
 from gEngine.utilities.widget import button_widget
 from gEngine.utilities.widget import window_widget
@@ -208,6 +208,15 @@ class NewGame(button_widget.TextButtonWidget):
         spawn_tool = spawning_tool.SpawningTools(self.gEngine, g, 0, 0, 18, 9, "Spawning Tools")
         spawn_tool.setup()
         self.gEngine.add_module(spawn_tool)
+
+        # Stick player usable modules below to keep them separate from dev mods
+        inv_mod = inventory_module.InventoryModule(self.gEngine, g, 0, 0, 35, 40, "Gold: %d" % g.player.fighter.money)
+        self.gEngine.add_module(inv_mod)
+        inv_mod.deactivate()
+
+        eq_mod = inventory_module.EquipmentModule(self.gEngine, g, 36, 0, 35, 25, "Equipment")
+        self.gEngine.add_module(eq_mod)
+        eq_mod.deactivate()
 
         # load this module last
         m = module_list.ModuleList(self.gEngine, g, 0, 0, 15, 5, 'Module List')

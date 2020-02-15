@@ -3,6 +3,8 @@ import tcod as libtcod
 # After creating a new font tile, add the name of the tile, and use the next available int
 # Call these to use new font by using chr(long_sword)
 
+# TODO ALWAYS PLACE THE NEXT AVAILABLE NUMBER HERE WHEN YOU ARE DONE EDITING!
+#  next usable number is: 294
 # melee weapons
 long_sword = 256
 dagger = 257
@@ -13,6 +15,7 @@ hammer = 261
 two_handed_hammer = 265
 hand_axe = 266
 battle_axe = 262
+shield = 293
 
 # ranged weapons
 bow_and_arrow = 263
@@ -24,6 +27,18 @@ javelen = 268
 big_potion = 269
 small_potion = 270
 scroll = 271
+
+# armor
+helm = 283
+glove = 284
+boot = 285
+torso = 286
+cloak = 287
+ring = 288
+neck = 289
+shoulder = 290
+arms = 291
+legs = 292
 
 # Libtcod TCOD Font fixes
 CHAR_ARROW_N = 272
@@ -66,5 +81,15 @@ Fonts = {
     big_potion: (0, 7),
     small_potion: (1, 7),
     scroll: (2, 7),
-
+    helm: (10, 5),
+    glove: (11, 5),
+    boot: (12, 5),
+    torso: (13, 5),
+    cloak: (14, 5),
+    ring: (15, 5),
+    neck: (16, 5),
+    shoulder: (17, 5),
+    arms: (18, 5),
+    legs: (19, 5),
+    shield: (9, 5),
 }

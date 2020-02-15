@@ -7,7 +7,7 @@ from game.object.misc import *
 #from game.spells.spells import *
 from game import combat
 from game import content_parser
-from gEngine import gEngine
+from gEngine import gEngine, custom_font
 from game.object.effects import Effect
 
 
@@ -180,7 +180,7 @@ class GameObjects:
 
         name = "potion of %s" % potion.name
         item = Object(game.dungeon_console, x, y, potion.cell, name, potion.color, item=item_component)
-
+        item.char = chr(custom_font.big_potion)
         return item
 
     def build_scroll(self, game, x, y, name=None):
@@ -202,7 +202,7 @@ class GameObjects:
 
         name = "scroll of %s" % scroll.name
         item = Object(game.dungeon_console, x, y, scroll.cell, name, scroll.color, item=item_component)
-
+        item.char = chr(custom_font.scroll)
         return item
 
     def build_light_source(self, game, x, y, name=None):
@@ -242,6 +242,7 @@ class GameObjects:
     def build_equipment(self, game, x, y, type=None, name=None, mat=None):
         """
         todo: revist when subtypes are implemented
+            # *note: subtypes are implemented*
         Builds a piece of equipment into a game usable object
         :param game: the main game object
         :param x: x position on the map, can be 0 if going directly into inventory
@@ -315,6 +316,9 @@ class GameObjects:
         equip.item.equipment.effects.append(effect)
         equip.item.equipment.effects.append(effect_two)
 
+        char = self.get_custom_char(equip)
+        if char:
+            equip.char = char
         # equip.send_to_back(game.objects)
         return equip
 
@@ -553,3 +557,55 @@ class GameObjects:
             if ammo.weapon_type == name:
                 return ammo
         return None
+
+    def get_custom_char(self, obj):
+        if hasattr(obj, "item"):
+            if hasattr(obj.item, "spell") and obj.item.spell:
+                return chr(custom_font.scroll)
+            elif hasattr(obj.item, "equipment") and obj.item.equipment:
+                if obj.item.equipment.subtype:  # its a weapon
+                    if obj.item.equipment.subtype == "Shield":
+                        return chr(custom_font.shield)
+                    if obj.item.equipment.subtype == "Long Sword":
+                        return chr(custom_font.long_sword)
+                    if obj.item.equipment.subtype == "Dagger":
+                        return chr(custom_font.dagger)
+                    if obj.item.equipment.subtype == "Short Sword":
+                        return chr(custom_font.short_sword)
+                    if obj.item.equipment.subtype == "Great Sword":
+                        return chr(custom_font.great_sword)
+                    if obj.item.equipment.subtype == "Mace":
+                        return chr(custom_font.mace)
+                    if obj.item.equipment.subtype == "Hammer":
+                        return chr(custom_font.hammer)
+                    if obj.item.equipment.subtype == "Great Hammer":
+                        return chr(custom_font.two_handed_hammer)
+                    if obj.item.equipment.subtype == "Hand Axe":
+                        return chr(custom_font.hand_axe)
+                    if obj.item.equipment.subtype == "Battle Axe":
+                        return chr(custom_font.battle_axe)
+                else:  # its an armor
+                    if obj.item.equipment.location == "Head":
+                        return chr(custom_font.helm)
+                    if obj.item.equipment.location == "Hands":
+                        return chr(custom_font.glove)
+                    if obj.item.equipment.location == "Shoulders":
+                        return chr(custom_font.shoulder)
+                    if obj.item.equipment.location == "Arms":
+                        return chr(custom_font.arms)
+                    if obj.item.equipment.location == "Torso":
+                        return chr(custom_font.torso)
+                    if obj.item.equipment.location == "Legs":
+                        return chr(custom_font.legs)
+                    if obj.item.equipment.location == "Feet":
+                        return chr(custom_font.boot)
+                    if obj.item.equipment.location == "Cloak":
+                        return chr(custom_font.cloak)
+                    if obj.item.equipment.location == "Neck":
+                        return chr(custom_font.neck)
+                    if obj.item.equipment.location == "Ring":
+                        return chr(custom_font.ring)
+            elif hasattr(obj.item, "ammo") and obj.item.ammo:
+                pass
+            else:  # its a regular ass bitch ass item
+                pass

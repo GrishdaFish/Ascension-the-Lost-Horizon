@@ -109,7 +109,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
 
     key = libtcod.Key()
     mouse = libtcod.Mouse()
-    libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY, key, mouse)
+    # libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY, key, mouse)
     current_selection = 0
     s_current_selection = 0
     i_master_check = CheckBox(1, 30, "Check/Uncheck All")

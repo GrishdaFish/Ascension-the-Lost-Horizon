@@ -27,7 +27,7 @@ class EscMenu:
         # self.img = self.gEngine.image_load(os.path.join(path, 'img', 'menu_background_2.png'))
         self.m_menu = Menus(self.gEngine, int(self.gEngine.SCREEN_HEIGHT / 2 + 22),
                             int(self.gEngine.SCREEN_WIDTH), 24, 'Game Menu',
-                            ['Return to Game', 'Options', 'Help', 'Quit to Menu', 'Quit Game (You can\'t)'],
+                            ['Return to Game', 'Options', 'Help', 'Quit to Menu', 'Quit Game'],
                             self.con)
 
     def activate(self):
@@ -92,9 +92,8 @@ class EscMenu:
                     self.gEngine.log_close_block()
                 return
             if choice == 4:
-                self.gEngine.log_message('Quit game')
-                self.gEngine.remove_module(self)
+                self.gEngine.log_message('Quitting game')
                 self.gEngine.log_close_block()
-                return True
+                exit(42069)
             # if choice == 5:
         return True
