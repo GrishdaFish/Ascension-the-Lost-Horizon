@@ -126,27 +126,51 @@ class gEngine:
         self.additional_modules = []
         self.modules_to_remove = []
         self.module_adjust_list = []
+        self.adjusting = False
         self.player_id = None
         self.zdepth = 0
 
     def run(self):
         is_closed = None
         while True:
+            # start every frame by flushing all  of the screen, then grab and parse any input
             self.console_flush()
+
+            # all modules receive and parse the same input
+            # Do not call self.handle_input() outside of the engine unless you pull program control away from the engine
+            # NOT RECOMMENDED. AVOID ANY OTHER WHILE LOOP IF POSSIBLE
             key, mouse = self.handle_input()
+
+            # Add any new modules before the run cycle starts
             if len(self.additional_modules) > 0:
                 for modules in self.additional_modules:
                     self.modules.append(modules)
                 self.additional_modules.clear()
 
+            # run all active modules in our module list
             for module in self.modules:
                 if module.active is True:
                     module.run(key, mouse)
+
+            # then after running, we make any adjustments to the list
+
+            # Adjusting positions of modules in the list, eg. bringing a module to the front (back) of the list
             if len(self.module_adjust_list) > 0:
                 self.modules.clear()
                 for module in self.module_adjust_list:
                     self.modules.append(module)
                 self.module_adjust_list.clear()
+
+            # Removing any module(s) that need to be removed before the next run cycle
+            if len(self.modules_to_remove) > 0:
+                if len(self.modules) == 1:
+                    self.modules.pop()
+                else:
+                    for module in self.modules_to_remove:
+                        if module in self.modules:
+                            self.modules.remove(module)
+                self.modules_to_remove.clear()
+            self.adjusting = False
 
     def render_all(self):
         self.console_flush()
@@ -155,9 +179,8 @@ class gEngine:
         self.additional_modules.append(module)
 
     def remove_module(self, module):
-        if module in self.modules:
-            module.on_exit()
-            self.modules.remove(module)
+        self.modules_to_remove.append(module)
+        module.on_exit()
 
     def get_module_by_name(self, name):
         for module in self.modules:
@@ -173,6 +196,9 @@ class gEngine:
             return None
 
     def bring_module_to_front(self, module):
+        if self.adjusting:
+            return
+        self.adjusting = True
         for m in self.modules:
             if m != module:
                 self.module_adjust_list.append(m)
