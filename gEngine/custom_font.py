@@ -4,7 +4,7 @@ import tcod as libtcod
 # Call these to use new font by using chr(long_sword)
 
 # TODO ALWAYS PLACE THE NEXT AVAILABLE NUMBER HERE WHEN YOU ARE DONE EDITING!
-#  next usable number is: 294
+#  next usable number is: 299
 # melee weapons
 long_sword = 256
 dagger = 257
@@ -21,7 +21,14 @@ shield = 293
 bow_and_arrow = 263
 bow = 264
 throwing_axe = 267
-javelen = 268
+javelin = 268
+sling = 294
+xbow = 295
+
+# ammo
+arrow = 296
+bolt = 297
+quiver = 298
 
 # consumables
 big_potion = 269
@@ -77,7 +84,7 @@ Fonts = {
     bow_and_arrow: (0, 6),
     bow: (1, 6),
     throwing_axe: (2, 6),
-    javelen: (3, 6),
+    javelin: (3, 6),
     big_potion: (0, 7),
     small_potion: (1, 7),
     scroll: (2, 7),
@@ -92,4 +99,10 @@ Fonts = {
     arms: (18, 5),
     legs: (19, 5),
     shield: (9, 5),
+
+    sling: (4, 6),
+    xbow: (5, 6),
+    arrow: (3, 7),
+    bolt: (4, 7),
+    quiver: (5, 7),
 }

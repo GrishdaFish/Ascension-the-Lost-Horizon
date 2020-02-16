@@ -103,7 +103,7 @@ def handle_inventory(key, game, turn):
             else:
                 game.gEngine.activate_module("InventoryModule")
         if not game.gEngine.get_module_by_name("EquipmentModule"):
-            eq_mod = inventory_module.EquipmentModule(game.gEngine, g, 36, 0, 35, 25, "Equipment")
+            eq_mod = inventory_module.EquipmentModule(game.gEngine, game, 36, 0, 35, 16, "Equipment")
             game.gEngine.add_module(eq_mod)
         else:
             if game.gEngine.get_module_status("EquipmentModule"):

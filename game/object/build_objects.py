@@ -584,6 +584,24 @@ class GameObjects:
                         return chr(custom_font.hand_axe)
                     if obj.item.equipment.subtype == "Battle Axe":
                         return chr(custom_font.battle_axe)
+                    if obj.item.equipment.subtype == "Javelin":
+                        return chr(custom_font.javelin)
+                    if obj.item.equipment.subtype == "Throwing Axe":
+                        return chr(custom_font.throwing_axe)
+                    if obj.item.equipment.subtype == "Throw Dagger":
+                        return chr(custom_font.dagger)
+                    if obj.item.equipment.subtype == "Sling":
+                        return chr(custom_font.sling)
+                    if obj.item.equipment.subtype == "Bow":
+                        return chr(custom_font.bow)
+                    if obj.item.equipment.subtype == "Crossbow":
+                        return chr(custom_font.xbow)
+                    # if obj.item.equipment.subtype == "Polearm":
+                    #     return chr(custom_font. )
+                    # if obj.item.equipment.subtype == "Flail":
+                    #     return chr(custom_font. )
+                    # if obj.item.equipment.subtype == "Staff":
+                    #     return chr(custom_font. )
                 else:  # its an armor
                     if obj.item.equipment.location == "Head":
                         return chr(custom_font.helm)
@@ -606,6 +624,15 @@ class GameObjects:
                     if obj.item.equipment.location == "Ring":
                         return chr(custom_font.ring)
             elif hasattr(obj.item, "ammo") and obj.item.ammo:
-                pass
+                if obj.item.ammo.weapon_type == "Bow":
+                    if obj.item.qty > 1:
+                        return chr(custom_font.quiver)
+                    else:
+                        return chr(custom_font.arrow)
+                if obj.item.ammo.weapon_type == "Crossbow":
+                    if obj.item.qty > 1:
+                        return chr(custom_font.quiver)
+                    else:
+                        return chr(custom_font.bolt)
             else:  # its a regular ass bitch ass item
                 pass

@@ -141,7 +141,10 @@ class Equipment:
     ########################################################  equip is handled by equipped panel now
     def equip(self, target, game=None, owner=None, slot=0):  # TODO REFACTOR unnecessary arguments? this isn't marriage - find calls before deleting
         if owner is not None:
-            target.fighter.gear.quip_it(owner)
+            if owner in target.fighter.gear.gimmie_da_quips():
+                self.un_equip(target, owner)
+            else:
+                target.fighter.gear.quip_it(owner)
 
     def un_equip(self, target, item):
         if item is not None:

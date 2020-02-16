@@ -214,7 +214,7 @@ class NewGame(button_widget.TextButtonWidget):
         self.gEngine.add_module(inv_mod)
         inv_mod.deactivate()
 
-        eq_mod = inventory_module.EquipmentModule(self.gEngine, g, 36, 0, 35, 25, "Equipment")
+        eq_mod = inventory_module.EquipmentModule(self.gEngine, g, 36, 0, 35, 16, "Equipment")
         self.gEngine.add_module(eq_mod)
         eq_mod.deactivate()
 

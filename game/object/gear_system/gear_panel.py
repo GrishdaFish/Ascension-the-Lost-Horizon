@@ -488,7 +488,7 @@ class GearPanel:
             return self.weapon_panel[weapon.item.equipment.subtype].combat_type
         else:
             if off_hand_weapon:  # and self.is_weapon(off_hand_weapon):
-                return self.weapon_panel[weapon.item.equipment.subtype].combat_type
+                return self.weapon_panel[off_hand_weapon.item.equipment.subtype].combat_type
         return None
 
     #######################################
