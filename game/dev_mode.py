@@ -5,386 +5,322 @@ from dungeon import prefab_dungeon
 from gEngine.utilities.dijikstra_map import *
 from copy import deepcopy
 import math
+from game.debug_modules import module_list
 
-
-class FleeingAi:
-    def __init__(self, start_x, start_y):
-        self.start_x = start_x
-        self.start_y = start_y
-        self.x = start_x
-        self.y = start_y
-
-    def calculate_move(self, d_map):
-        current_cell = d_map[self.x][self.y]
-        valid_options = None
-        best_value = 100000
-        # get the (x, y) values of all surrounding cells that has a value of 1 greater than current cell
-        for x in range(self.x - 1, self.x + 2, 1):
-            for y in range(self.y - 1, self.y + 2, 1):
-                value = d_map[x][y]
-                if value <= current_cell:
-                    if value < best_value:
-                        best_value = value
-                        valid_options = (x, y)
-        # pick a random cell from valid cells
-        if valid_options:
-            dest = valid_options
-            self.x = dest[0]
-            self.y = dest[1]
-            return self.x, self.y
-        else:
-            return None, None
-
-
-class Level:
-    def __init__(self):
-        self.dungeon = None
-        self.MAP_WIDTH = 0
-        self.MAP_HEIGHT = 0
-        self.fov_map = None
-        self.rooms = None
-
-
-class Light:
-    def __init__(self, x, y, r, i, color):
-        self.x = x
-        self.y = y
-        self.radius = r
-        self.intensity = i
-        if isinstance(color, libtcod.Color):
-            r, g, b = color
-            r = r * i
-            g = g * i
-            b = b * i
-            r = float(r / 255)
-            g = float(g / 255)
-            b = float(b / 255)
-            color = (r, g, b)
-        self.color = color
-
-
-class NewLightmask:
-    def __init__(self, width, height, ambient=1.0):
-        self.width = width
-        self.height = height
-        self.ambient = ambient
-        self.lightmask = [(ambient, ambient, ambient) for i in range(width*height)]
-        self.lights = []
-
-    def idx(self, x, y):
-        return x + y * self.width
-
-    def reset(self):
-        self.lightmask = [(self.ambient, self.ambient, self.ambient) for i in range(self.width * self.height)]
-        self.lights = []
-
-    def set_ambient(self, ambient):
-        self.ambient = ambient
-
-    def calculate_light(self, light, dungeon):
-        """
-        Calculates the lights with psuedo ray casting
-        :param light: The light to calculate
-        :param dungeon: the dungeon map isntance to check for walls
-        :return: nothing
-        """
-        # first create a bounding box for the light, clamped to map boundaries
-        top = int(max(0, light.y - light.radius + 1))
-        bottom = int(min(self.height, light.y + light.radius + 1))
-        left = int(max(0, light.x - light.radius + 1))
-        right = int(min(self.width, light.x + light.radius + 1))
-        # then we cast the top and bottom rays from left to right, from the light's center point
-        for x in range(left, right):
-            top_ray = libtcod.line_iter(light.x, light.y, x, top)
-            for cell in top_ray:
-                # and clamp to the circle, so we don't try to walk the ray past the radius of the circle
-                if self.in_circle(light.x, light.y, cell[0], cell[1], light.radius):
-                    # then we check to see if we hit a wall, if we do, light it, and stop walking through the line
-                    # since we don't want to light past a wall
-                    if dungeon[cell[0]][cell[1]].blocked:
-                        d = self.distance_from_center(light.x, light.y, cell[0], cell[1], light.radius)
-                        self.light_tile(cell[0], cell[1], d, light)
-                        break
-                    else:
-                        d = self.distance_from_center(light.x, light.y, cell[0], cell[1], light.radius)
-                        self.light_tile(cell[0], cell[1], d, light)
-                else:
-                    break
-            # follow the same process for the bottom line
-            bottom_ray = libtcod.line_iter(light.x, light.y, x, bottom)
-            for cell in bottom_ray:
-                if self.in_circle(light.x, light.y, cell[0], cell[1], light.radius):
-                    if dungeon[cell[0]][cell[1]].blocked:
-                        d = self.distance_from_center(light.x, light.y, cell[0], cell[1], light.radius)
-                        self.light_tile(cell[0], cell[1], d, light)
-                        break
-                    else:
-                        d = self.distance_from_center(light.x, light.y, cell[0], cell[1], light.radius)
-                        self.light_tile(cell[0], cell[1], d, light)
-                else:
-                    break
-        # And then cast the left and right rays, from top to bottom
-        for y in range(top, bottom):
-            left_ray = libtcod.line_iter(light.x, light.y, left, y)
-            for cell in left_ray:
-                if self.in_circle(light.x, light.y, cell[0], cell[1], light.radius):
-                    if dungeon[cell[0]][cell[1]].blocked:
-                        d = self.distance_from_center(light.x, light.y, cell[0], cell[1], light.radius)
-                        self.light_tile(cell[0], cell[1], d, light)
-                        break
-                    else:
-                        d = self.distance_from_center(light.x, light.y, cell[0], cell[1], light.radius)
-                        self.light_tile(cell[0], cell[1], d, light)
-                else:
-                    break
-            right_ray = libtcod.line_iter(light.x, light.y, right, y)
-            for cell in right_ray:
-                if self.in_circle(light.x, light.y, cell[0], cell[1], light.radius):
-                    if dungeon[cell[0]][cell[1]].blocked:
-                        d = self.distance_from_center(light.x, light.y, cell[0], cell[1], light.radius)
-                        self.light_tile(cell[0], cell[1], d, light)
-                        break
-                    else:
-                        d = self.distance_from_center(light.x, light.y, cell[0], cell[1], light.radius)
-                        self.light_tile(cell[0], cell[1], d, light)
-                else:
-                    break
-
-
-    def light_tile(self, x, y, amount, light):
-        """
-        calculates the light value based on distance from center
-        :param x: x position of the tile to be lit
-        :param y: y position of t he tile to be lit
-        :param amount: the distance from the center
-        :param light: the Light() class
-        :return: nothing
-        """
-        # divide by radius to get a distance normalized float to  use
-        d = amount / light.radius
-        c1 = -d + light.color[0]
-        c2 = -d + light.color[1]
-        c3 = -d + light.color[2]
-
-        cc1, cc2, cc3 = self.lightmask[self.idx(x, y)]
-
-        c1 = max(c1, cc1)
-        c2 = max(c2, cc2)
-        c3 = max(c3, cc3)
-
-        c1 = max(self.ambient, c1)
-        c2 = max(self.ambient, c2)
-        c3 = max(self.ambient, c3)
-        self.lightmask[self.idx(x, y)] = (c1, c2, c3)
-
-    def add_light(self, x, y, intensity, color, radius=10.5):
-        light = Light(x, y, radius, intensity, color)
-        self.lights.append(light)
-
-    def compute(self, dungeon=None):
-        for light in self.lights:
-            self.calculate_light(light, dungeon)
-
-    def get_value(self, x, y):
-        return (self.lightmask[self.idx(x, y)])
-
-    @staticmethod
-    def in_circle(centerx, centery, targetx, targety, radius):
-        dx = targetx - centerx
-        dy = targety - centery
-        sq = (dx*dx + dy*dy)
-        return sq < radius*radius
-
-    @staticmethod
-    def distance_from_center(cx, cy, tx, ty, r):
-        dx = cx - tx
-        dy = cy - ty
-        sq = dx * dx + dy * dy
-        d = math.sqrt(sq)
-        return d
+from game.object import build_objects
+from gEngine.utilities.user_interface import hot_bar
+from gEngine.utilities.widget import window_widget, text_input_widget, button_group, button_widget, popups
 
 
 class DevMode:
     def __init__(self, gEngine):
+        gEngine.log_open_block("Loading Dev Mode...")
+        self.first=True
         self.gEngine = gEngine
-        self.con = self.gEngine.console_new(self.gEngine.w, 48)
-        # self.dungeon_gen = dungeon.BasicDungeon(48, self.gEngine.w, 10, 15, 15, 0, 0, self.gEngine)
-        self.dungeon_gen = prefab_dungeon.PrefabGenerator(self.gEngine.w, 48, self.gEngine)
-        #self.level = self.dungeon_gen.make_map()
-        self.level = Level()
-        self.level.dungeon = self.dungeon_gen.dungeon
-        self.level.MAP_HEIGHT = 48
-        self.level.MAP_WIDTH = self.gEngine.w
-
-        self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
-        self.dungeon_gen.set_draw_map(self.level.dungeon)
-
-        self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
-        self.level.fov_map = self.gEngine.get_fov_map()
-        self.print_d_map = False
         self.active = True
-        self.d = DijikstraMap(self.gEngine, self.gEngine.w, 48)
-        c = [libtcod.yellow, libtcod.orange, libtcod.red, libtcod.purple]
-        self.visualize_colors = libtcod.color_gen_map(c, [0, 12, 24, 36])
-        self.m = None
-        self.cx, self.cy = 0, 0
-        self.v_map = None
-        #self.gEngine.mMap = self.level.dungeon
-        # self.level.dungeon, self.level.rooms = self.dungeon_gen.add_prefab_room(self.level.dungeon,
-        #                                                       self.dungeon_gen.width,
-        #                                                       self.dungeon_gen.height,
-        #                                                       True,
-        #                                                       self.level.rooms,
-        #                                                       True)
-        self.level = self.dungeon_gen.level_from_prefabs()
-        # self.height_map = libtcod.heightmap_new(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
-        # noise = libtcod.noise_new(libtcod.random_get_int(0, 3, 5))
-        # libtcod.heightmap_add_fbm(self.height_map, noise, 2.5, 0.5, 1.0, 1.0, 5, 0.5, 0.5)
-        # for y in range(self.level.MAP_HEIGHT):
-        #     for x in range(self.level.MAP_WIDTH):
-        #         self.level.dungeon[x][y].color = libtcod.Color(255,255,255)
-        #         v = libtcod.heightmap_get_value(self.height_map, x, y)
-        #         self.level.dungeon[x][y].color *= v
+        self.con_w = self.gEngine.w
+        self.con_h = 48
+        self.con = self.gEngine.console_new(self.con_w, self.con_h)
+        self.gEngine.log_message("Dev Mode Console " + str(self.con))
 
-        self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
-        self.dungeon_gen.set_draw_map(self.level.dungeon)
+        # Ui variables
+        self.screen_width = self.gEngine.w
+        self.screen_height = self.gEngine.h
+        self.panel_height = 7
+        self.dungeon_height = self.screen_height - self.panel_height - 5
+        self.dungeon_width = self.screen_width
+        self.bar_width = 20
+        self.panel_y = self.screen_height - self.panel_height
+        self.message_x = self.bar_width + 2
+        self.message_width = self.screen_width
+        self.message_height = self.panel_height - 1
 
-        self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
-        self.level.fov_map = self.gEngine.get_fov_map()
-        self.canopy = self.gEngine.console_new(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
-        self.canopy_backup = self.gEngine.console_new(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
-        libtcod.console_set_key_color(self.gEngine.console_get_console(self.canopy), (0, 0, 0))
-        num_floor_tiles = 0
-        for y in range(self.level.MAP_HEIGHT):
-            for x in range(self.level.MAP_WIDTH):
-                #self.gEngine.console_get_console(self.canopy).buffer[y, x] = (ord(' '), [0,0,0,0], [0,0,0,0])
-                if not self.level.dungeon[x][y].blocked:
-                    num_floor_tiles += 1
-        print(num_floor_tiles)
-        self.lights = []
+        # create all of the consoles for drawing and UI
+        self.dungeon_console = self.gEngine.console_new(self.dungeon_width, self.dungeon_height)  # main viewport
+        self.panel = self.gEngine.console_new(self.screen_width, self.panel_height)  # for messages and others
+        self.toolbar = self.gEngine.console_new(self.screen_width, 5)  # for the hotbar
+        '''self.gEngine.log_open_block("Initializing Hotbar")
+        x = 32 / 2
+        x = self.gEngine.w / 2 - x
+        self.hotbar = hot_bar.HotBar(x, 0, self.gEngine, self.toolbar)
+        z = 1
+        index = ord('1')
+        for i in range(10):
+            if index == ord(':'):
+                index = ord('0')
+            s = hot_bar.HotBarSlot(None, z + x, self.panel_y - 4, z, chr(index), self.gEngine)
+            self.hotbar.add_slot(s)
+            z += 3
+            index += 1
+        self.gEngine.log_message("Hotbar initialized")
+        self.gEngine.log_close_block()'''
+
+        self.gEngine.log_open_block("Loading all content")
+
+        self.gEngine.log_message("Loading monsters and items")
+        self.content = build_objects.GameObjects(self.gEngine)
+
+        self.gEngine.log_message("Loading Rooms")
+        self.prefab_generator = prefab_dungeon.PrefabGenerator(self.dungeon_width, self.dungeon_height, self.gEngine)
+
+        self.gEngine.log_message("Content loaded")
+        self.gEngine.log_close_block()
+
+        self.gEngine.log_message("...Dev mode successfully set up!")
+        self.gEngine.log_close_block()
+
+        # m = module_list.ModuleList(self.gEngine, None, 0, 0, 15, 5, 'Module List')
+        # self.gEngine.add_module(m)
+        # self.gEngine.bring_module_to_front(m)
+
+        self.dev_mode_menu = DevModeMenu(self.gEngine, x=0, y=self.panel_y, w=self.screen_width, h=self.panel_height)
+        self.dev_mode_menu.setup(self)
+        self.dev_mode_menu.activate()
+        self.gEngine.add_module(self.dev_mode_menu)
+
+        self.gEngine.log_open_block("Setting up Dev Mode Editors...")
+        self.monster_editor = MonsterEditor(self.gEngine, x=0, y=0, w=self.con_w, h=self.con_h, title="Monster Editor")
+        self.monster_editor.setup(self.content.monsters)
+        self.monster_editor.deactivate()
+        self.gEngine.add_module(self.monster_editor)
+
+        self.item_editor = ItemEditor(self.gEngine, x=0, y=0, w=self.con_w, h=self.con_h, title="Item Editor")
+        self.item_editor.setup()
+        self.item_editor.deactivate()
+        self.gEngine.add_module(self.item_editor)
+
+        self.room_editor = RoomEditor(self.gEngine, x=0, y=0, w=self.con_w, h=self.con_h, title="Room Editor")
+        self.room_editor.setup()
+        self.room_editor.deactivate()
+        self.gEngine.add_module(self.room_editor)
+
+        self.gEngine.log_message("Editors set up")
+        self.gEngine.log_close_block()
+
+
 
     def run(self, key, mouse):
-        while not libtcod.console_is_window_closed():
-            self.gEngine.console_clear(self.con)
-            #self.gEngine.console_clear(self.canopy)
-            key = libtcod.Key()
-            mouse = libtcod.Mouse()
-            libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY_PRESS, key, mouse)
-            libtcod.map_compute_fov(self.level.fov_map, mouse.cx, mouse.cy)
-            self.gEngine.lightmask_reset()
-            self.light_mask.reset()
-            for lights in self.lights:
-                self.light_mask.add_light(lights[0], lights[1], lights[2], lights[3], lights[4])
-            self.testing(key, mouse)
+        if self.first:
+            self.gEngine.console_clear(0)
+            self.gEngine.log_open_block("Dev mode Running...")
+            self.gEngine.log_message(" ")
+            self.first = False
 
-            self.light_mask.compute(self.level.dungeon)
-            #self.gEngine.lightmask_compute(self.level.dungeon)
-            self.gEngine.map_draw(self.con, mouse.cx, mouse.cy, run_fov=False, lightmask=self.light_mask)
-            #self.gEngine.map_draw_fast(self.con, mouse.cx, mouse.cy)
-            self.gEngine.console_blit(self.con, 0, 0, 0, 0, 0, 0, 0, 1.0, 1.0)
-            self.gEngine.console_blit(self.canopy, 0, 0, 0, 0, 0, 0, 0, 0.0, 1.0)
-            self.gEngine.console_flush()
 
-        return True
+        self.render(key, mouse)
 
-    def testing(self, key, mouse):
-        cx, cy = 0, 0
-        self.gEngine.console_print(self.con, 1, 1, "(%dfps) Depth: %d" % (libtcod.sys_get_fps(), 1))
-        if mouse.cx < self.level.MAP_WIDTH and mouse.cy < self.level.MAP_HEIGHT:
-            flicker = 0.0  # libtcod.random_get_float(0, -0.25, 0.25)
-            intensity_flicker = libtcod.random_get_float(0, -0.05, 0.05)
 
-            self.light_mask.add_light(mouse.cx, mouse.cy, 1.35+intensity_flicker, libtcod.desaturated_amber, 10.5 + flicker)
-            # radius = 2.5
-            # top = int(max(1, mouse.cy - radius + 1))
-            # bottom = int(min(self.level.MAP_HEIGHT-1, mouse.cy + radius + 1))
-            # left = int(max(1, mouse.cx - radius + 1))
-            # right = int(min(self.level.MAP_WIDTH-1, mouse.cx + radius + 1))
-            # for y in range(top-1, bottom+1):
-            #     for x in range(left-1, right+1):
-            #         #if self.in_circle(mouse.cx, mouse.cy, x, y, radius):
-            #             self.gEngine.console_get_console(self.canopy).buffer[y, x][2][3] = 255
-            #
-            # for y in range(top, bottom):
-            #     for x in range(left, right):
-            #         if self.in_circle(mouse.cx, mouse.cy, x, y, radius):
-            #             dx = mouse.cx - x
-            #             dy = mouse.cy - y
-            #             sq = dx * dx + dy * dy
-            #             d = math.sqrt(sq)
-            #             d = d / radius
-            #             d = d / 1.755
-            #             v = 255 * d
-            #             self.gEngine.console_get_console(self.canopy).buffer[y, x][2][3] = v
+    def render(self, key, mouse):
+        self.gEngine.console_clear(self.con)
+        # self.hotbar.update(mouse, key, self)
+        # self.gEngine.console_print(self.con, 1, 1, "(%dfps) Depth: %d" % (self.gEngine.sys_get_fps(), 1))
+        # self.gEngine.console_blit(self.con, 0, 0, 0, 0, 0, 0, 0, 1.0, 1.0)
+        # self.hotbar.render()
+        # self.gEngine.console_blit(self.toolbar, 0, 0, self.gEngine.w, 5, 0, 0, self.panel_y - 5, 1.0, 1.0)
 
-        if key.vk == libtcod.KEY_SPACE:
-            intensity_flicker = libtcod.random_get_float(0, -0.05, 0.05)
-            self.lights.append((mouse.cx, mouse.cy, 1.5+intensity_flicker, libtcod.desaturated_orange, 10.5))
-            # tree_colors = [(libtcod.desaturated_green, libtcod.darkest_green),
-            #                (libtcod.desaturated_red, libtcod.darkest_red),
-            #                (libtcod.desaturated_orange, libtcod.darkest_orange),
-            #                (libtcod.desaturated_yellow, libtcod.darkest_yellow)
-            #                ]
-            # tree_color = tree_colors[libtcod.random_get_int(0, 0, len(tree_colors)-1)]
-            # radius = libtcod.random_get_int(0, 3,  5)
-            # radius += 0.5
-            # nodes = libtcod.random_get_int(0, 6, 11)
-            # centerx = mouse.cx
-            # centery = mouse.cy
-            # multiplier = 1
-            # for n in range(nodes):
-            #     #tree_color = tree_colors[libtcod.random_get_int(0, 0, len(tree_colors) - 1)]
-            #     multiplier = n / nodes
-            #     nodex = libtcod.random_get_float(0, -radius, radius)
-            #     nodey = libtcod.random_get_float(0, -radius, radius)
-            #     nodex = centerx + nodex
-            #     nodey = centery + nodey
-            #     self.draw_tree(nodex, nodey, radius, multiplier, tree_color)
-            # self.draw_tree(centerx, centery, radius, colors=tree_color)
-            #
-            # self.dungeon_gen.set_draw_map(self.level.dungeon)
-            #
-            # self.gEngine.map_init_level(self.level.MAP_WIDTH, self.level.MAP_HEIGHT)
-            # self.level.fov_map = self.gEngine.get_fov_map()
+        #self.gEngine.console_flush()
 
-        if mouse.lbutton_pressed:
-            pass
-            # print(self.gEngine.console_get_console(self.con).buffer[0,0])
-            # self.gEngine.console_get_console(self.con).buffer[0,0] = (32, [0,0,0,0], [255,255,255,0])
-            # print(self.gEngine.console_get_console(self.con).buffer[0, 0])
 
-        if mouse.rbutton:
-            pass
-        if mouse.mbutton_pressed:
-            pass
+class DevModeMenu(window_widget.WindowWidget):
+    def update(self, key, mouse):
+        for button in self.buttons:
+            if self.active:
+                button.run(key, mouse)
 
-        if key.vk == libtcod.KEY_ENTER:
-            pass
+    def close(self):
+        pass
 
-    def in_circle(self, cx, cy, tilex, tiley, r):
-        dx = float(tilex - cx)
-        dy = float(tiley - cy)
-        sq = float(dx*dx + dy*dy)
-        return sq < r*r
+    def setup(self, dev_mode):
+        self.dev_mode = dev_mode
+        self.buttons = []
+        self.m = MonsterEditorButton(self, 1, 1, "Monster Editor", None, self.dev_mode)
+        self.i = ItemEditorButton(self, 1, 2, "Item Editor", None, self.dev_mode)
+        self.r = RoomEditorButton(self, 1, 3, "Room Editor", None, self.dev_mode)
+        self.buttons.append(self.m)
+        self.buttons.append(self.i)
+        self.buttons.append(self.r)
 
-    def draw_tree(self, center_x, center_y, radius, layer_multiplier=1.0, colors=None):
-        layer_multiplier = max(0.1, layer_multiplier)
-        top = int(max(0, center_y - radius + 1))
-        bottom = int(min(self.level.MAP_HEIGHT, center_y + radius + 1))
-        left = int(max(0, center_x - radius + 1))
-        right = int(min(self.level.MAP_WIDTH, center_x + radius + 1))
-        for y in range(top, bottom):
-            for x in range(left, right):
-                if self.in_circle(center_x, center_y, x, y, radius):
-                    dx = center_x - x
-                    dy = center_y - y
-                    sq = dx * dx + dy * dy
-                    d = math.sqrt(sq)
-                    d = d / radius
-                    variance = libtcod.random_get_float(0, 1.0, 1.75)
-                    d = (d / variance)
-                    d = d * (layer_multiplier)
-                    col = libtcod.color_lerp(colors[1], colors[0],  d)
-                    #self.level.dungeon[x][y].color = col
-                    self.gEngine.console_get_console(self.canopy).buffer[y, x] = (ord(' '), [0, 0, 0, 0],[col[0], col[1], col[2], 255])
-                    self.gEngine.console_get_console(self.canopy_backup).buffer[y, x] = (ord(' '), [0, 0, 0, 0], [col[0], col[1], col[2], 255])
+
+class MonsterEditor(window_widget.WindowWidget):
+    def update(self, key, mouse):
+        if not self.collapsed and not self.minimized:
+            self.gEngine.console_print_frame(self.preview_console, 0, 0, 10, 10, True, "Preview ")
+            r, g, b = 0, 0, 0
+            if len(self.m_color_r.text_field) > 0:
+                r = int(self.m_color_r.text_field)
+                if r == 0:
+                    r = 1
+                elif r >= 255:
+                    r = 255
+            if len(self.m_color_g.text_field) > 0:
+                g = int(self.m_color_g.text_field)
+                if g == 0:
+                    g = 1
+                elif g >= 255:
+                    g = 255
+            if len(self.m_color_b.text_field) > 0:
+                b = int(self.m_color_b.text_field)
+                if b == 0:
+                    b = 1
+                elif b >= 255:
+                    b = 255
+            color = (r, g, b)
+            cell = self.gEngine.color_text(self.m_cell.text_field, color)
+            self.gEngine.console_print(self.preview_console, 4, 4, cell)
+            self.gEngine.console_blit(self.preview_console, 0, 0, 10, 10, self.con, 14, 24, 1.0, 1.0)
+
+            self.gEngine.console_vline(self.con, self.max_width + 2, 1, self.height-2)
+            for button in self.monster_edit_buttons:
+                button.run(key, mouse)
+            self.gEngine.console_print(self.con, 1, 9, "Can Equip Items: ")
+            self.m_equip_group.run(key, mouse)
+            self.gEngine.console_print(self.con, 1, 11, "Monster size (below)")
+            self.m_size_group.run(key, mouse)
+
+            for button in self.ui_buttons:
+                button.run(key, mouse)
+
+    def close(self):
+        pass
+
+    def setup(self, monsters):
+        self.preview_console = self.gEngine.console_new(10, 10)
+        self.monsters = monsters
+        self.monster_edit_buttons = []
+        self.monster_list = []
+        self.ui_buttons = []
+        self.base_width = 25
+        self.max_width = 38
+        max_width = self.max_width
+
+        for monster in self.monsters:
+            # put together a list of monsters
+            self.monster_list.append(monster)
+
+        # Set up the window layout with no monster loaded
+        self.m_name = text_input_widget.TextInputWidget(self, "Name: ", 1, 1, max_width)
+        self.monster_edit_buttons.append(self.m_name)
+
+        self.m_cell = text_input_widget.TextInputWidget(self, "Cell: ", 1, 2, max_width)
+        self.monster_edit_buttons.append(self.m_cell)
+
+        self.m_hp = text_input_widget.TextInputWidget(self, "Hit Points: ", 1, 3, max_width)
+        self.monster_edit_buttons.append(self.m_hp)
+
+        self.m_speed = text_input_widget.TextInputWidget(self, "Speed: ", 1, 4, max_width)
+        self.monster_edit_buttons.append(self.m_speed)
+
+        self.m_strength = text_input_widget.TextInputWidget(self, "Strength: ", 1, 5, max_width)
+        self.monster_edit_buttons.append(self.m_strength)
+
+        self.m_dexterity = text_input_widget.TextInputWidget(self, "Dexterity: ", 1, 6, max_width)
+        self.monster_edit_buttons.append(self.m_dexterity)
+
+        self.m_intelligence = text_input_widget.TextInputWidget(self, "Intelligence: ", 1, 7, max_width)
+        self.monster_edit_buttons.append(self.m_intelligence)
+
+        self.m_xp = text_input_widget.TextInputWidget(self, "XP Value: ", 1, 8, max_width)
+        self.monster_edit_buttons.append(self.m_xp)
+
+        self.m_equip_group = button_group.ButtonGroupWidget(self, 18, 9, 4, 1)
+        self.m_equip_group.add_button(button_group.GroupButton(self.m_equip_group, 1, 0, "True"))
+
+        self.m_color_r = text_input_widget.TextInputWidget(self, "Color R: ", 1, 10, 12)
+        self.monster_edit_buttons.append(self.m_color_r)
+        self.m_color_g = text_input_widget.TextInputWidget(self, "G: ", 14, 10, 6)
+        self.monster_edit_buttons.append(self.m_color_g)
+        self.m_color_b = text_input_widget.TextInputWidget(self, "B: ", 21, 10, 6)
+        self.monster_edit_buttons.append(self.m_color_b)
+
+        # Tiny, Small, Normal, Large, Huge
+        self.m_size_group = button_group.ButtonGroupWidget(self, 1, 12, max_width)
+        self.m_size_group.add_button(button_group.GroupButton(self.m_size_group, 1, 0, "Tiny"))
+        self.m_size_group.add_button(button_group.GroupButton(self.m_size_group, 1, 0, "Small"))
+        self.m_size_group.add_button(button_group.GroupButton(self.m_size_group, 1, 0, "Normal"))
+        self.m_size_group.add_button(button_group.GroupButton(self.m_size_group, 1, 0, "Large"))
+        self.m_size_group.add_button(button_group.GroupButton(self.m_size_group, 1, 0, "Huge"))
+
+
+        #t = self.gEngine.color_text("New", )
+        self.new_button = button_widget.TextButtonWidget(self,2, self.height-2, "New", self.new)
+        self.save_button = button_widget.TextButtonWidget(self, 8, self.height - 2, "Save", self.save)
+        self.load_button = button_widget.TextButtonWidget(self, 16, self.height-2, "Load", self.load)
+        self.clear_button = button_widget.TextButtonWidget(self, 24, self.height-2, "Clear", self.clear)
+
+        self.ui_buttons.append(self.new_button)
+        self.ui_buttons.append(self.save_button)
+        self.ui_buttons.append(self.load_button)
+        # self.ui_buttons.append(self.clear_button)
+
+    def save(self):
+        pass
+
+    def new(self):
+        for button in self.monster_edit_buttons:
+            button.text_field = ""
+
+        self.m_equip_group.disable_all()
+        self.m_size_group.disable_all()
+
+
+    def load(self):
+        pass
+
+    def clear(self):
+        pass
+
+class ItemEditor(window_widget.WindowWidget):
+    def update(self, key, mouse):
+        pass
+
+    def close(self):
+        pass
+
+    def setup(self):
+        pass
+
+
+class RoomEditor(window_widget.WindowWidget):
+    def update(self, key, mouse):
+        pass
+
+    def close(self):
+        pass
+
+    def setup(self):
+        pass
+
+
+class MonsterEditorButton(button_widget.TextButtonWidget):
+    def trigger(self):
+        for b in self.passable.dev_mode_menu.buttons:
+            b.triggered = False
+        self.triggered = True
+        self.passable.monster_editor.activate()
+        self.passable.item_editor.deactivate()
+        self.passable.room_editor.deactivate()
+        # self.passable.gEngine.bring_module_to_front(self.passable.monster_editor)
+
+
+class ItemEditorButton(button_widget.TextButtonWidget):
+    def trigger(self):
+        for b in self.passable.dev_mode_menu.buttons:
+            b.triggered = False
+        self.triggered = True
+        self.passable.monster_editor.deactivate()
+        self.passable.item_editor.activate()
+        self.passable.room_editor.deactivate()
+
+
+class RoomEditorButton(button_widget.TextButtonWidget):
+    def trigger(self):
+        for b in self.passable.dev_mode_menu.buttons:
+            b.triggered = False
+        self.triggered = True
+        self.passable.monster_editor.deactivate()
+        self.passable.item_editor.deactivate()
+        self.passable.room_editor.activate()
+
+
+def setup_monster_text_field(monster):
+    pass

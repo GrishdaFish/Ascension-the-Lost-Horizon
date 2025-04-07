@@ -1,24 +1,24 @@
 
-
+# ALL FIELDS REQUIRED, Use single quotes (' ' ) and double quotes (" ") in the same spots
 [[monster]]
     name = 'rat'
-    cell = 'r'
+    cell = 'r' # The character represented on game screen. Can only be a single character
     hp = 5
-    defense = 0
-    power = 1
-    type = 'melee'
-    threat_level = 0.5
-    starting_depth = 1
-    deepest_depth  = 2
-    speed = 10
+    defense = 0 # Depreciated for now
+    power = 1 # Depreciated for now
+    type = 'melee' # 'melee, ranged, magic'
+    threat_level = 0.5 # Used to start calculations on the power level of the monster, controlls spawning
+    starting_depth = 1 # Earliest level this will show up as a non boss/champion/eliete
+    deepest_depth  = 2 # Deepest level this will show up alone
+    speed = 10 # Lower numbers are faster, base is 10
     xp_reward = 25
     strength = 6
     dexterity = 5
     intelligence = 1
     defense_bonus = -20
-    can_equip_gear = false
-    size = "tiny"
-    color = [94, 75, 47]
+    can_equip_gear = false # If this creature can equip weapons, armors, wands.. Note, has to be lower case, no quotes.
+    size = "tiny" # Tiny, Small, Normal, Large, Huge, in ascending order
+    color = [94, 75, 47] # R, G, B values on game screen, must be in square brackets []
 
 [[monster]]
     name = 'goblin'

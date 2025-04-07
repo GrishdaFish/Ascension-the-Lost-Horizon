@@ -6,7 +6,7 @@ import tcod as libtcod
 
 
 class ButtonGroupWidget:
-    def __init__(self, parent, x, y, width, height=1, border=False):
+    def __init__(self, parent, x, y, width, height=1, border=False, max_active=10):
         self.parent = parent
         self.gEngine = parent.gEngine
         self.x = x
@@ -27,6 +27,10 @@ class ButtonGroupWidget:
 
     def deactivate(self):
         self.active = True
+
+    def disable_all(self):
+        for button in self.buttons:
+            button.disable()
 
     def on_exit(self):
         self.deactivate()

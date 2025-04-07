@@ -3,9 +3,9 @@ import math
 from gEngine.utilities.user_interface import menu
 import tcod as libtcod
 
-
+# TODO Figure out how widgets are automatically getting added to gEngine module list??????
 class WindowWidget:
-    def __init__(self, gEngine, game, x=0, y=0, w=0, h=5, title="", target_console=0):
+    def __init__(self, gEngine, game=None, x=0, y=0, w=0, h=5, title="", target_console=0):
         """
         Basic widget for the engine. Inheret this class. Override update. Add to gEngine.modules
         All required functions are set up to work with nothing over-ridden. Only over-ride functions if you know what
@@ -69,6 +69,8 @@ class WindowWidget:
     def run(self, key, mouse):
         if self.active:
             self.gEngine.console_clear(self.con)
+        else:
+            return
         self.basic_mouse_input(mouse)
         self.pre_draw_widgit()
         if self.check_for_overlap():
@@ -167,6 +169,8 @@ class WindowWidget:
 
     def pre_draw_widgit(self):
         if self.active:
+            #libtcod
+            #self.gEngine.console_set_default_Foreground(self.con,)
             self.gEngine.console_print_frame(self.con, 0, 0, self.width, self.height, True)
             self.gEngine.console_print(self.con, self.title_x_position, 0, self.title)
             self.gEngine.console_print(self.con, 0, 0, self.collapse_button)

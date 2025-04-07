@@ -9,6 +9,7 @@ from game.user_interface import shop
 from game.object import misc
 from game.object import object as objects
 from game.object import npc
+from game.object import build_objects
 from gEngine import lights
 from gEngine import gEngine as _gEngine
 from gEngine.utilities import xp_loader
@@ -28,6 +29,8 @@ height = 43
 #     path = sys.path[0]
 path = os.path.abspath('.')
 path = os.path.join(path, 'content')
+
+
 # path = path.replace('core.exe', '')
 
 class PrefabGenerator:
@@ -38,7 +41,8 @@ class PrefabGenerator:
 
     Will power scripted levels when scripting becomes available.
     """
-    def __init__(self, w,  h, gEngine=None, game=None):
+
+    def __init__(self, w, h, gEngine=None, game=None):
         self.game = game
         self.gEngine = gEngine
         self.gEngine.log_open_block("Initializing prefab generator")
@@ -76,7 +80,7 @@ class PrefabGenerator:
                 room.append(m[ii + offset].strip('\n'))
             offset = offset + int(m[i + offset])  # change our offset to the next room's height value
 
-            #convert array of strings, to 2d array to match layout
+            # convert array of strings, to 2d array to match layout
             h = []  # height array
             room_width = 0
             for r in room:
@@ -86,7 +90,7 @@ class PrefabGenerator:
                 if len(w) > room_width:
                     room_width = len(w)  # find our widest room dimension
                 h.append(w)
-            room_height = len(h) # and get the height of our entire room
+            room_height = len(h)  # and get the height of our entire room
             self.room_holder.append((h, room_width, room_height))  # add a tuple with the room, plus it dimensions
         self.gEngine.log_message("all rooms successfully loaded")
         self.gEngine.log_close_block()
@@ -119,7 +123,7 @@ class PrefabGenerator:
         """
         if not rooms:
             rooms = []
-        r = libtcod.random_get_int(0, 0, len(self.room_holder)-1)
+        r = libtcod.random_get_int(0, 0, len(self.room_holder) - 1)
         new_room = self.room_holder[r]  # grab a random room from the  list of rooms
         new_room_tiles = new_room[0]  # pull out relevant data
         new_room_width = new_room[1]
@@ -129,6 +133,7 @@ class PrefabGenerator:
         room_x = 0
         room_y = 0
         doors = []  # to hold the positions of where we can make door and draw hallways from
+        door_objects = []  # this will hold the actual door objects.
         trys = max_trys  # limit the number of trys so we don't waste time trying to place a room in a crowded map
         failed = False
         node_obj = None
@@ -136,15 +141,15 @@ class PrefabGenerator:
         while trys > 0:
             # pick random room co-ords clamped to map dimensions, from room center point
             if first:
-                room_x = int(width/2)
-                room_y = int(height/2)
+                room_x = int(width / 2)
+                room_y = int(height / 2)
             else:
                 room_x = libtcod.random_get_int(0, int(new_room_width + 2), int(width - center_x - 2))
                 room_y = libtcod.random_get_int(0, int(new_room_height + 2), int(height - center_y - 2))
                 failed = False
 
                 if place_over_hallways:
-                    nroom = rect.Rect(room_x-center_x, room_y-center_y, new_room_width,
+                    nroom = rect.Rect(room_x - center_x, room_y - center_y, new_room_width,
                                       new_room_height, doors, new_room_tiles)
                     for r in rooms:
                         if nroom.intersect(r):
@@ -152,10 +157,11 @@ class PrefabGenerator:
                             break
                 else:
                     # check to see if placing this room here would overlap another room or hallway
-                    for y in range(room_y - center_y-1, room_y + center_y+1):  # extend boundaries by 1 to leave a gap
+                    for y in range(room_y - center_y - 1,
+                                   room_y + center_y + 1):  # extend boundaries by 1 to leave a gap
                         if failed:
                             break  # as soon as we find a failure, break out of the loop to speed things along
-                        for x in range(room_x - center_x-1, room_x + center_x+1):
+                        for x in range(room_x - center_x - 1, room_x + center_x + 1):
                             if not map[x][y].blocked:  # if we find one, we fail this try
                                 failed = True
                                 break
@@ -168,7 +174,8 @@ class PrefabGenerator:
                     for y in range(new_room_height):
                         if new_room_tiles[y][x] == 'd':
                             doors.append((x + room_x - center_x, y + room_y - center_y))
-                            # self.set_ground(x + room_x - center_x, y + room_y - center_y, map)
+                            #self.set_ground(x + room_x - center_x, y + room_y - center_y, map)
+
                         elif new_room_tiles[y][x] == '.':
                             # then place the room at the proper offsets from the center of the room
                             self.set_ground(x + room_x - center_x, y + room_y - center_y, map)
@@ -203,9 +210,13 @@ class PrefabGenerator:
                                 node_obj.node = node
                                 node_obj.use = node.spawn_mobs
                                 node_obj.node.owner = node_obj
-                                node_obj.node.ticker.schedule_turn(0, node_obj)
 
-                room = rect.Rect(room_x-center_x, room_y-center_y, new_room_width, new_room_height, doors,
+                                # change this to append spawn nodes to level object
+                                # then pass level object to ai_director
+                                self.game.ai_director.spawn_nodes.append(node)
+                                # node_obj.node.ticker.schedule_turn(0, node_obj)
+
+                room = rect.Rect(room_x - center_x, room_y - center_y, new_room_width, new_room_height, doors,
                                  new_room_tiles)
                 rooms.append(room)
                 break  # break out of the loop if we draw a room to not waste time
@@ -235,10 +246,10 @@ class PrefabGenerator:
             if connect_to_home:  # should create a sort of spiral type map
                 dest_room = rooms[0]
             else:
-                r = libtcod.random_get_int(0, 0, len(rooms)-2)  # get a room that isnt the new room
+                r = libtcod.random_get_int(0, 0, len(rooms) - 2)  # get a room that isnt the new room
                 dest_room = rooms[r]
             dest_doors = dest_room.doors
-            origin_doors = rooms[len(rooms)-1].doors  # will always be our newly created room
+            origin_doors = rooms[len(rooms) - 1].doors  # will always be our newly created room
 
             # origin_door, dest_door = self.pick_doors(origin_doors, dest_doors)
             distance = 100000
@@ -251,6 +262,16 @@ class PrefabGenerator:
                         origin_door = odoor  # hodor????
                         dest_door = ddoor
                         distance = new_distance
+
+            mat = self.game.build_objects.get_random_material()
+            m = misc.Misc(type='door')
+            door = objects.Object(self.game.dungeon_console, origin_door[0], origin_door[1], '=', '%s door' % mat.name,
+                                  mat.color, blocks=True, misc=m)
+            door.game = self.game
+            m.attach_owner(door)
+            m.set_use_function(m.open)
+            door.misc.setup_popups()
+            self.game.objects.append(door)
 
             self.set_ground(origin_door[0], origin_door[1], map)
             libtcod.map_set_properties(pmap, origin_door[0], origin_door[1], True, True)
@@ -273,6 +294,7 @@ class PrefabGenerator:
                     # self.set_wall(dest_door[0], dest_door[1], map)
                     break
                 self.set_ground(x, y, map)
+
             print('Pathing complete')
 
             r = libtcod.random_get_int(0, 0, 100)
@@ -280,12 +302,12 @@ class PrefabGenerator:
                 origin_doors = []
                 dest_doors = []
                 print("Generating secondary connection...")
-                origin_room = rooms[len(rooms)-1]
+                origin_room = rooms[len(rooms) - 1]
                 distance = 100000000
                 dest_room = None
                 for room in rooms:
                     new_distance = self.room_distance_to(origin_room, room)
-                    #print(new_distance)
+                    # print(new_distance)
                     if new_distance != 0.0:
                         if new_distance < distance:
                             distance = new_distance
@@ -298,7 +320,7 @@ class PrefabGenerator:
                 for odoor in origin_doors:
                     for ddoor in dest_doors:
                         new_distance = self.door_distance_to(odoor, ddoor)
-                        #print(new_distance)
+                        # print(new_distance)
                         if new_distance < distance:
                             origin_door = odoor  # hodor????
                             dest_door = ddoor
@@ -323,7 +345,7 @@ class PrefabGenerator:
                     if not map[x][y].blocked:
                         libtcod.map_set_properties(pmap, x, y, True, True)
             wpath = libtcod.path_new_using_map(pmap, 0)
-            this_room = rooms[len(rooms)-1]
+            this_room = rooms[len(rooms) - 1]
             home_room = rooms[0]
             this_cx, this_cy = this_room.center()
 
@@ -373,7 +395,7 @@ class PrefabGenerator:
                 print("Room addition completed!")
         else:
             print("First room set!")
-        return map, rooms, node_obj
+        return map, rooms, node_obj  # , door_objects
 
     def pick_doors(self, dest_doors, origin_doors):  # this bugs the generator out for some reason *shrugs*
         """
@@ -387,7 +409,7 @@ class PrefabGenerator:
         dest_door = []
         for odoor in origin_doors:
             for ddoor in dest_doors:
-                new_distance = self.distance_to(odoor, ddoor)
+                new_distance = self.door_distance_to(odoor, ddoor)
                 if new_distance < distance:
                     origin_door = odoor  # hodor????
                     dest_door = ddoor
@@ -401,29 +423,32 @@ class PrefabGenerator:
                         for x in range(self.width)]
         map_rooms = []
         spawn_nodes = []
+        doors = []
         first = True
 
         for r in range(max_rooms):
             dungeon, rooms, s = self.add_prefab_room(self.dungeon, self.width, self.height, first=first,
-                                                          rooms=map_rooms, connect_to_home=False, connect_to_closest=50,
-                                                          max_path=30, place_over_hallways=True,
-                                                          light_handler=light_handler,
-                                                          light_spawn_chance=light_spawn_chance, max_trys=max_trys)
+                                                     rooms=map_rooms, connect_to_home=False, connect_to_closest=50,
+                                                     max_path=30, place_over_hallways=True,
+                                                     light_handler=light_handler,
+                                                     light_spawn_chance=light_spawn_chance, max_trys=max_trys)
             first = False
             if dungeon:
                 self.dungeon = dungeon
             map_rooms = rooms
             if s:
                 spawn_nodes.append(s)
+            # if d:
+            #    doors.append(d)
         down = False
         if self.game:
             while not down:
-                x = libtcod.random_get_int(0,  0, self.width-1)
-                y = libtcod.random_get_int(0, 0, self.height-1)
+                x = libtcod.random_get_int(0, 0, self.width - 1)
+                y = libtcod.random_get_int(0, 0, self.height - 1)
                 if not self.dungeon[x][y].blocked:
                     m = misc.Misc(type='down')
-                    down = objects.Object(self.game.dungeon_console, x, y, '>', 'set of stairs going down', libtcod.white,
-                                  blocks=False, misc=m)
+                    down = objects.Object(self.game.dungeon_console, x, y, '>', 'set of stairs going down',
+                                          libtcod.white, blocks=False, misc=m)
                     self.game.objects.append(down)
                     down.send_to_back(self.game.objects)
                     down = True
@@ -434,8 +459,7 @@ class PrefabGenerator:
                 if not self.dungeon[x][y].blocked:
                     m = misc.Misc(type='up')
                     up = objects.Object(self.game.dungeon_console, x, y, '<', 'set of stairs going up',
-                                         libtcod.white,
-                                         blocks=False, misc=m)
+                                        libtcod.white, blocks=False, misc=m)
                     self.game.objects.append(up)
                     up.send_to_back(self.game.objects)
                     up = True
@@ -452,11 +476,19 @@ class PrefabGenerator:
         self.set_draw_map(self.dungeon)
         fov_map = self.gEngine.get_fov_map()
         mmap = self.gEngine.get_map()
+        print(map_rooms)
+
+        for obj in self.game.objects:
+            if obj.misc:
+                if obj.misc.type == "door":
+                    pass
+                    self.gEngine.map_change_tile_blocking(obj.x, obj.y, True, True)
         if self.game:
             return level.Level(self.width, self.height, self.gEngine, self.dungeon, self.game.objects, self.game.depth,
-                               fov_map=fov_map, draw_map=mmap)
+                               fov_map=fov_map, draw_map=mmap, rooms=map_rooms)
         else:
-            return level.Level(self.width, self.height, self.gEngine, self.dungeon, fov_map=fov_map, draw_map=mmap)
+            return level.Level(self.width, self.height, self.gEngine, self.dungeon, fov_map=fov_map, draw_map=mmap,
+                               rooms=map_rooms)
 
     def load_level_from_string(self, l, light_handler=None, colorset='town'):
         """
@@ -475,7 +507,7 @@ class PrefabGenerator:
         noise = libtcod.noise_new(2)
         noise_zoom = 7.5
         noise_octaves = 1.9
-        #print(cs)
+        # print(cs)
         for r in row:
             w = []
             for c in r:
@@ -495,7 +527,7 @@ class PrefabGenerator:
                     if value < 0:
                         value = -value
                     self.set_ground(x, y)
-                    r = libtcod.random_get_int(0, 0, len(ground_color)-1)
+                    r = libtcod.random_get_int(0, 0, len(ground_color) - 1)
                     r = deepcopy(ground_color[r])
                     # print(r)
                     # r[0] += max(0, min(255, (r[0]*value)))
@@ -505,7 +537,7 @@ class PrefabGenerator:
                     self.dungeon[x][y].color = r
                 if h[y][x] == 'f':
                     self.set_ground(x, y)
-                    r = libtcod.random_get_int(0, 0, len(floor_color)-1)
+                    r = libtcod.random_get_int(0, 0, len(floor_color) - 1)
                     self.dungeon[x][y].color = floor_color[r]
                 if h[y][x] == '#':
                     dx *= (dx * dx)
@@ -530,8 +562,9 @@ class PrefabGenerator:
                     r = libtcod.random_get_int(0, 0, len(floor_color) - 1)
                     self.dungeon[x][y].color = floor_color[r]
                     m = misc.Misc(type='down')
-                    down = objects.Object(self.game.dungeon_console, x, y, '>', 'set of stairs going down', libtcod.white,
-                                  blocks=False, misc=m)
+                    down = objects.Object(self.game.dungeon_console, x, y, '>', 'set of stairs going down',
+                                          libtcod.white,
+                                          blocks=False, misc=m)
                     self.game.objects.append(down)
                     down.send_to_back(self.game.objects)
                 # check for NPC locations
@@ -562,7 +595,8 @@ class PrefabGenerator:
                     container.sort(key=lambda cons: cons.name)
                     n = npc.NPC()
                     n.attach_shop("Fizzilip's Magiteria", img, container, shop.shop)
-                    n = objects.Object(self.game.dungeon_console, x, y, '@', 'Fizzilip', libtcod.white, blocks=True, npc=n)
+                    n = objects.Object(self.game.dungeon_console, x, y, '@', 'Fizzilip', libtcod.white, blocks=True,
+                                       npc=n)
                     self.game.objects.append(n)
                     self.set_ground(x, y)
                 if h[y][x] == 'Q':
@@ -576,7 +610,8 @@ class PrefabGenerator:
                     container.sort(key=lambda cons: cons.name)
                     n = npc.NPC()
                     n.attach_shop("The Helm and Buckler", img, container, shop.shop)
-                    n = objects.Object(self.game.dungeon_console, x, y, '@', 'Garrius', libtcod.white, blocks=True, npc=n)
+                    n = objects.Object(self.game.dungeon_console, x, y, '@', 'Garrius', libtcod.white, blocks=True,
+                                       npc=n)
                     self.game.objects.append(n)
                     self.set_ground(x, y)
                 # check for light locations
@@ -635,7 +670,7 @@ class PrefabGenerator:
             # choose random spot for this item
             x = libtcod.random_get_int(0, room.x1 + 1, room.x2 - 1)
             y = libtcod.random_get_int(0, room.y1 + 1, room.y2 - 1)
-            t = libtcod.random_get_int(0, 0, len(types)-1)
+            t = libtcod.random_get_int(0, 0, len(types) - 1)
             # only place it if the tile is not blocked
             if not self.dungeon[x][y].blocked:
                 self.game.objects.append(types[t](self.game, x, y))
@@ -654,7 +689,7 @@ class PrefabGenerator:
         if not map:
             self.dungeon[x][y].blocked = False
             self.dungeon[x][y].block_sight = False
-            self.dungeon[x][y].tile = ' '#ground_tiles[libtcod.random_get_int(0, 0, (len(ground_tiles) - 1))]
+            self.dungeon[x][y].tile = ' '  # ground_tiles[libtcod.random_get_int(0, 0, (len(ground_tiles) - 1))]
             self.dungeon[x][y].opacity = 0.0
             self.dungeon[x][y].color = libtcod.Color(125, 125, 125)
         else:
@@ -691,6 +726,5 @@ class PrefabGenerator:
         x1, y1 = room1.center()
         dx = x2 - x1
         dy = y2 - y1
-        v = (dx ** 2) + (dy **2)
+        v = (dx ** 2) + (dy ** 2)
         return math.sqrt((int(v)))
-

@@ -322,3 +322,18 @@ class StatPanel:
         self.elemental_effects = None
         self.modifiers = None
         self.conditions = None
+
+    def get_total_threat(self):
+        threat = 0
+        threat += self.get_stat("HP")
+        threat += self.get_stat("Regen") * 2
+        threat += self.get_stat("Accuracy")
+        threat += self.get_stat("Defense")
+        threat += self.get_stat("Block")
+        threat += self.get_stat("Parry")
+        threat += self.get_stat("Evasion")
+        threat += self.get_stat("Speed") / 10
+        threat += self.get_stat("Strength") / 10
+        threat += self.get_stat("Constitution") / 10
+        threat += self.get_stat("Dexterity") / 10
+        threat += self.get_stat("Intelligence") / 10

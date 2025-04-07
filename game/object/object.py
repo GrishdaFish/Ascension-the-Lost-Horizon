@@ -39,6 +39,7 @@ class Object:
         self.type = None
         self.flashing = False
         self.flash_duration = 0
+        self.game = None
 
         self.fighter = fighter
         if self.fighter:
@@ -347,7 +348,7 @@ class Fighter:
                 attacker.fighter.current_xp += self.current_xp
                 function = self.death_function
                 if function is not None:
-                    function(self.owner)
+                    function(self.owner, game)
             else:
                 pass  # flash  \ (. )( .) /
 
@@ -398,7 +399,7 @@ def get_next_to_player(mob, player, map):
     for i in range(len(offsets)):
         px, py = offsets[i]
         if mob.owner.distance(player.x + px, player.y + py) < d:
-            if not mob.owner.is_blocked(player.x + px, player.y + py, map, mob.owner.objects):
+            if not mob.owner.is_blocked(player.x + px, player.y + py, map, player.game.objects):
                 dx, dy = player.x + px, player.y + py
                 d = mob.owner.distance(player.x + px, player.y + py)
     return dx, dy
@@ -563,28 +564,54 @@ class RangedMonster(AI_Base):
             # close enough, cast spell
 
 
-def monster_death(monster):
-    if monster.ai.node:
-        monster.ai.remove_from_node()
-    # drop all of equipped gear from monsters
-    for item in [monster.fighter.gear.gimmie_da_weapon(), monster.fighter.gear.gimmie_da_weapon(off_hand=True)]:
-        if item:
-            if item.item.equipment.type != 'monster_melee':
+def monster_death(monster, game=None):
+    game.gEngine.log_open_block("Killing something...")
+    try:
+        game.gEngine.log_message("... %s being killed" %(monster.name))
+        if monster.ai.node:
+            game.gEngine.log_message("removing monster from spawn node")
+            monster.ai.remove_from_node()
+        # drop all of equipped gear from monster
+        # s
+        game.gEngine.log_message("Dropping monster items")
+        for item in [monster.fighter.gear.gimmie_da_weapon(), monster.fighter.gear.gimmie_da_weapon(off_hand=True)]:
+            if item:
+                if item.item.equipment.type != 'monster_melee':
+                    monster.fighter.inventory.append(item)
+        for item in monster.fighter.gear.gimmie_da_armors():
+            if item:
                 monster.fighter.inventory.append(item)
-    for item in monster.fighter.gear.gimmie_da_armors():
-        if item:
-            monster.fighter.inventory.append(item)
-    for item in monster.fighter.inventory:
-        item.item.drop(monster.fighter.inventory, monster, False)
-        item.send_to_back()
-    # Add loot drops
-    # Add gore
-    monster.fighter.ticker.remove_object(monster)
-    monster.message.message(monster.name.capitalize() + ' is dead!', 5)
-    monster.char = '%'
-    monster.color = libtcod.dark_red
-    monster.blocks = False
-    monster.fighter = None
-    monster.ai = None
-    monster.name = 'remains of ' + monster.name
-    monster.send_to_back()
+        for item in monster.fighter.inventory:
+            item.item.drop(monster.fighter.inventory, monster, False)
+            item.send_to_back()
+
+        game.gEngine.log_message("Loot drops")
+        # Add loot drops
+        game.gEngine.log_message("Gore")
+        # Add gore
+        game.gEngine.log_message("Sending Death Message")
+        game.message.message(monster.name.capitalize() + ' is dead!', 5)
+
+        game.gEngine.log_message("removing from Ticker")
+        monster.fighter.ticker.remove_object(monster)
+
+        game.gEngine.log_message("Adding corpse")
+        monster.char = '%'
+        monster.color = libtcod.dark_red
+        monster.blocks = False
+        monster.fighter = None
+        monster.ai = None
+        monster.name = 'remains of ' + monster.name
+
+        game.gEngine.log_message("Sending to back and finishing up")
+        monster.send_to_back(game.objects)
+        game.gEngine.log_close_block()
+
+    except Exception as e:
+        game.gEngine.log_open_block("An error occurred")
+        game.gEngine.log_message("%s" % str(e))
+        print(e)
+        game.gEngine.log_close_block()
+        game.gEngine.log_close_block()
+
+        pass

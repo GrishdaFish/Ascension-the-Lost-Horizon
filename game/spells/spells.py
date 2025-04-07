@@ -155,15 +155,20 @@ def light(min, max, range, radius, targets, target, player, game, effect_color):
     equip.objects = game.objects
 
     if target == game.player:
-        game.message.message("You are surrounded by a glowing magical light!", libtcod.light_cyan)
         if target.fighter.gear.light_source:
             if target.fighter.gear.light_source.name == "magical light":
                 game.message.message("You cannot cast magical light while under the effects of another magical light!", libtcod.flame)
                 return "cancelled"
             else:
+                game.message.message("You are surrounded by a glowing magical light!", libtcod.light_cyan)
                 game.ai_director.add_player_stat('spells cast', 1)
                 target.fighter.inventory.append(target.fighter.gear.light_source)
-                target.fighter.gear.light_source = equip
+                # target.fighter.gear.light_source.quip_it(equip) #= equip
+                target.fighter.gear.quip_it(equip)
+        else:
+            game.message.message("You are surrounded by a glowing magical light!", libtcod.light_cyan)
+            game.ai_director.add_player_stat('spells cast', 1)
+            target.fighter.gear.quip_it(equip)
 
 
 def detect_monsters(min, max, range, radius, targets, target, player, game, effect_color):

@@ -6,6 +6,7 @@ from gEngine.utilities.user_interface import menu
 
 import tcod as libtcod
 
+
 # 18x9
 class SpawningTools(window_widget.WindowWidget):
     def close(self):
@@ -52,7 +53,9 @@ class SpawningTools(window_widget.WindowWidget):
                     elif mousey == 4:
                         gear = menu.color_text(gear, libtcod.green)
                         if mouse.lbutton:
-                            pass
+                            e = EquipmentSpawner(self.gEngine, self.game, 0, 0, 16, 1, "Equipment Spawner")
+                            e.setup()
+                            self.gEngine.add_module(e)
                     elif mousey == 5:
                         full_set = menu.color_text(full_set, libtcod.green)
                         if mouse.lbutton:
@@ -63,6 +66,7 @@ class SpawningTools(window_widget.WindowWidget):
                             pass
                     elif mousey == 7:
                         move_down = menu.color_text(move_down, libtcod.green)
+
             self.gEngine.console_print(self.con, 1, 1, mon)
             self.gEngine.console_print(self.con, 1, 2, scroll)
             self.gEngine.console_print(self.con, 1, 3, potion)
@@ -72,6 +76,44 @@ class SpawningTools(window_widget.WindowWidget):
             self.gEngine.console_print(self.con, 1, 7, move_down)
 
 
+class EquipmentSpawner(window_widget.WindowWidget):
+    def close(self):
+        for button in self.buttons:
+            button.close()
+        self.gEngine.remove_module(self)
+
+    def setup(self):
+        self.buttons = []
+        # self.melee = self.game.build_objects.weapons
+        # self.armors = self.game.build_objects.armor
+        # self.ranged = self.game.build_objects.ranged
+
+        self.buttons.append(
+            button_widget.TextButtonWidget(self, 1, 1, "Melee", self.game.build_objects.build_equipment,
+                                           [self.game, self.game.player.x, self.game.player.y, "melee"]))
+        self.buttons.append(
+            button_widget.TextButtonWidget(self, 1, 2, "Armors", self.game.build_objects.build_equipment,
+                                           [self.game, self.game.player.x, self.game.player.y, "armor"])
+        )
+        self.buttons.append(
+            button_widget.TextButtonWidget(self, 1, 3, "Ranged", self.game.build_objects.build_equipment,
+                                           [self.game, self.game.player.x, self.game.player.y, "ranged"])
+        )
+        self.height = len(self.buttons) + 2
+        self.original_height = self.height
+        if len(self.title) < 8:
+            self.width = 8
+            self.original_width = self.width
+        self.gEngine.console_remove_console(self.con)
+        self.con = self.gEngine.console_new(self.width, self.height)
+
+    def update(self, key, mouse):
+        returnables = []
+        for button in self.buttons:
+            returnables.append(button.run(key, mouse))
+        for returnable in returnables:
+            if returnable:
+                returnable.item.pick_up(self.game.player.fighter.inventory, self.game)
 
 class PotionSpawner(window_widget.WindowWidget):
     def close(self):

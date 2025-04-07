@@ -8,9 +8,12 @@ from game import content_parser
 from gEngine import gEngine
 from game.object.effects import Effect
 
+WEAPONS_ONLY = 1
+ARMOR_ONLY = 2
+ANY_OBJECT = 3
 
 class GameObjects:
-    def __init__(self):
+    def __init__(self, gEngine):
         self.threat_list = []
         self.scrolls = []
         self.potions = []
@@ -30,14 +33,14 @@ class GameObjects:
         self.melee_weapons = []
         self.monster_weapons = []
         self.light_sources = []
-        self.load_content()
+        self.load_content(gEngine)
         # Need to sort all of the different content
         # for the object builders
         self.sort_threat_levels()
         self.sort_consumables()
         self.sort_materials()
 
-    def load_content(self):
+    def load_content(self,gEngine):
         """
         Calls the content parser to load all of the items from disk
         :return:
@@ -46,18 +49,40 @@ class GameObjects:
         #     path = getattr(sys, "_MEIPASS", ".")
         # else:
         #     path = sys.path[0]
+
         path = os.path.abspath('.')
+        gEngine.log_open_block("Loading content...")
+        gEngine.log_message("Loading monsters")
         self.monsters = content_parser.load_content(os.path.join(path, 'content', 'actors', 'monsters.toml'))
+
+        gEngine.log_message("Loading consumables")
         self.consumables = content_parser.load_content(
             os.path.join(path, 'content', 'items', 'consumables.toml'))
+
+        gEngine.log_message("Loading currency items")
         self.currency = content_parser.load_content(os.path.join(path, 'content', 'items', 'currency.toml'))
+
+        gEngine.log_message("Loading materials")
         self.materials = content_parser.load_content(os.path.join(path, 'content', 'items', 'materials.toml'))
+
+        gEngine.log_message("Loading monster weapons")
         self.monster_weapons = content_parser.load_content(
             os.path.join(path, 'content', 'items', 'monster_weapons.toml'))
+
+        gEngine.log_message("Loading armors")
         self.armor = content_parser.load_content(os.path.join(path, 'content', 'items', 'armor.toml'))
+
+        gEngine.log_message("Loading weapons")
         self.weapons = content_parser.load_content(os.path.join(path, 'content', 'items', 'weapons.toml'))
+
+        gEngine.log_message("Loading light sources")
         self.light_sources = content_parser.load_content(os.path.join(path, 'content', 'items', 'light_source.toml'))
+
+        gEngine.log_message("Loading ammos")
         self.ammo = content_parser.load_content(os.path.join(path, 'content', 'items', 'ammo.toml'))
+
+        gEngine.log_message("Loading monsters")
+
         for item in self.armor:
             self.equipment.append(item)
         for item in self.weapons:
@@ -68,6 +93,9 @@ class GameObjects:
             self.equipment.append(item)
         for item in self.monster_weapons:
             self.equipment.append(item)
+        gEngine.log_message("Content Loaded")
+        gEngine.log_close_block()
+
 
     def sort_materials(self):
         """
@@ -75,9 +103,9 @@ class GameObjects:
         :return:
         """
         for item in self.materials:
-            if item.can_be_made_from == 1 or item.can_be_made_from == 3:
+            if item.can_be_made_from == WEAPONS_ONLY or item.can_be_made_from == ANY_OBJECT:
                 self.weapon_mats.append(item)
-            if item.can_be_made_from == 2 or item.can_be_made_from == 3:
+            if item.can_be_made_from == ARMOR_ONLY or item.can_be_made_from == ANY_OBJECT:
                 self.armor_mats.append(item)
 
     def sort_consumables(self):
@@ -362,7 +390,7 @@ class GameObjects:
         :param y: The y position of hte monster
         :param threat_level: depreceated
         :param mob_name: Optional: spawn a specific monster
-        :return: The ccompleted objects.fighter
+        :return: The completed objects.fighter
         """
         if not mob_name:
             mob = self.monsters[libtcod.random_get_int(0, 0, len(self.monsters) - 1)]
@@ -399,8 +427,7 @@ class GameObjects:
         monster.fighter.stat.set_stat_base("Strength", mob.strength)
         monster.fighter.stat.set_stat_base("Dexterity", mob.dexterity)
         monster.fighter.stat.set_stat_base("Intelligence", mob.intelligence)
-        monster.fighter.stat.set_stat_base("Constitution",
-                                           10)  # todo need this stat to be added to toml and file parser
+        monster.fighter.stat.set_stat_base("Constitution", 10)  # todo need this stat to be added to toml and file parser
 
         monster.fighter.ticker.schedule_turn(monster.fighter.stat.get_stat("Speed"), monster) #TODO UNCOMMENT AFTER REFACTOR
 
@@ -551,3 +578,6 @@ class GameObjects:
             if ammo.weapon_type == name:
                 return ammo
         return None
+
+    def get_random_material(self):
+        return self.materials[libtcod.random_get_int(0, 0, len(self.materials) - 1)]

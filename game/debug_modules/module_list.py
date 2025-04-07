@@ -2,6 +2,7 @@ __author__ = 'GrishdaFish'
 import math
 from gEngine.utilities.widget import window_widget
 from gEngine.utilities.user_interface import menu
+from game.debug_modules import module_list
 
 import tcod as libtcod
 
@@ -39,6 +40,7 @@ class ModuleList(window_widget.WindowWidget):
                     elif mousey == i and mouse.lbutton:
                         data = menu.color_text(data, libtcod.red)
                         self.gEngine.toggle_module(self.gEngine.modules[index])
+                        self.gEngine.bring_module_to_front(self.gEngine.modules[index])
                     elif mousey == i and mouse.rbutton:
                         self.gEngine.remove_module(self.gEngine.modules[index])
                 if not self.gEngine.modules[index].active:

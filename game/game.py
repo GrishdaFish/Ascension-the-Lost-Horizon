@@ -77,23 +77,26 @@ class Game:
         self.depth = 0
         self.path = None
         # create all of the consoles for drawing and UI
+        self.gEngine.log_message("Creating consoles")
         self.dungeon_console = self.gEngine.console_new(self.dungeon_width, self.dungeon_height)  # main viewport
         self.panel = self.gEngine.console_new(self.screen_width, self.panel_height)  # for messages and others
         self.toolbar = self.gEngine.console_new(self.screen_width, 5)  # for the hotbar
+        self.message = messaging.Message(self.panel, self.message_height, self.message_width,
+                                         self.message_x, self.gEngine)
 
+        self.gEngine.log_message("Setting up dungeon Generators")
         self.basic_dungeon = dungeon.BasicDungeon(self.dungeon_height, self.dungeon_width, min_room_size, max_room_size,
                                                   max_rooms, max_room_monsters, max_room_items,
                                                   self.gEngine)
         self.prefab_generator = prefab_dungeon.PrefabGenerator(self.dungeon_width, self.dungeon_height, self.gEngine, self)
         self.dungeon_generators.append(self.basic_dungeon)
         self.dungeon_generators.append(self.prefab_generator)
-        self.message = messaging.Message(self.panel, self.message_height, self.message_width,
-                                         self.message_x, self.gEngine)
+
 
         self.fov_recompute = True
         self.player_moved = False
         self.monsters = []
-        self.build_objects = build_objects.GameObjects()
+        self.build_objects = build_objects.GameObjects(self.gEngine)
         self.newgame = False
         x = 32 / 2
         x = self.gEngine.w / 2 - x
@@ -114,8 +117,8 @@ class Game:
         self.player_action = None
         self.bark_manager = bark.BarkManager()
         self.ambient = 0.15
-
-        self.dev_console = console.Console(self, self.dungeon_width, self.dungeon_height, 'debug')
+        if not self.gEngine.release:
+            self.dev_console = console.Console(self, self.dungeon_width, self.dungeon_height, 'debug')
         self.monster_force_display = [False, 0]
         self.loot_force_display = [False, 0]
         self.ai_director = ai_director.AiDirector(self, self.gEngine)
@@ -133,12 +136,12 @@ class Game:
         fore = os.path.join(path, 'img', 'Torch.png')
         self.player_torch_bar = status_bar.AnimatedStatusBar(back, fore, "torch flame", self.toolbar, self.gEngine, 0, 0)
 
-
         self.ranged_ammo_index = None
         self.popup = None
+        self.is_player_turn = False
+
         self.gEngine.log_message("Game fully initialized")
         self.gEngine.log_close_block()
-        self.is_player_turn = False
 
     def activate(self):
         self.active = True
@@ -225,6 +228,7 @@ class Game:
                 # fast forward until the next object gets its turn
                 self.ticker.get_next_tick()
 
+                # TODO - Create system for updating all spells
                 if self.monster_force_display[0]:
                     if self.monster_force_display[1] <= 0:
                         self.monster_force_display[0] = False
@@ -257,7 +261,7 @@ class Game:
         self.gEngine.add_module(m)
 
     def setup_player(self):
-        fighter_component = object.Fighter(death_function=self.player_death, money=800, ticker=self.ticker)
+        fighter_component = object.Fighter(death_function=self.player_death, money=28000, ticker=self.ticker)
         fighter_component.game = self
         self.player = object.Object(self.dungeon_console, 0, 0, '@', 'player',
                                     libtcod.white, blocks=True, fighter=fighter_component)
@@ -306,7 +310,7 @@ class Game:
         self.fov = self.level.fov_map
         for object in self.objects:
             if object.npc:
-                b = bark.Bark(self.gEngine, self.dungeon_console, object, 30.0, object.npc.shop_name)
+                b = bark.Bark(self.gEngine, self.dungeon_console, object, 600.0, object.npc.shop_name)
                 self.bark_manager.add_bark(b)
         if not first_visit:
             self.ticker.clear_ticker()
@@ -356,6 +360,7 @@ class Game:
         self.objects = []
 
         l = lights.LightHandler(self.gEngine)
+        self.ai_director.spawn_nodes.clear()
         # level = self.basic_dungeon.make_map(game=self, light_handler=l)
         level = self.prefab_generator.level_from_prefabs(light_handler=l)
 
@@ -379,8 +384,8 @@ class Game:
         self.levels.append(level)
         self.level = level
         self.fov = self.level.fov_map
-        #self.ticker.schedule_turn(10, self.player)
-        #self.ticker.get_next_tick()
+        self.ticker.schedule_turn(10, self.player)
+        self.ticker.get_next_tick()
         # self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
         self.game_state = 'playing'
         for object in self.objects:
@@ -389,7 +394,7 @@ class Game:
                     self.player.x = object.x
                     self.player.y = object.y
         #self.objects = []
-
+        self.ai_director.take_turn()
 
     def prev_level(self):
         self.objects = []

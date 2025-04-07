@@ -25,6 +25,7 @@ class ThreatEngine:
             if self.current_threat >= threshold:
                 self.base_threat = self.threat_thresholds.pop(threshold)
         print(self.current_threat)
+        return self.current_threat
 
     def get_player_threat(self):
         """
@@ -43,7 +44,7 @@ class ThreatEngine:
                 pass
             # todo generate and calculate potion and scrolls threat levels
         threat += (self.game.player.fighter.level * 2)
-        threat += (self.game.player.fighter.stat_panel.get_stat_by_name("HP") / 2)
+        threat += (self.game.player.fighter.stat_panel.get_stat("HP") / 2)
         # todo calculate total spent skill points
         return int(threat)
 
@@ -75,7 +76,7 @@ class ThreatEngine:
         threat = 0
         for object in self.game.objects:
             if object.fighter:
-                if not self.game.fighter:
+                if not self.game.player:
                     threat += object.fighter.threat
         return threat
 
@@ -93,6 +94,9 @@ class ThreatEngine:
                     pass
         return threat
 
+    def get_monster_threat(self, monster):
+        threat  = monster.fighter.stat_panel.get_total_threat()
+        return threat
 
 if __name__ == "__main__":
     class Game:

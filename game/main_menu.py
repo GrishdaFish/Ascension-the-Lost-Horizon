@@ -9,13 +9,14 @@ from gEngine.utilities.user_interface.menu import Menus
 from gEngine.utilities.widget import button_widget
 from gEngine.utilities.widget import window_widget
 from gEngine.utilities.widget import button_group
+from game.user_interface import help_popup_module
 import os
 import sys
 from gEngine import gEngine as _gEngine
 import time
 import webbrowser
 from gEngine import custom_font
-
+from game.classes import character_creator
 
 class MainMenu:
     def __init__(self, gEngine):
@@ -74,12 +75,13 @@ class MainMenu:
         if self.first:
             self.gEngine.log_open_block("Main menu running...")
             self.first = False
-            login = login_module.LoginMenu(self.gEngine, None, self.gEngine.SCREEN_WIDTH / 4,
+            '''login = login_module.LoginMenu(self.gEngine, None, self.gEngine.SCREEN_WIDTH / 4,
                                            self.gEngine.SCREEN_HEIGHT / 4,
                                            25, 7, "Login")
             login.setup()
-            self.gEngine.add_module(login)
+            self.gEngine.add_module(login)'''
             self.gEngine.add_module(self.menu_widget)
+            self.menu_widget.activate()
             return
 
         self.gEngine.console_clear(self.con)
@@ -123,7 +125,7 @@ class MainMenu:
                     # menu_fade_value = 1.0
                     self.menu_fade = False
 
-        if not self.gEngine.get_module_status("LoginMenu"):
+        '''if not self.gEngine.get_module_status("LoginMenu"):
             # TODO REFACTOR this to prevent constant creation of new buttons
             if self.gEngine.player_id:
                 logout = False
@@ -152,9 +154,9 @@ class MainMenu:
                             button.close()
                             self.menu_widget.buttons.remove(button)
                             break
-                    self.menu_widget.buttons.append(Login(self.menu_widget, 1, 6, "Login", None))
+                    self.menu_widget.buttons.append(Login(self.menu_widget, 1, 6, "Login", None))'''
 
-            self.menu_widget.activate()
+        # self.menu_widget.activate()
 
 
 class MenuWidget(window_widget.WindowWidget):
@@ -192,8 +194,12 @@ class NewGame(button_widget.TextButtonWidget):
         self.gEngine.log_message('Starting new game')
         self.parent.close()
         self.gEngine.remove_module(self.gEngine.get_module_by_name("MainMenu"))
-
-        self.gEngine.log_close_block()
+        c = character_creator.CharacterCreator(self.gEngine, w=self.gEngine.w, h=self.gEngine.h,
+                                               title="Character Creator")
+        c.activate()
+        c.setup()
+        self.gEngine.add_module(c)
+        '''self.gEngine.log_close_block()
         self.gEngine.modules = []
         self.gEngine.additional_modules = []
         self.gEngine.module_adjust_list = []
@@ -212,6 +218,9 @@ class NewGame(button_widget.TextButtonWidget):
         # load this module last
         m = module_list.ModuleList(self.gEngine, g, 0, 0, 15, 5, 'Module List')
         self.gEngine.add_module(m)
+
+        help_module = help_popup_module.HelpPopup(self.gEngine, g, 5, 5, 70, 30, "Help")
+        self.gEngine.add_module(help_module)'''
 
 
 class CloseGame(button_widget.TextButtonWidget):
@@ -234,10 +243,18 @@ class LoadGame(button_widget.TextButtonWidget):
 class DevMode(button_widget.TextButtonWidget):
     def trigger(self):
         self.gEngine.log_message('Entering Devmode')
+        self.parent.close()
         self.gEngine.remove_module(self.gEngine.get_module_by_name("MainMenu"))
-        self.gEngine.remove_module(self.parent)
+
+        #self.gEngine.remove_module(self.parent)
+
+        self.gEngine.modules = []
+        self.gEngine.additional_modules = []
+        self.gEngine.module_adjust_list = []
+
         d = dev_mode.DevMode(self.gEngine)
         self.gEngine.add_module(d)
+        self.gEngine.log_message("Added devmode module")
         self.gEngine.log_close_block()
 
 

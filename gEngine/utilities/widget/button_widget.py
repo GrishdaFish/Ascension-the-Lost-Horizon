@@ -35,6 +35,9 @@ class ButtonWidget:
         self.active = True
         self.passable = passable
         self.original_label = self.label
+        self.triggered = False
+        self.untriggered_color = libtcod.dark_grey
+        self.triggered_color = libtcod.white
 
     def activate(self):
         self.active = True
@@ -63,9 +66,10 @@ class ButtonWidget:
         Do not over-ride unless you know what you're doing
         :return: Returns what ever the function pointer will return
         """
-        if self.passable:
-            return self.function(*self.passable)  # works similar to *args, only in reverse
-        return self.function()
+        if self.function:
+            if self.passable:
+                return self.function(*self.passable)  # works similar to *args, only in reverse
+            return self.function()
 
     def mouse_is_in_console(self, mouse):
         if math.floor(self.x + self.parent.x) <= math.floor(mouse.cx) <= math.floor(((self.parent.x + self.x)) + self.width):
@@ -96,7 +100,10 @@ class ButtonWidget:
             if mouse.lbutton:
                 return self.trigger()
         else:
-            self.label = menu.color_text(self.original_label, libtcod.dark_grey)
+            if not self.triggered:
+                self.label = menu.color_text(self.original_label, self.untriggered_color)
+            else:
+                self.label = menu.color_text(self.original_label, self.triggered_color)
 
     def pre_draw_widget(self):
         if self.active:

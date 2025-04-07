@@ -41,6 +41,7 @@ class TextInputWidget:
         self.text_field = ""
         self.frame_blink = 0
         self.enabled = True
+        self.default_text = "Edit..."
 
     def activate(self):
         self.active = True
@@ -109,8 +110,9 @@ class TextInputWidget:
         self.update(key, mouse)
         self.prepare_render()
         self.run_blink()
-        if self.active:
-            self.gEngine.console_blit(self.con, 0, 0, 0, 0, self.target, self.x, self.y, 1.0, 1.0)
+        if self.parent.active:
+            if self.active:
+                self.gEngine.console_blit(self.con, 0, 0, 0, 0, self.parent.con, self.x, self.y, 1.0, 1.0)
         if input:
             return self.text_field
         return None
@@ -151,5 +153,15 @@ class TextInputWidget:
 
     def prepare_render(self):
         if self.active:
-            text = self.label + self.text_field
+            text = ""
+            if self.text_field == "":
+                text = self.label + menu.color_text(self.default_text, libtcod.dark_grey)
+            else:
+                text = self.label + self.text_field
             self.gEngine.console_print(self.con, 0, 0, text)
+
+    def get_widget_by_label(self, label):
+        if self.label == label:
+            return self
+        else:
+            return None

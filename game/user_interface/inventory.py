@@ -330,7 +330,7 @@ def inventory(con, player, game, width=80, height=43):
                     #    w = len(message) + 2
                     #    d_box = DialogBox(game, w, 10, width / 4, height / 2, message, con=inventory_window)
                     #    confirm = d_box.display_box()
-                        game.message.message("You are under the effects of a magical light!", libtcod.flame)
+                        # game.message.message("You are under the effects of a magical light!", libtcod.flame) # TODO uncomment when magical light bug is fixed
                         pass
                     else:
                         i_n = color_text(item.name.capitalize(), item.color)

@@ -6,11 +6,13 @@ import tcod as libtcod
 
 class GameOptions:
     def __init__(self):
-        if gEngine.RELEASE:
-            path = getattr(sys, "_MEIPASS", ".")
-        else:
-            path = sys.path[0]
+        #if gEngine.RELEASE:
+        #    path = getattr(sys, "_MEIPASS", ".")
+        #else:
+        #    path = sys.path[0]
+        path = os.path.abspath('.')
         f = open(os.path.join(path, 'options.toml'))
+        print("Loading options file located at %s" % path)
         self.options = f.read()
         f.close()
 
@@ -30,22 +32,23 @@ class GameOptions:
         self.key_character = None
         self.key_char_stat = None
         self.key_perks = None
-
         self.load_options()
 
         #self.options.close()
 
     def reload_options(self):
-        if gEngine.RELEASE:
-            path = getattr(sys, "_MEIPASS", ".")
-        else:
-            path = sys.path[0]
+        #if gEngine.RELEASE:
+        #    path = getattr(sys, "_MEIPASS", ".")
+        #else:
+        #    path = sys.path[0]
+        path = os.path.abspath('.')
         f = open(os.path.join(path, 'options.toml'))
         self.options = f.read()
         f.close()
         self.load_options()
 
     def load_options(self):
+        print("Loading Options...")
         options = toml.loads(self.options)
         game_options = options.get('game_options')
         self.setup_game_options(game_options)
@@ -55,11 +58,14 @@ class GameOptions:
         #options.close()
 
     def setup_game_options(self, game_options):
+        print("Loading game settings")
         self.fullscreen = game_options.get('fullscreen')
         self.key_set = game_options.get('key_set')
         self.fps = game_options.get('fps')
+        print("Done")
 
     def setup_key_config(self, key_options):
+        print("Loading Key config...")
         keys = key_options.get(self.key_set)
 
         self.key_north = keys.get('key_north')
@@ -86,4 +92,5 @@ class GameOptions:
         self.key_character = keys.get('key_character')
         self.key_char_stat = keys.get('key_char_stat')
         self.key_perks = keys.get('key_perks')
+        print("Done")
 

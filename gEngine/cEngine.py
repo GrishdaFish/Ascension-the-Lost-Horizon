@@ -65,8 +65,8 @@ class gEngine(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
-    def __init__(self, w, h, name, fs, fps, font):
-        _cEngine.gEngine_swiginit(self, _cEngine.new_gEngine(w, h, name, fs, fps, font))
+    def __init__(self, w, h, name, fs, fps, font, nbw, nbh):
+        _cEngine.gEngine_swiginit(self, _cEngine.new_gEngine(w, h, name, fs, fps, font, nbw, nbh))
 
     def mClear(self, c):
         return _cEngine.gEngine_mClear(self, c)
@@ -91,6 +91,9 @@ class gEngine(object):
 
     def mSysGetFPS(self):
         return _cEngine.gEngine_mSysGetFPS(self)
+
+    def mSysSetFPS(self, fps):
+        return _cEngine.gEngine_mSysSetFPS(self, fps)
 
     def mSetKeyColor(self, c, r, g, b):
         return _cEngine.gEngine_mSetKeyColor(self, c, r, g, b)
@@ -197,6 +200,12 @@ class gEngine(object):
     def mDungeonBlit2x(self, c):
         return _cEngine.gEngine_mDungeonBlit2x(self, c)
 
+    def mImageSetKeyColor(self, i, r, g, b):
+        return _cEngine.gEngine_mImageSetKeyColor(self, i, r, g, b)
+
+    def mImageBatchShift(self, i, r1, g1, b1, r2, g2, b2):
+        return _cEngine.gEngine_mImageBatchShift(self, i, r1, g1, b1, r2, g2, b2)
+
     def mDungeonNewMap(self, w, h):
         return _cEngine.gEngine_mDungeonNewMap(self, w, h)
 
@@ -205,6 +214,9 @@ class gEngine(object):
 
     def mDungeonAddTile(self, x, y, blocked, blockSight, r, g, b):
         return _cEngine.gEngine_mDungeonAddTile(self, x, y, blocked, blockSight, r, g, b)
+
+    def mDungeonChangeTileBlocking(self, x, y, blocked, blockSight):
+        return _cEngine.gEngine_mDungeonChangeTileBlocking(self, x, y, blocked, blockSight)
 
     def mDungeonRenderStaticMap(self, con, x, y):
         return _cEngine.gEngine_mDungeonRenderStaticMap(self, con, x, y)
@@ -215,8 +227,11 @@ class gEngine(object):
     def mDungeonRenderScrollingMap(self, c, x, y):
         return _cEngine.gEngine_mDungeonRenderScrollingMap(self, c, x, y)
 
-    def mDungeonRenderScrollingMap2x(self, c, x, y):
-        return _cEngine.gEngine_mDungeonRenderScrollingMap2x(self, c, x, y)
+    def mDungeonRenderScrollingMap2x(self, c, x, y, mx, my, sh, sw):
+        return _cEngine.gEngine_mDungeonRenderScrollingMap2x(self, c, x, y, mx, my, sh, sw)
+
+    def mDungeonDrawSubcellPixel(self, x, y, m, dx, dy):
+        return _cEngine.gEngine_mDungeonDrawSubcellPixel(self, x, y, m, dx, dy)
 
     def mDungeonIsExplored(self, x, y):
         return _cEngine.gEngine_mDungeonIsExplored(self, x, y)
@@ -226,6 +241,9 @@ class gEngine(object):
 
     def mDungeonIsTransparent(self, x, y):
         return _cEngine.gEngine_mDungeonIsTransparent(self, x, y)
+
+    def mDungeonRevealMap(self):
+        return _cEngine.gEngine_mDungeonRevealMap(self)
 
     def mLightmaskInit(self, w, h):
         return _cEngine.gEngine_mLightmaskInit(self, w, h)
@@ -283,6 +301,27 @@ class gEngine(object):
 
     def mMapAsciiCodeToFont(self, code, x, y):
         return _cEngine.gEngine_mMapAsciiCodeToFont(self, code, x, y)
+
+    def mNewDijkstraMap(self, w, h):
+        return _cEngine.gEngine_mNewDijkstraMap(self, w, h)
+
+    def mDijkstraCompute(self, id):
+        return _cEngine.gEngine_mDijkstraCompute(self, id)
+
+    def mDijkstraAddPoint(self, id, x, y, value):
+        return _cEngine.gEngine_mDijkstraAddPoint(self, id, x, y, value)
+
+    def mDijkstraClearMap(self, id):
+        return _cEngine.gEngine_mDijkstraClearMap(self, id)
+
+    def mDijkstraRemovePoint(self, id, x, y):
+        return _cEngine.gEngine_mDijkstraRemovePoint(self, id, x, y)
+
+    def mDijkstraGetValue(self, id, x, y):
+        return _cEngine.gEngine_mDijkstraGetValue(self, id, x, y)
+
+    def mDijkstraRemoveMap(self, id):
+        return _cEngine.gEngine_mDijkstraRemoveMap(self, id)
     __swig_destroy__ = _cEngine.delete_gEngine
 
 # Register gEngine in _cEngine:

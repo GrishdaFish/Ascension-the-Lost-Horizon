@@ -49,6 +49,8 @@ class Button:
     def mouse_input(self, mouse=None):
         #key, mouse = self.parent.game.gEngine.handle_input()
         #print(mouse)
+        if mouse == None:
+            return
 
         mx = mouse.cx - (self.x_pos + self.dest_x)
         my = mouse.cy - (self.y_pos + self.dest_y)
