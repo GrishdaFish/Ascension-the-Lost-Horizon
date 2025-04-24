@@ -6,10 +6,6 @@ import tcod as libtcod
 
 class GameOptions:
     def __init__(self):
-        #if gEngine.RELEASE:
-        #    path = getattr(sys, "_MEIPASS", ".")
-        #else:
-        #    path = sys.path[0]
         path = os.path.abspath('.')
         f = open(os.path.join(path, 'options.toml'))
         print("Loading options file located at %s" % path)
@@ -37,10 +33,6 @@ class GameOptions:
         #self.options.close()
 
     def reload_options(self):
-        #if gEngine.RELEASE:
-        #    path = getattr(sys, "_MEIPASS", ".")
-        #else:
-        #    path = sys.path[0]
         path = os.path.abspath('.')
         f = open(os.path.join(path, 'options.toml'))
         self.options = f.read()

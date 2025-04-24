@@ -35,7 +35,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                 col = libtcod.color_lerp(col, libtcod.black, 0.9)
                 # col = libtcod.color_lerp(col, libtcod.light_azure, 0.2)
                 r, g, b = col
-                game.gEngine.image_put_pixel(dark_bg, y, x, r, g, b)
+                game.gEngine.image_put_pixel(dark_bg, y, x, (r, g, b))
 
     shop_height = 28
     compare_height = height - shop_height
@@ -56,15 +56,15 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
     compare_y = shop_height
 
     inventory_window = game.gEngine.console_new(width / 2, height)
-    game.gEngine.console_set_default_foreground(inventory_window, r, g, b)
+    game.gEngine.console_set_default_foreground(inventory_window, (r, g, b))
     game.gEngine.console_print_frame(inventory_window, 0, 0, width / 2, height, True)
 
     shop_window = game.gEngine.console_new(width / 2, shop_height)
-    game.gEngine.console_set_default_foreground(shop_window, r, g, b)
+    game.gEngine.console_set_default_foreground(shop_window, (r, g, b))
     game.gEngine.console_print_frame(shop_window, 0, 0, width / 2, shop_height, True)
 
     compare_window = game.gEngine.console_new(width / 2, compare_height)
-    game.gEngine.console_set_default_foreground(compare_window, r, g, b)
+    game.gEngine.console_set_default_foreground(compare_window, (r, g, b))
     game.gEngine.console_print_frame(compare_window, 0, 0, width / 2, compare_height, True)
 
     i_check_boxes = []
@@ -186,7 +186,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
         # ========================================================================
         # if bg:
         #     game.gEngine.image_blit_2x(dark_bg, inventory_window, 0, 0, width, 0)
-        game.gEngine.console_set_default_foreground(inventory_window, r, g, b)
+        game.gEngine.console_set_default_foreground(inventory_window, (r, g, b))
         game.gEngine.console_print_frame(inventory_window, 0, 0, width / 2, height, False)
         game.gEngine.console_print(inventory_window, i_header_pos, 0, i_header)
         if len(player.fighter.inventory) > 0:
@@ -196,13 +196,13 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                 text = '  (' + chr(letter_index) + ') ' + inventory_items[i]
                 if current_selection == y - 1:
                     r, g, b = libtcod.color_lerp(player.fighter.inventory[i].color, libtcod.blue, 0.5)
-                    game.gEngine.console_set_default_background(inventory_window, r, g, b)
+                    game.gEngine.console_set_default_background(inventory_window, (r, g, b))
                 else:
-                    game.gEngine.console_set_default_background(inventory_window, 0, 0, 0)
+                    game.gEngine.console_set_default_background(inventory_window, (0, 0, 0))
                 game.gEngine.console_print_ex(inventory_window, 1, y, libtcod.BKGND_SET, libtcod.LEFT, text)
                 y += 1
                 letter_index += 1
-        game.gEngine.console_set_default_background(inventory_window, 0, 0, 0)
+        game.gEngine.console_set_default_background(inventory_window, (0, 0, 0))
         game.gEngine.console_print(inventory_window, 1, 31,
                                    'Gold: ' + color_text(str(player.fighter.money), libtcod.gold))
         r, g, b = libtcod.white
@@ -212,7 +212,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
         # ========================================================================
         # if bg:
         #     game.gEngine.image_blit_2x(dark_bg, shop_window, 0, 0)
-        game.gEngine.console_set_default_foreground(shop_window, r, g, b)
+        game.gEngine.console_set_default_foreground(shop_window, (r, g, b))
         game.gEngine.console_print_frame(shop_window, 0, 0, width / 2, shop_height, False)
         game.gEngine.console_print(shop_window, s_header_pos, 0, s_header)
         if len(s_options) > 0:
@@ -222,14 +222,14 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                 text = '  (' + chr(letter_index) + ') ' + s_options[i]
                 if s_current_selection == y - 1:
                     rr, gg, bb = libtcod.color_lerp(container[i].color, libtcod.blue, 0.5)
-                    game.gEngine.console_set_default_background(shop_window, rr, gg, bb)
+                    game.gEngine.console_set_default_background(shop_window, (rr, gg, bb))
                 else:
-                    game.gEngine.console_set_default_background(shop_window, 0, 0, 0)
+                    game.gEngine.console_set_default_background(shop_window, (0, 0, 0))
                 game.gEngine.console_print_ex(shop_window, 1, y, libtcod.BKGND_SET, libtcod.LEFT, text)
                 game.gEngine.console_print_ex(shop_window, s_size + 10, y, libtcod.BKGND_SET, libtcod.RIGHT, s_gold[i])
                 y += 1
                 letter_index += 1
-            game.gEngine.console_set_default_background(inventory_window, 0, 0, 0)
+            game.gEngine.console_set_default_background(inventory_window, (0, 0, 0))
             r, g, b = libtcod.white
 
         # ========================================================================
@@ -238,7 +238,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
         #if bg:
         #    game.gEngine.image_blit_2x(dark_bg, compare_window, 0, 0, sx=0, sy=compare_y * 2)
 
-        game.gEngine.console_set_default_foreground(compare_window, r, g, b)
+        game.gEngine.console_set_default_foreground(compare_window, (r, g, b))
         game.gEngine.console_print_frame(compare_window, 0, 0, width / 2, compare_height, False)
         game.gEngine.console_print(compare_window, c_header_pos, 0, c_header)
 
@@ -256,7 +256,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
             if (mouse.cy - 1) < len(player.fighter.inventory) and mouse.cy - 1 >= 0:
                 item = player.fighter.inventory[mouse.cy - 1]
                 current_selection = mouse.cy - 1
-                game.gEngine.console_set_default_background(compare_window, 0, 0, 0)
+                game.gEngine.console_set_default_background(compare_window, (0, 0, 0))
                 if item.item.equipment:
                     game.gEngine.console_print_ex(compare_window, 1, 2, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Name    : ' + color_text(item.name.capitalize(), item.color))
@@ -324,7 +324,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
             if (mouse.cy - 1) < len(container) and mouse.cy - 1 >= 0:
                 item = container[mouse.cy - 1]
                 s_current_selection = mouse.cy - 1
-                game.gEngine.console_set_default_background(compare_window, 0, 0, 0)
+                game.gEngine.console_set_default_background(compare_window, (0, 0, 0))
                 if item.item.equipment:
                     game.gEngine.console_print_ex(compare_window, 1, 2, libtcod.BKGND_SET, libtcod.LEFT,
                                                   'Name    : ' + color_text(item.name.capitalize(), item.color))
@@ -570,7 +570,7 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
         game.gEngine.console_blit(shop_window, 0, 0, width / 2, shop_height, 0, 0, 0, 1.0, 1.0)
         game.gEngine.console_blit(compare_window, 0, 0, width / 2, compare_height, 0, 0, compare_y, 1.0, 1.0)
         game.gEngine.console_flush()
-        libtcod.console_flush()
+        # libtcod.console_flush()
         for i in exit_input:
             if i != -1:
                 key.vk = libtcod.KEY_ESCAPE

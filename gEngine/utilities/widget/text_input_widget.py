@@ -4,7 +4,7 @@ import math
 import tcod as libtcod
 
 class TextInputWidget:
-    def __init__(self, parent, label,  x, y, width):
+    def __init__(self, parent,  x, y, label, width):
         """
         A text gathering widget for the window widget system.
         Nothing too fancy

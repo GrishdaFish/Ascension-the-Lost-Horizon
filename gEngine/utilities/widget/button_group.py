@@ -39,6 +39,9 @@ class ButtonGroupWidget:
         self.buttons = []
         self.gEngine.console_remove_console(self.con)
 
+    def close(self):
+        self.on_exit()
+
     def get_active_id(self):
         """
         Returns the currently enabled button, or None if all are disabled
@@ -133,10 +136,10 @@ class GroupButton(button_widget.ButtonWidget):
     def pre_draw_widget(self):
         if self.active:
             if self.enabled:
-                r, g, b = libtcod.lighter_grey
+                col = libtcod.lighter_grey
             else:
-                r, g, b = libtcod.darker_grey
-            self.gEngine.console_set_default_background(self.con, r, g, b)
+                col = libtcod.darker_grey
+            self.gEngine.console_set_default_background(self.con, col)
             self.gEngine.console_print(self.con, 0, 0, self.label)
 
     def run(self,  key, mouse):

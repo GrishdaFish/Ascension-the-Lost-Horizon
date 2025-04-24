@@ -1,7 +1,6 @@
 import os
 import sys
 import toml
-from gEngine import gEngine
 font = os.path.join(sys.path[0], 'terminal10x10_gs_tc.png')
 
 
@@ -21,14 +20,7 @@ class EngineConfig:
         self.load_config()
 
     def load_config(self):
-        # if gEngine.RELEASE:
-        #     path = hasattr(sys, "_MEIPASS")
-        # else:
-        #     path = sys.path[0]
-        # print(path)
-        # print(os.path.abspath('.'))
         path = os.path.abspath('.')
-        # print(path)
         with open(os.path.join(path, 'gEngine', 'config.toml')) as config:
             config = config.read()
             config = toml.loads(config)
@@ -46,10 +38,6 @@ class EngineConfig:
         pass
 
     def setup_config_default(self):
-        # if gEngine.RELEASE:
-        #     path = getattr(sys, "_MEIPASS", ".")
-        # else:
-        #     path = sys.path[0]
         path = os.path.abspath('.')
         path2 = os.path.join(path, 'gEngine', 'config.toml')
         if not os.path.exists(path2):

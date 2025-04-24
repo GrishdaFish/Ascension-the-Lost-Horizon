@@ -51,7 +51,7 @@ class EscMenu:
         while not libtcod.console_is_window_closed():
             #if not first:
             key, mouse = self.gEngine.handle_input()
-            self.gEngine.console_set_default_background(0, 0, 0, 0)
+            self.gEngine.console_set_default_background(0, (0, 0, 0))
 
             choice = m_menu.run(key, mouse, alpha=1.0)
             self.gEngine.console_flush()

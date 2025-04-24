@@ -81,8 +81,7 @@ class Game:
         self.dungeon_console = self.gEngine.console_new(self.dungeon_width, self.dungeon_height)  # main viewport
         self.panel = self.gEngine.console_new(self.screen_width, self.panel_height)  # for messages and others
         self.toolbar = self.gEngine.console_new(self.screen_width, 5)  # for the hotbar
-        self.message = messaging.Message(self.panel, self.message_height, self.message_width,
-                                         self.message_x, self.gEngine)
+        self.message = messaging.Message(self.panel, self.message_height, self.message_width, self.message_x, self.gEngine)
 
         self.gEngine.log_message("Setting up dungeon Generators")
         self.basic_dungeon = dungeon.BasicDungeon(self.dungeon_height, self.dungeon_width, min_room_size, max_room_size,

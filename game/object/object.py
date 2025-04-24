@@ -128,8 +128,9 @@ class Object:
             br = min(255, br)
             bg = min(255, bg)
             bb = min(255, bb)
-            gEngine.console_put_char_ex(self.con, int(self.x), int(self.y), self.char, fr, fg, fb,
-                                        int(br), int(bg), int(bb))  # self.char,self.color,col)
+
+            gEngine.console_put_char_ex(self.con, int(self.x), int(self.y), self.char, (fr, fg, fb),
+                                        (int(br), int(bg), int(bb)))  # self.char,self.color,col)
 
         elif gEngine.map_is_in_fov(int(self.x), int(self.y)):
             # set the color and then draw the character that represents this object at its position
@@ -163,11 +164,11 @@ class Object:
             bb = min(255, bb)
 
             if is_player:  # TODO NOTE This  will be needed if we do a scrolling map
-                gEngine.console_put_char_ex(self.con, gEngine.w / 2, gEngine.h / 2 - 6, self.char, int(fr), int(fg),
-                                            int(fb), int(br), int(bg), int(bb))
+                gEngine.console_put_char_ex(self.con, gEngine.w / 2, gEngine.h / 2 - 6, self.char, (int(fr), int(fg),
+                                            int(fb)), (int(br), int(bg), int(bb)))
             else:
-                gEngine.console_put_char_ex(self.con, int(self.x), int(self.y), self.char, int(fr), int(fg), int(fb),
-                                            int(br), int(bg), int(bb))  # self.char,self.color,col)
+                gEngine.console_put_char_ex(self.con, int(self.x), int(self.y), self.char, (int(fr), int(fg), int(fb)),
+                                            (int(br), int(bg), int(bb)))  # self.char,self.color,col)
 
     def clear(self, gEngine):
         # erase the character that represents this object
@@ -615,3 +616,29 @@ def monster_death(monster, game=None):
         game.gEngine.log_close_block()
 
         pass
+
+
+class BaseComponent:
+    def __init__(self, name=''):
+        self.name = name
+
+    def activate(self, data=None):
+        pass
+
+
+class NewObject:
+    def __init__(self, name=None):
+        self.components = {}
+        self.name = name
+
+    def add_component(self, component):
+        self.components.update({component.name: component})
+
+    def remove_component(self, component):
+        self.components.pop(component.name)
+
+    def activate_component(self, component, data):
+        c = self.components[component.name]
+        c.activate(data)
+
+

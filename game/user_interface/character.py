@@ -51,14 +51,14 @@ def character_info(con, width, height, game, x=0, y=0):
 
         # Draw Character info
         r, g, b = libtcod.white
-        game.gEngine.console_set_default_foreground(char_window, r, g, b)
+        game.gEngine.console_set_default_foreground(char_window, (r, g, b))
         game.gEngine.console_print_frame(char_window, 0, 0, width / 2, height / 2, True)
         game.gEngine.console_print(char_window, c_pos, 0, c_header)
         game.gEngine.console_print(char_window, 1, 1, 'Name: %s' % game.player.name)
 
         player_hp_bar = status_bar.StatusBar(int(width / 2) - 10, libtcod.light_red,
                                              libtcod.darker_red, char_window, gEngine=game.gEngine)
-        player_hp_bar.render(1, 2, game.gEngine, [game.player.fighter.hp, game.player.fighter.stat.get_stat_base("HP")]
+        player_hp_bar.render(1, 2, [game.player.fighter.hp, game.player.fighter.stat.get_stat_base("HP")]
                              , 'Hp: ')
         game.gEngine.console_set_alignment(player_hp_bar.con, int(libtcod.LEFT))
         game.gEngine.console_print(char_window, 1, 3, 'Level: %d' % game.player.fighter.level)
@@ -66,7 +66,7 @@ def character_info(con, width, height, game, x=0, y=0):
         player_xp_bar = status_bar.StatusBar(int(width / 2) - 10, libtcod.light_grey,
                                              libtcod.dark_grey, char_window, gEngine=game.gEngine)
 
-        player_xp_bar.render(1, 4, game.gEngine, [game.player.fighter.current_xp,
+        player_xp_bar.render(1, 4,  [game.player.fighter.current_xp,
                                                   game.player.fighter.xp_to_next_level], 'Xp: ')
         game.gEngine.console_set_alignment(player_xp_bar.con, int(libtcod.LEFT))
 
@@ -97,7 +97,7 @@ def character_info(con, width, height, game, x=0, y=0):
         game.gEngine.console_print(char_window, 1, 16, 'Turn Speed: [%s]' % speed)
 
         r, g, b = libtcod.white
-        game.gEngine.console_set_default_foreground(skill_window, r, g, b)
+        game.gEngine.console_set_default_foreground(skill_window, (r, g, b))
         game.gEngine.console_print_frame(skill_window, 0, 0, width / 2, height, True)
         game.gEngine.console_print(skill_window, s_pos, 0, s_header)
         t, p = get_centered_text('Type: Level / EXP / TNL', width / 4)
@@ -110,7 +110,7 @@ def character_info(con, width, height, game, x=0, y=0):
             y = do_string_output(game, skill_window, y, "Lvl:%s " % str(level).ljust(2))
             bar = status_bar.StatusBar(int(width / 2) - 17, libtcod.light_red,
                                        libtcod.darker_red, skill_window, gEngine=game.gEngine)
-            bar.render(14, y - 1, game.gEngine, [w_xp, w_xp_tnl], weapon_type)
+            bar.render(14, y - 1,  [w_xp, w_xp_tnl], weapon_type)
             game.gEngine.console_set_alignment(bar.con, int(libtcod.LEFT))
             # y += 1
         ###########################################################################
@@ -151,15 +151,15 @@ def character_info(con, width, height, game, x=0, y=0):
                 y = do_string_output(game, skill_window, y, "%s:  %s /   %s /   %d " % (
                     stat.ljust(12), str(val[0]).ljust(4), str(val[1]).ljust(4), val[2]))
         ################################################################################################################
-        game.gEngine.console_set_default_background(skill_window, 0, 0, 0)
+        game.gEngine.console_set_default_background(skill_window, (0, 0, 0))
 
         game.gEngine.console_print_ex(skill_window, 1, y, libtcod.BKGND_SET, libtcod.LEFT, '')
         #    y += 1
         #    letter_index += 1
-        game.gEngine.console_set_default_background(skill_window, 0, 0, 0)
+        game.gEngine.console_set_default_background(skill_window, (0, 0, 0))
 
         r, g, b = libtcod.white
-        game.gEngine.console_set_default_foreground(skill_desc_window, r, g, b)
+        game.gEngine.console_set_default_foreground(skill_desc_window, (r, g, b))
         game.gEngine.console_print_frame(skill_desc_window, 0, 0, width / 2, height / 2, True)
         game.gEngine.console_print(skill_desc_window, d_pos, 0, d_header)
         # TODO THIS STUFF BELOW SHOULD USE HOVER DESCRIPTION
@@ -242,9 +242,9 @@ def character_info(con, width, height, game, x=0, y=0):
                 first_print = False
             for condition in game.player.fighter.stat.active_conditions:
                 if condition.duration > 0:
-                    bar = status_bar.StatusBar(game.player.fighter, int(width / 2) - 17, condition.get_color(),
-                                               libtcod.darker_red, skill_desc_window, type='hp', gEngine=game.gEngine)
-                    bar.render(1, y, game.gEngine, [condition.duration, condition.total_duration],
+                    bar = status_bar.StatusBar(int(width / 2) - 17, condition.get_color(),
+                                               libtcod.darker_red, skill_desc_window, gEngine=game.gEngine)
+                    bar.render(1, y,  [condition.duration, condition.total_duration],
                                condition.effect_name)
                     game.gEngine.console_set_alignment(bar.con, int(libtcod.LEFT))
                     y += 1
@@ -322,7 +322,7 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
 
         # Draw Character info
         r, g, b = libtcod.white
-        game.gEngine.console_set_default_foreground(condition_window, r, g, b)
+        game.gEngine.console_set_default_foreground(condition_window, (r, g, b))
         game.gEngine.console_print_frame(condition_window, 0, 0, width / 2, height / 2, True)
         game.gEngine.console_print(condition_window, c_pos, 0, c_header)
         # game.gEngine.console_print(condition_window, 1, 1, 'Name: %s' % game.player.name)
@@ -337,7 +337,7 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
         #     line_ind += 1
         #############################################################################################################
         r, g, b = libtcod.white
-        game.gEngine.console_set_default_foreground(stat_window, r, g, b)
+        game.gEngine.console_set_default_foreground(stat_window, (r, g, b))
         game.gEngine.console_print_frame(stat_window, 0, 0, width / 2, height, True)
         game.gEngine.console_print(stat_window, s_pos, 0, s_header)
         t, p = get_centered_text('Damage / Resistance:', width / 4)
@@ -380,15 +380,15 @@ def stat_panel_info(con, width, height, game, x=0, y=0):
                 y = do_string_output(game, stat_window, y, "%s:  %s /   %s /   %d " % (
                 stat.ljust(12), str(val[0]).ljust(4), str(val[1]).ljust(4), val[2]))
         ################################################################################################################
-        game.gEngine.console_set_default_background(stat_window, 0, 0, 0)
+        game.gEngine.console_set_default_background(stat_window, (0, 0, 0))
 
         game.gEngine.console_print_ex(stat_window, 1, y, libtcod.BKGND_SET, libtcod.LEFT, '')
         #    y += 1
         #    letter_index += 1
-        game.gEngine.console_set_default_background(stat_window, 0, 0, 0)
+        game.gEngine.console_set_default_background(stat_window, (0, 0, 0))
 
         r, g, b = libtcod.white
-        game.gEngine.console_set_default_foreground(stat_desc_window, r, g, b)
+        game.gEngine.console_set_default_foreground(stat_desc_window, (r, g, b))
         game.gEngine.console_print_frame(stat_desc_window, 0, 0, width / 2, height / 2, True)
         game.gEngine.console_print(stat_desc_window, d_pos, 0, d_header)
 

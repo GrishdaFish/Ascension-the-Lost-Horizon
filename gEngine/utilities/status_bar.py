@@ -2,21 +2,40 @@ import tcod as libtcod
 
 
 class StatusBar:
-    def __init__(self,size, full, empty, con, gEngine=None):
+    def __init__(self, size, full, empty, con, gEngine):
+        """
+        WARNING: Does not like to be placed in a WindowWidget console for some reason. Currently investigating
+                 In the meantime, create a secondary console to put the bar on
+        This is a subcell HP type bar UI element
+        :param size: How wide the bar is
+        :param full: The Color of the bars filled section (TCODColor or 3 element tuple (R,G,B))
+        :param empty: The Color of the bars empty section (TCODColor or 3 element tuple (R,G,B))
+        :param con: The console this bar is displayed on (INT gEngine returns upon creation of a console)
+        :param gEngine: the graphics engine
+        """
         self.bar = gEngine.image_new(size * 2, 2)
         self.full = full
         self.empty = empty
         self.size = size * 2
         self.con = con
+        self.gEngine = gEngine
 
-    def render(self, px, py, gEngine, values=None, name=None):
+    def render(self, px, py, values=None, name=None):
+        """
+        Render's the Bar
+        :param px: X position of the bar
+        :param py: Y Position of the bar
+        :param values: a list or 2 element tuple containing Min/Max values for the bar
+        :param name: The Label to be placed over the bar
+        :return:
+        """
         if values:
             value = values[0]
             maximum = values[1]
             msg = name.capitalize() + ': ' + str(value) + '/' + str(int(maximum))
         else:
-            gEngine.log_open_block("No  values passed to status bar.render()")
-            gEngine.log_close_block()
+            self.gEngine.log_open_block("No values passed to status bar.render()")
+            self.gEngine.log_close_block()
             return
 
         if value <= 0:
@@ -27,34 +46,25 @@ class StatusBar:
         if bar > self.size:
             bar = self.size
         r, g, b = self.empty
-        gEngine.image_clear(self.bar, r, g, b)
+        self.gEngine.image_clear(self.bar, self.empty)
         r, g, b = self.full
         for i in range(bar):
-            gEngine.image_put_pixel(self.bar, i, 0, r, g, b)
-            gEngine.image_put_pixel(self.bar, i, 1, r, g, b)
+            self.gEngine.image_put_pixel(self.bar, i, 0, self.full)
+            self.gEngine.image_put_pixel(self.bar, i, 1, self.full)
 
-        gEngine.image_blit_2x(self.bar, self.con, px, py)
+        self.gEngine.image_blit_2x(self.bar, self.con, px, py)
         r, g, b = libtcod.white
-        gEngine.console_set_default_foreground(self.con, r, g, b)
-        gEngine.console_print(self.con, px, py, msg)
+        self.gEngine.console_set_default_foreground(self.con, libtcod.white)
+        self.gEngine.console_print(self.con, px, py, msg)
 
     def remove_bar(self, bars):
         pass
 
-    def hover_description(self):
-        names = [self.type.capitalize()]
-        if 'hp':
-            names.append(str(self.owner.hp) + " / " + str(self.owner.stat.get_stat_base("HP")))
-            names.append("Regen rate: " + str(self.owner.stat.get_stat("Regen")))
-        if 'mp':
-            pass
-        if 'xp':
-            pass
-        if 'torch':
-            pass
-
 
 class AnimatedStatusBar:
+    """
+    An animation style bar UI element. Ascensions Torch Meter
+    """
     def __init__(self, background, foreground, animation, target_console, gEngine, x, y):
         self.x = x
         self.y = y

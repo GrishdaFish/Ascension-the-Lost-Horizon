@@ -46,8 +46,8 @@ class HotBar():
         :return: Activated? (t/f)
         """
         self.gEngine.console_clear(self.window)
-        r, g, b = libtcod.white
-        self.gEngine.console_set_default_foreground(self.window, r, g, b)
+        col = libtcod.white
+        self.gEngine.console_set_default_foreground(self.window, col)
         self.gEngine.console_print_frame(self.window, 0, 0, 32, 5, True)
         for slot in self.slots:
             slot.update(mouse, keyboard, game)
@@ -166,10 +166,10 @@ class HotBarSlot():
         :return: Activated? (t/f)
         """
         self.gEngine.console_clear(self.window)
-        r, g, b = libtcod.white
+        col = libtcod.white
         if self.cx <= mouse.cx <= self.cx + 2:
             if self.cy <= mouse.cy <= self.cy + 2:
-                r, g, b = libtcod.green
+                col = libtcod.green
                 t = self.name.capitalize()
                 t = chr(libtcod.CHAR_TEEW) + t
                 if self.obj:
@@ -182,13 +182,13 @@ class HotBarSlot():
                 t, p = get_centered_text(t, 16)
                 self.gEngine.console_print(self.owner.window, p, 0, t)
                 if mouse.lbutton:
-                    r, g, b = libtcod.red
+                    col = libtcod.red
                 if mouse.lbutton:
                     self.use(game)
                 if mouse.rbutton:
                     self.remove_object()
 
-        self.gEngine.console_set_default_foreground(self.window, r, g, b)
+        self.gEngine.console_set_default_foreground(self.window, col)
         self.gEngine.console_print_frame(self.window, 0, 0, 3, 3, True)
         self.gEngine.console_print(self.window, 0, 0, self.label)
 

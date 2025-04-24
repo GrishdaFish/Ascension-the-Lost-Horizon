@@ -103,7 +103,7 @@ class MainMenu:
 
         self.logo_done = self.gEngine.animation_draw_animation("title logo", 0, 0, 29)
 
-        r, g, b = libtcod.color_lerp(libtcod.light_flame, libtcod.dark_flame, self.lerp_value)
+        col = libtcod.color_lerp(libtcod.light_flame, libtcod.dark_flame, self.lerp_value)
         if self.name_done:
             self.lerp_value += self.lerp_amount
             if self.lerp_value < 0.087:
@@ -111,12 +111,12 @@ class MainMenu:
             if self.lerp_value > 0.913:
                 self.lerp_amount = -0.087
 
-        self.gEngine.console_set_default_foreground(0, r, g, b)
+        self.gEngine.console_set_default_foreground(0,col)
         self.gEngine.console_print(0, int(self.gEngine.SCREEN_WIDTH / 2 - 11),
                                    int(self.gEngine.SCREEN_HEIGHT - 15),
                                    self.print_name)
 
-        self.gEngine.console_set_default_background(0, 0, 0, 0)
+        self.gEngine.console_set_default_background(0, libtcod.black)
         if self.intro_done:
             if self.menu_fade:
                 if self.menu_fade_value < 1.0:

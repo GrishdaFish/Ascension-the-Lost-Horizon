@@ -1,9 +1,5 @@
 __author__ = 'GrishdaFish'
-from gEngine import gEngine as _gEngine
-import tcod as libtcod
-import sys
 import os
-import distutils.util as dist_util
 import toml
 
 class Animation:
@@ -21,7 +17,7 @@ class Animation:
         self.hold_last_frame = hold_last_frame
         self.name = name
         self.reverse = reverse
-        self.index = 0  # to keep track of what frame we're supposed to draw
+        self.index = 0
         self.length = len(self.animation) - 1
         self.finished = False
 
@@ -56,19 +52,16 @@ class Animations:
         self.animations = []  # TODO Consider making this a dict
         self.gEngine = gEngine
 
-    def load_animations(self):
+    def load_animations(self, root_path=None):
         """
         Loads all animations from the content/img/animations directory
         Animations should be numbered and png, eg 0.png - 49.png
         :return:
         """
         self.gEngine.log_open_block("Loading all animation files")
-        # if _gEngine.RELEASE:
-        #     path = getattr(sys, "_MEIPASS", ".")
-        # else:
-        #     path = sys.path[0]
         path = os.path.abspath('.')
-        root_path = os.path.join(path, 'content', 'img', 'animations')
+        if not root_path:
+            root_path = os.path.join(path, 'content', 'img', 'animations')
         for root, dirs, files in os.walk(root_path):
             if len(files) > 0:
                 if "controller.toml" in files:

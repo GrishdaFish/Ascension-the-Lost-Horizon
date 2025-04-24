@@ -381,7 +381,6 @@ class GameObjects:
 
         return obj
 
-
     def create_monster(self, game, x, y, threat_level=None, mob_name=None):
         """
         Builds a fully created monster

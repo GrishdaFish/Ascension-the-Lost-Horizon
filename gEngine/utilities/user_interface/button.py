@@ -23,7 +23,7 @@ class Button:
         self.label = label
         self.label_o = label
         r, g, b = libtcod.white
-        self.parent.game.gEngine.console_set_default_foreground(self.window, r, g, b)
+        self.parent.game.gEngine.console_set_default_foreground(self.window, (r, g, b))
         self.parent.game.gEngine.console_set_alignment(self.window, 2)
         self.type = type
 

@@ -85,11 +85,11 @@ def draw_objects(game):
 
 
 def draw_user_interface(game):
-    r, g, b = libtcod.black
-    game.gEngine.console_set_default_background(game.panel, r, g, b)
+    col = libtcod.black
+    game.gEngine.console_set_default_background(game.panel, col)
     game.gEngine.console_clear(game.panel)
 
-    game.player_hp_bar.render(1, 1, game.gEngine, [game.player.fighter.hp,
+    game.player_hp_bar.render(1, 1, [game.player.fighter.hp,
                                                    game.player.fighter.stat.get_stat_base("HP")], 'Hp: ')
     if game.player.fighter.gear.light_source:
         current = game.player.fighter.gear.light_source.item.equipment.fuel
@@ -98,13 +98,13 @@ def draw_user_interface(game):
     else:
         data = [0, 0]
     game.player_torch_bar.update(data)
-    game.player_xp_bar.render(1, 3, game.gEngine, [game.player.fighter.current_xp,
+    game.player_xp_bar.render(1, 3,  [game.player.fighter.current_xp,
                                                    game.player.fighter.xp_to_next_level], 'Xp: ')
 
-    r, g, b = libtcod.light_gray
-    game.gEngine.console_set_default_foreground(game.panel, r, g, b)
+    col = libtcod.light_gray
+    game.gEngine.console_set_default_foreground(game.panel, col)
     game.gEngine.console_set_alignment(game.panel, libtcod.LEFT)
-    game.gEngine.console_set_default_background(0, r, g, b)
+    game.gEngine.console_set_default_background(0, col)
     game.gEngine.console_print(game.panel, 1, 5, "(%dfps) Depth: %d" % (game.gEngine.sys_get_fps(), game.level.depth))
     #game.gEngine.console_print(game.panel, 1, 0, game.get_names_under_mouse())
 

@@ -55,14 +55,14 @@ class Confirm(window_widget.WindowWidget):
             :param: callback is the function that grabs the response
             :param: ok and cancel change the button text """
         self.message = message
-        self.width = len(message) + 2
+        self.width = len(message) + 4
         self.original_width = self.width
         self.gEngine.console_remove_console(self.con)
         self.con = self.gEngine.console_new(self.width, self.height)
         self.title_x_position = self.width / 2 - (len(self.title) / 2)
         self.callback = callback
         self.ok_button = button_widget.ButtonWidget(self, len(ok) + 3, 4, ok, self.callback, [True])
-        self.cancel_button = button_widget.ButtonWidget(self, self.width - len(cancel) - 3, 4, cancel, self.callback, [False])
+        self.cancel_button = button_widget.ButtonWidget(self, self.width - len(cancel) - 5, 4, cancel, self.callback, [False])
 
     def update(self, key, mouse):
         if self.active:

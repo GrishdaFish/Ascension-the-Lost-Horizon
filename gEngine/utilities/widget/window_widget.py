@@ -192,7 +192,7 @@ class WindowWidget:
         """
         Over-ride to change behavior of the 'x' button
         """
-        self.gEngine.remove_module(self)
+        self.on_exit()
 
     def minimize(self):
         self.close()

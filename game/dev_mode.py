@@ -269,6 +269,7 @@ class MonsterEditor(window_widget.WindowWidget):
     def clear(self):
         pass
 
+
 class ItemEditor(window_widget.WindowWidget):
     def update(self, key, mouse):
         pass

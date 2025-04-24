@@ -24,7 +24,7 @@ implied by ``import tcod``.
 from typing import Any, Dict, Mapping, NamedTuple, Optional, Iterator, Tuple
 
 import tcod.event_constants
-from tcod.loader import ffi, lib
+from tcod.loader import ffi, lib # todo change to tcod.cffi on update
 from tcod.event_constants import *  # noqa: F4
 from tcod.event_constants import KMOD_SHIFT, KMOD_CTRL, KMOD_ALT, KMOD_GUI
 

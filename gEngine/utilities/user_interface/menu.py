@@ -88,7 +88,7 @@ class Menus:
             # if self.img:
             #     self.gEngine.image_blit_2x(self.img, 0, 0, 0)
             self.gEngine.console_set_alignment(self.window, libtcod.LEFT)
-            self.gEngine.console_set_default_foreground(self.window, r, g, b)
+            self.gEngine.console_set_default_foreground(self.window,(r, g, b))
             self.gEngine.console_blit(self.window, 0, 0, self.width,
                                       self.height, self.con, self.w_pos, self.h_pos, alpha, alpha)
 
@@ -233,7 +233,7 @@ def menu(con, header, options, width, SCREEN_HEIGHT, SCREEN_WIDTH, bg=None, game
         header = '======='
     if bg:
         img = game.gEngine.image_load(bg)
-        game.gEngine.image_blit_2x(img, 0, 0, 0)
+        game.gEngine.image_blit_2x(img, (0, 0, 0))
 
     height = len(options)
     width += 5
@@ -249,7 +249,7 @@ def menu(con, header, options, width, SCREEN_HEIGHT, SCREEN_WIDTH, bg=None, game
     h_pos = SCREEN_HEIGHT / 2 - height / 2
 
     r, g, b = libtcod.white
-    game.gEngine.console_set_default_foreground(window, r, g, b)
+    game.gEngine.console_set_default_foreground(window, (r, g, b))
     original_header = header
     is_dragging = False
     in_drag_zone = False
@@ -393,7 +393,7 @@ def confirm_screen(con, message, screen_height, screen_width,
     window = game.gEngine.console_new(width, height)
 
     r, g, b = libtcod.white
-    game.gEngine.console_set_default_foreground(window, r, g, b)
+    game.gEngine.console_set_default_foreground(window, (r, g, b))
     game.gEngine.console_print_frame(window, 0, 0, width, height, True)
     game.gEngine.console_set_alignment(window, libtcod.CENTER)
     game.gEngine.console_print(window, width / 2, 1, message)

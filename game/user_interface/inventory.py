@@ -9,9 +9,9 @@ import tcod as libtcod
 def init_shit(game, width, height, r, g, b):
     """ utility function for initializing consoles - params as stated  """
     window = game.gEngine.console_new(width / 2, height)
-    game.gEngine.console_set_default_foreground(window, r, g, b)
+    game.gEngine.console_set_default_foreground(window, (r, g, b))
     game.gEngine.console_print_frame(window, 0, 0, width / 2, height, True)
-    game.gEngine.console_set_default_background(window, 0, 0, 0)
+    game.gEngine.console_set_default_background(window, (0, 0, 0))
     return window
 
 def inventory(con, player, game, width=80, height=43):
@@ -120,16 +120,16 @@ def inventory(con, player, game, width=80, height=43):
 
         # set up draw screen
         r, g, b = libtcod.white
-        game.gEngine.console_set_default_foreground(inventory_window, r, g, b)
+        game.gEngine.console_set_default_foreground(inventory_window, (r, g, b))
         game.gEngine.console_print_frame(inventory_window, 0, 0, width / 2, height, True)
 
-        game.gEngine.console_set_default_foreground(equipment_window, r, g, b)
+        game.gEngine.console_set_default_foreground(equipment_window, (r, g, b))
         game.gEngine.console_print_frame(equipment_window, 0, 0, width / 2, equip_height, True)
 
-        game.gEngine.console_set_default_foreground(wielded_window, r, g, b)
+        game.gEngine.console_set_default_foreground(wielded_window, (r, g, b))
         game.gEngine.console_print_frame(wielded_window, 0, 0, width / 2, wield_height, True)
 
-        game.gEngine.console_set_default_foreground(compare_window, r, g, b)
+        game.gEngine.console_set_default_foreground(compare_window, (r, g, b))
         game.gEngine.console_print_frame(compare_window, 0, 0, width / 2, compare_height, True)
 
         # ========================================================================
@@ -143,13 +143,13 @@ def inventory(con, player, game, width=80, height=43):
                 text = '  (' + chr(letter_index) + ') ' + inventory_items[i]
                 if current_selection == y - 1:
                     r, g, b = libtcod.color_lerp(player.fighter.inventory[i].color, libtcod.blue, 0.5)
-                    game.gEngine.console_set_default_background(inventory_window, r, g, b)
+                    game.gEngine.console_set_default_background(inventory_window, (r, g, b))
                 else:
-                    game.gEngine.console_set_default_background(inventory_window, 0, 0, 0)
+                    game.gEngine.console_set_default_background(inventory_window, (0, 0, 0))
                 game.gEngine.console_print_ex(inventory_window, 1, y + 2, libtcod.BKGND_SET, libtcod.LEFT, text)
                 y += 1
                 letter_index += 1
-        game.gEngine.console_set_default_background(inventory_window, 0, 0, 0)
+        game.gEngine.console_set_default_background(inventory_window, (0, 0, 0))
         game.gEngine.console_print(inventory_window, 1, 31,
                                    'Gold: ' + color_text(str(player.fighter.money), libtcod.gold))
 

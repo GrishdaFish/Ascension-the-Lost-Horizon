@@ -107,8 +107,7 @@ class ButtonWidget:
 
     def pre_draw_widget(self):
         if self.active:
-            r, g, b = libtcod.lighter_grey
-            self.gEngine.console_set_default_background(self.con, r, g, b)
+            self.gEngine.console_set_default_background(self.con, libtcod.lighter_grey)
             self.gEngine.console_print(self.con, 0, 0, self.label)
 
 
