@@ -12,7 +12,7 @@ class CharacterCreator(window_widget.WindowWidget):
         self.max_width = 38
         self.buttons = []
 
-        self.fighter_description = False
+        self.warrior_description = False
         self.wizard_description = False
         self.paladin_description = False
         self.ranger_description = False
@@ -31,7 +31,7 @@ class CharacterCreator(window_widget.WindowWidget):
         self.m_tutorial_group.add_button(self.tutorial_on_button)
 
         self.c_class_group = button_group.ButtonGroupWidget(self, 1, 4, self.max_width)
-        self.c_class_group.add_button(button_group.GroupButton(self.c_class_group, 1, 0, "Fighter", self.activate_fighter))
+        self.c_class_group.add_button(button_group.GroupButton(self.c_class_group, 1, 0, "Warrior", self.activate_warrior))
         self.c_class_group.add_button(button_group.GroupButton(self.c_class_group, 1, 0, "Wizard", self.activate_wizard))
 
         self.c_class_group.add_button(button_group.GroupButton(self.c_class_group, 1, 0, "Ranger"))
@@ -77,21 +77,21 @@ class CharacterCreator(window_widget.WindowWidget):
             help_module.deactivate()
         self.gEngine.add_module(help_module)
 
-    def activate_fighter(self):
-        self.fighter_description = True
+    def activate_warrior(self):
+        self.warrior_description = True
         self.wizard_description = False
 
         self.display_description = True
 
     def activate_wizard(self):
         self.wizard_description = True
-        self.fighter_description = False
+        self.warrior_description = False
 
         self.display_description = True
 
     def description(self):
         text = ""
-        if self.fighter_description:
+        if self.warrior_description:
             text = "Melee based class focusing on offense and 2 handed weapons with wide sweeping attacks. " \
                    "High health but low magical ability. Limited scroll usage, but increased torch and lantern duration. " \
                    "Uses heavy armor with less penalties, light armor with no penalties and no armor with bonuses. "
@@ -119,8 +119,8 @@ class CharacterCreator(window_widget.WindowWidget):
     def create_player(self):
         self.g.player.name = self.c_name.text_field
 
-        if self.fighter_description:
-            self.create_fighter()
+        if self.warrior_description:
+            self.create_warrior()
         if self.wizard_description:
             self.create_wizard()
         if self.paladin_description:
@@ -130,7 +130,7 @@ class CharacterCreator(window_widget.WindowWidget):
         if self.rogue_description:
             self.create_rogue()
 
-    def create_fighter(self):
+    def create_warrior(self):
         inv = self.g.player.fighter.inventory
         print(self.g.player.name)
         weapon = self.g.build_objects.build_equipment(self.g, 0, 0, name="Great Sword", mat="Iron")
