@@ -202,7 +202,8 @@ class GameObjects:
         item_component.spell = spell_component
         item_component.use_function = item_component.spell.cast  # function pointer
         item_component.value = int(potion.value)
-        item_component.stackable = True
+        item_component.stackable = potion.stackable
+        item_component.level = potion.level
 
         name = "potion of %s" % potion.name
         item = Object(game.dungeon_console, x, y, potion.cell, name, potion.color, item=item_component)
@@ -224,7 +225,8 @@ class GameObjects:
         item_component.spell = spell_component
         item_component.use_function = item_component.spell.cast  # function pointer
         item_component.value = int(scroll.value)
-        item_component.stackable = True
+        item_component.stackable = scroll.stackable
+        item_component.level = scroll.level
 
         name = "scroll of %s" % scroll.name
         item = Object(game.dungeon_console, x, y, scroll.cell, name, scroll.color, item=item_component)

@@ -74,6 +74,7 @@ def load_consumables(content):
         c.color = libtcod.Color(col[0], col[1], col[2])
         c.value = consumable.get('value')
         c.stackable = consumable.get('stackable')
+        c.level = consumable.get('level')
         consumable_array.append(c)
     return consumable_array
 
@@ -245,6 +246,7 @@ class Consumable:
         self.value = 0
         self.max_stack = 0
         self.stackable = None
+        self.level = 0
 
 
 class Currency:

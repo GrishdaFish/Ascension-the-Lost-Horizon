@@ -13,7 +13,7 @@ class StatPanel:
         self.panel = {
             "modifiers": {
                 "key": ["Penalty", "Modifier", "Base"],
-                "HP": [0, 0, 999999],
+                "HP": [0, 0, 1],
                 "Regen": [0, 0, 0],
                 "Accuracy": [0, 0, 1],
                 "Defense": [0, 0, 1],

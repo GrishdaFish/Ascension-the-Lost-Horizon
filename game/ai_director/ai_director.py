@@ -103,7 +103,7 @@ class AiDirector:
         return monster
 
     def spawn_group(self,spawn_node=None):
-        group_size = 1  # figure this out based on threat
+        group_size = 6  # figure this out based on threat
         self.gEngine.log_message("Spawning a group with %d monsters in it" % group_size)
         group = []
         commander = self.spawn_commander(x=spawn_node.x, y=spawn_node.y)

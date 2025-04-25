@@ -146,17 +146,19 @@ def get_accuracy_bonus(creature):
 
 
 # based on 0, 0 being player position
+# (x, y) +x is right, -x is left, +y is down, -y is up
 attack_patterns = {
-        "partial cross": [(0, -1), (-1, -1,), (1, -1), (0, -2)],
+        "partial_cross": [(0, -1), (-1, -1,), (1, -1), (0, -2)],
         "checkered": [(-1, -1), (1, -1), (0, -2), (-1, -3), (1, -3)],
-        " ": [(0, -1)],
-        "": [(0, -1)],
+        "line": [(0, -1), (-1, -1), (1, -1)],
+        "left_sweep": [(0, -1), (-1, -1)],
+        "right_sweep": [(0, -1), (1, -1)],
         "default": [(0, -1)]
         # add additional north oriented attack patterns here
     }
 
 
-def get_attack_pattern(attacker, direction, pattern="default"):
+def get_attack_pattern(attacker, direction, pattern="line"):
     """
     Returns direction normalized attack patterns
     :param direction: the cardinal direction of the attack

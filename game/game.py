@@ -425,7 +425,7 @@ class Game:
                 return object
         return None
 
-    def player_death(self, player):
+    def player_death(self, player, game=None):
         # the game ended!
         self.message.message('You died! Press Escape to return to the main menu.', 1)
         self.game_state = 'dead'

@@ -149,7 +149,7 @@ class Particle:
             #     lightmask.add_light(int(self.x), int(self.y), self.color)
 
     def draw(self, gEngine):  # change this to lightmap drawing once subcell res is implemented
-        gEngine.image_put_pixel(-1, int(self.x), int(self.y), int(self.color[0]), int(self.color[1]), int(self.color[2]))
+        gEngine.image_put_pixel(-1, int(self.x), int(self.y), (int(self.color[0]), int(self.color[1]), int(self.color[2])))
 
     def get_angle(self, dx, dy):
         self.angle = math.atan2(float(dy), float(dx))

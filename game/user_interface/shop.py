@@ -55,6 +55,8 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
     r, g, b = libtcod.white
     compare_y = shop_height
 
+    unusable = game.gEngine.color_text(" Unable to use this item!", libtcod.red)
+
     inventory_window = game.gEngine.console_new(width / 2, height)
     game.gEngine.console_set_default_foreground(inventory_window, (r, g, b))
     game.gEngine.console_print_frame(inventory_window, 0, 0, width / 2, height, True)
@@ -353,19 +355,20 @@ def shop(con, player, game, container=None, bg=None, header=None, width=80, heig
                         show_effects(item, game, compare_window)
 
                 if item.item.spell:
-                    game.gEngine.console_print_ex(compare_window, 1, 2, libtcod.BKGND_SET, libtcod.LEFT,
-                                                  'Name  : ' + color_text(item.name.capitalize(), item.color))
-                    game.gEngine.console_print_ex(compare_window, 1, 3, libtcod.BKGND_SET, libtcod.LEFT,
-                                                  'Type  : ' + item.item.spell.type.capitalize())
-                    game.gEngine.console_print_ex(compare_window, 1, 4, libtcod.BKGND_SET, libtcod.LEFT,
-                                                  'Power : ' + str(item.item.spell.min) + '-' + str(
-                                                      item.item.spell.max))
-                    game.gEngine.console_print_ex(compare_window, 1, 5, libtcod.BKGND_SET, libtcod.LEFT,
-                                                  'Range : ' + str(item.item.spell.range))
-                    game.gEngine.console_print_ex(compare_window, 1, 6, libtcod.BKGND_SET, libtcod.LEFT,
-                                                  'Radius: ' + str(item.item.spell.radius))
-                    game.gEngine.console_print_ex(compare_window, 1, 7, libtcod.BKGND_SET, libtcod.LEFT,
-                                                  'Value : ' + str(item.item.value))
+                    if item.item.level > game.player.fighter.max_consumable_level:  # this includes potions
+                        lvl = game.gEngine.color_text(str(item.item.level), libtcod.red)
+                        lvl = lvl + unusable
+                    else:
+                        lvl = game.gEngine.color_text(str(item.item.level), libtcod.green)
+                    game.gEngine.console_print(compare_window, 1, 2,
+                                               'Name  : ' + color_text(item.name.capitalize(), item.color))
+                    game.gEngine.console_print(compare_window, 1, 3, 'Type  : ' + item.item.spell.type.capitalize())
+                    game.gEngine.console_print(compare_window, 1, 4,
+                                               'Power : ' + str(item.item.spell.min) + '-' + str(item.item.spell.max))
+                    game.gEngine.console_print(compare_window, 1, 5, 'Range : ' + str(item.item.spell.range))
+                    game.gEngine.console_print(compare_window, 1, 6, 'Radius: ' + str(item.item.spell.radius))
+                    game.gEngine.console_print(compare_window, 1, 7, 'Value : ' + str(item.item.value))
+                    game.gEngine.console_print(compare_window, 1, 8, 'Level : ' + lvl)
 
                 if mouse.lbutton and mouse.cx >= 3:
                     if len(player.fighter.inventory) >= 26:

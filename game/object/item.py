@@ -17,6 +17,7 @@ class Item:
         if self.equipment:
             self.use_function = self.equipment.equip
         self.ammo = ammo
+        self.level = 0
 
 
     def pick_up(self, inventory, game=None):
@@ -73,8 +74,12 @@ class Item:
     def use(self, inventory, creature, game, player=True):
         # just call the "use_function" if it is defined
         if player:
+            if game.player.fighter.max_consumable_level < self.level:
+                mes = game.gEngine.color_text(self.owner.name, self.owner.color)
+                game.message.message("Your class is unable to use the " + mes)
+                return
             if self.use_function is None:
-                self.owner.message.message('The ' + self.owner.name + ' cannot be used.')
+                game.message.message('The ' + self.owner.name + ' cannot be used.')
             else:
                 if not self.equipment:
                     if self.use_function(creature, game.player, game=game) != 'cancelled':

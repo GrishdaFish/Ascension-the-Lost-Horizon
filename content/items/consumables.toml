@@ -16,8 +16,9 @@
     radius=0 #how big of a radius of effects spells, like fireball
     max_targets=0 #0 for user/target, 1 for unlimited, or 2+ targets
     col=[255, 114, 114] #color of the item
-    value=25
+    value=25 #gold value of this item
     stackable = true
+    level = 0 #Used to restrict what classes can use this item. 0 = all/no restrictions, higher levels = higher restrictions
 
     
 [["consumable"]]
@@ -37,7 +38,7 @@
     col=[255, 0, 0]
     value=50
     stackable = true
-
+    level=3
     
 [["consumable" ]]
     name="fireball"
@@ -56,7 +57,7 @@
     col=[255, 255, 0]
     value = 150
     stackable = true
-
+    level = 3
     
 [["consumable"]]
     name="chain lightning"
@@ -75,6 +76,7 @@
     col=[255, 255, 0]
     value=150
     stackable = true
+    level = 3
 
 [["consumable"]]
     name="lightning"
@@ -93,7 +95,7 @@
     col=[255, 255, 0]
     value=100
     stackable = true
-
+    level = 2
     
 [["consumable"]]
     name="confusion"
@@ -112,6 +114,7 @@
     col=[255, 255, 0]
     value= 75
     stackable = true
+    level = 2
 
 [["consumable"]]
     name="minor light"
@@ -130,6 +133,7 @@
     col=[155, 155, 155]
     value= 25
     stackable = true
+    level = 1
 
 [["consumable"]]
     name="light"
@@ -148,6 +152,7 @@
     col=[200, 200, 200]
     value= 100
     stackable = true
+    level = 2
 
 [["consumable"]]
     name="major light"
@@ -166,6 +171,7 @@
     col=[255, 255, 255]
     value= 225
     stackable = true
+    level = 3
 
 [["consumable"]]
     name="detect monsters"
@@ -184,6 +190,7 @@
     col=[255, 255, 255]
     value= 250
     stackable = true
+    level = 2
 
 [["consumable"]]
     name="detect items"
@@ -202,3 +209,4 @@
     col=[255, 255, 255]
     value= 250
     stackable = true
+    level = 2

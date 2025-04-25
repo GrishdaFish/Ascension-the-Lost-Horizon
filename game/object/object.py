@@ -250,6 +250,9 @@ class Fighter:
         self.max_hp = self.stat.get_stat("HP")
         self.hp = self.max_hp
 
+        self.max_consumable_level = 0
+        self.restricted_weapons = []
+
         self.skills = copy.deepcopy(combat.skill_list)  # skill list needs to have its own copies
 
     def get_attribute_package(self):

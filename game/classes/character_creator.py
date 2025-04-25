@@ -26,6 +26,9 @@ class CharacterCreator(window_widget.WindowWidget):
         self.exit_button = button_widget.ButtonWidget(self, 1, self.gEngine.h-2, "Finish", self.finish)
         self.buttons.append(self.exit_button)
 
+        self.m_tutorial_group = button_group.ButtonGroupWidget(self, 11, 6, 4, 1)
+        self.tutorial_on_button = button_group.GroupButton(self.m_tutorial_group, 1, 0, "Yes")
+        self.m_tutorial_group.add_button(self.tutorial_on_button)
 
         self.c_class_group = button_group.ButtonGroupWidget(self, 1, 4, self.max_width)
         self.c_class_group.add_button(button_group.GroupButton(self.c_class_group, 1, 0, "Fighter", self.activate_fighter))
@@ -36,9 +39,11 @@ class CharacterCreator(window_widget.WindowWidget):
     def update(self, key, mouse):
         self.gEngine.console_vline(self.con, self.max_width + 2, 1, self.height - 2)
         self.gEngine.console_print(self.con, 1, 3, "Select your class: ")
+        self.gEngine.console_print(self.con, 1, 6, "Tutorial? ")
         for button in self.buttons:
             button.run(key, mouse)
         self.c_class_group.run(key, mouse)
+        self.m_tutorial_group.run(key, mouse)
         self.description()
 
     def close(self):
@@ -66,6 +71,10 @@ class CharacterCreator(window_widget.WindowWidget):
         self.gEngine.add_module(m)
 
         help_module = help_popup_module.HelpPopup(self.gEngine, self.g, 5, 5, 70, 30, "Help")
+        if self.tutorial_on_button.enabled:
+            help_module.activate()
+        else:
+            help_module.deactivate()
         self.gEngine.add_module(help_module)
 
     def activate_fighter(self):
@@ -109,22 +118,50 @@ class CharacterCreator(window_widget.WindowWidget):
 
     def create_player(self):
         self.g.player.name = self.c_name.text_field
+
+        if self.fighter_description:
+            self.create_fighter()
+        if self.wizard_description:
+            self.create_wizard()
+        if self.paladin_description:
+            self.create_paladin()
+        if self.ranger_description:
+            self.create_ranger()
+        if self.rogue_description:
+            self.create_rogue()
+
+    def create_fighter(self):
         inv = self.g.player.fighter.inventory
         print(self.g.player.name)
-        if self.fighter_description:
-            weapon = self.g.build_objects.build_equipment(self.g, 0, 0, name="Great Sword", mat="Iron")
-            weapon.item.pick_up(inv)
-            chest = self.g.build_objects.build_equipment(self.g, 0, 0, name="plate", mat="Iron")
-            chest.item.pick_up(inv)
-            head = self.g.build_objects.build_equipment(self.g, 0, 0, name="plate helm", mat="Iron")
-            head.item.pick_up(inv)
+        weapon = self.g.build_objects.build_equipment(self.g, 0, 0, name="Great Sword", mat="Iron")
+        weapon.item.pick_up(inv)
+        chest = self.g.build_objects.build_equipment(self.g, 0, 0, name="plate", mat="Iron")
+        chest.item.pick_up(inv)
+        head = self.g.build_objects.build_equipment(self.g, 0, 0, name="plate helm", mat="Iron")
+        head.item.pick_up(inv)
+        for i in range(2):
             t = self.g.build_objects.build_light_source(self.g, 0, 0, "torch")
             t.item.pick_up(inv)
-            t = self.g.build_objects.build_light_source(self.g, 0, 0, "torch")
-            t.item.pick_up(inv)
-            for x in range(5):
-                p = self.g.build_objects.build_potion(self.g, 0, 0, 'healing')
-                p.item.pick_up(inv)
-            self.g.player.fighter.money = 200
-            self.g.player.fighter.max_hp = 25
-            self.g.player.fighter.hp = 25
+        # t = self.g.build_objects.build_light_source(self.g, 0, 0, "torch")
+        # t.item.pick_up(inv)
+        for x in range(5):
+            p = self.g.build_objects.build_potion(self.g, 0, 0, 'healing')
+            p.item.pick_up(inv)
+        self.g.player.fighter.money = 200
+        self.g.player.fighter.stat.set_stat_base("HP", 75)
+        self.g.player.fighter.hp = 75
+        self.g.player.fighter.max_consumable_level = 1
+
+        self.g.player.fighter.restricted_weapons = None
+
+    def create_wizard(self):
+        pass
+
+    def create_paladin(self):
+        pass
+
+    def create_ranger(self):
+        pass
+
+    def create_rogue(self):
+        pass
