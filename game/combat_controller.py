@@ -24,16 +24,22 @@ def single_target(attacker, target):
     attack_roll = libtcod.random_get_int(0, 1, 20)
     attack_roll += get_accuracy_bonus(attacker)
     print("ATK ROLL= " + str(attack_roll))
-
+    weapon = attacker.gear.gimmie_da_weapon()
     # Evasion chance always occurs, ends turn - no damage dealt
     if try_to_evade(target) > attack_roll:
         msg = attacker.owner.name.capitalize() + ' attacks ' + target.owner.name + ' but the attack was evaded!'
+        target.owner.flashing = True
+        target.owner.flash_duration = 10
+        target.owner.flash_hit = False
 
     # Parry chance is basically a second chance to evade
     elif target.gear.can_parry(target.gear.equipped['1h']) or \
             target.gear.can_parry(target.gear.equipped['2h']) and \
             try_to_parry(target) > attack_roll:
         msg = attacker.owner.name.capitalize() + ' attacks ' + target.owner.name + ' but the attack was deflected!'
+        target.owner.flashing = True
+        target.owner.flash_duration = 10
+        target.owner.flash_hit = False
 
     else:  # you hit, do some damage
         # TODO when weapon crits are added they will get checked at the same time as conditions:
@@ -64,16 +70,23 @@ def single_target(attacker, target):
 
         attacker.gear.add_w_xp(100)
 
+        if weapon.item.equipment.on_hit_effect:
+            weapon.item.equipment.on_hit(target=target, game=attacker.game, player=attacker.game.player)
         if elemental_damage:
             do_particle_burst(attacker, target)
-
+        #blood spatter
+        #make chance of blood spatter be based on size of hit, extra particles for crits
+        do_particle_burst(attacker, target)
     #if attacker.game:
     #    attacker.game.message.message(msg, 2)
 
 
-def do_particle_burst(attacker, target):  # does particle burst on elemental weapon damage
+def do_particle_burst(attacker, target, color=libtcod.dark_red):  # does particle burst on elemental weapon damage
     for fx in attacker.stat.elemental_effects:
-        attacker.game.gEngine.particle_explosion(fx.amount, target.owner.x, target.owner.y, color=attacker.stat.get_effect_color(fx))
+        attacker.game.gEngine.particle_explosion(fx.amount, target.owner.x, target.owner.y, color=attacker.stat.get_effect_color(fx), kill_no_vel=True)
+    amount = libtcod.random_get_int(None, 5, 10)
+    attacker.game.gEngine.particle_explosion(amount, target.owner.x, target.owner.y,
+                                             color=color, kill_no_vel=True)
 
 
 def check_elemental_dam_res(attacker, target):

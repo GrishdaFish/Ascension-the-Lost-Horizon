@@ -13,9 +13,12 @@ def render_all(game, injected_render_list=None):  # break this up to render ui a
 
         game.gEngine.map_draw(game.dungeon_console, game.player.x, game.player.y)
 
-        game.gEngine.particle_draw(game.dungeon_console)
+        game.gEngine.particle_draw(game.dungeon_console) # TODO: Add additional Particle array for character particles
 
         game.gEngine.map_blit(game.dungeon_console)
+
+        game.gEngine.particle_draw(game.dungeon_console) # TODO: Add additional Particle array for character particles
+
         draw_objects(game)
 
     draw_user_interface(game)

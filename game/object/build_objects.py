@@ -33,12 +33,19 @@ class GameObjects:
         self.melee_weapons = []
         self.monster_weapons = []
         self.light_sources = []
+        self.gEngine = gEngine
         self.load_content(gEngine)
         # Need to sort all of the different content
         # for the object builders
         self.sort_threat_levels()
         self.sort_consumables()
         self.sort_materials()
+
+    def reload_content(self):
+        self.load_content(self.gEngine)
+        self.sort_materials()
+        self.sort_consumables()
+        self.sort_threat_levels()
 
     def load_content(self,gEngine):
         """

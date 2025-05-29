@@ -37,8 +37,14 @@ class Object:
         self.objects = None
         self.message = None
         self.type = None
+
         self.flashing = False
         self.flash_duration = 0
+        self.flash = True
+        self.flash_max_frames = 2
+        self.flash_frames = self.flash_max_frames
+        self.flash_hit = True
+
         self.game = None
 
         self.fighter = fighter
@@ -110,9 +116,53 @@ class Object:
             objects.remove(self)
             objects.insert(0, self)
 
-    def attack_torch(self, torch):
+    def attack_torch(self, torch): ##TODO: Typo attack_torch->attach_torch
         self.torch = torch
         self.torch.owner = self
+
+    def fast_flash(self):
+        fr, fg, fb = 0, 0, 0
+        if self.flash_duration > 0:
+            if self.flash:
+                c2 = libtcod.Color(0, 0, 0)
+                libtcod.color_set_hsv(c2, 0, 0, 255)
+                fr, rg, rb = c2
+                self.flash_frames -= 1
+                if self.flash_frames == 0:
+                    self.flash = False
+                    self.flash_frames = self.flash_max_frames
+            else:
+                fr, fg, fb = self.color
+                self.flash_frames -= 1
+                if self.flash_frames == 0:
+                    self.flash = True
+                    self.flash_frames = self.flash_max_frames
+
+            self.flash_duration -= 1
+            if self.flash_duration <= 0:
+                self.flashing = False
+                self.flash = True
+            return fr, fg, fb
+
+    def slow_flash(self):
+        fr, fg, fb = 0, 0, 0
+        if self.flash_duration > 0:
+            c2 = libtcod.Color(0, 0, 0)
+            libtcod.color_set_hsv(c2, 0, 0, 255)
+            fr, fg, fb = c2
+
+        self.flash_duration -= 1
+        if self.flash_duration <= 0:
+            self.flashing = False
+            self.flash = True
+            fr, fg, fb = self.color
+        return fr, fg, fb
+
+    def calc_flash(self):
+        if self.flash_hit:
+            return self.fast_flash()
+        else:
+            return self.slow_flash()
 
     def draw(self, fov_map, gEngine, is_player=False, force_display=False):
         # only show if it's visible to the player
@@ -141,12 +191,8 @@ class Object:
             br, bg, bb = col
             fr, fg, fb = 0, 0, 0
             if self.flashing:
-                if self.flash_duration == 1:
-                    c2 = libtcod.Color(0, 0, 0)
-                    libtcod.color_set_hsv(c2, 0, 0, 255)
-                    fr, rg, rb = c2
-                    self.flash_duration = 0
-                    self.flashing = False
+                fr, fg, fb = self.calc_flash()
+
             else:  # TODO CONSIDER calculate final colors in a separate function? This may be the only spot to do this
                 fr, fg, fb = self.color
                 brightness = gEngine.lightmask_get_mask_value(self.x, self.y)
@@ -337,13 +383,17 @@ class Fighter:
 
         if damage > 0 and self.hp > 0:
             self.hp -= damage
+
             self.owner.flashing = True
-            self.owner.flash_duration = 1
+            self.owner.flash_duration = 10
+            self.owner.flash_hit = True
+
             r = libtcod.random_get_int(0, 0, 100)
             if r > 75:
                 r = libtcod.random_get_int(0, 0, len(bark.hit_barks)-1)
-                b = bark.Bark(game.gEngine, game.dungeon_console, self.owner, 1.0, bark.hit_barks[r])
-                game.bark_manager.add_bark(b)
+                ## TODO: Enable damage barks after testing
+                # b = bark.Bark(game.gEngine, game.dungeon_console, self.owner, 1.0, bark.hit_barks[r])
+                # game.bark_manager.add_bark(b)
 
             # check for death. if there's a death function, call it
             if self.hp <= 0:

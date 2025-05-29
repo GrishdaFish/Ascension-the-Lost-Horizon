@@ -1081,41 +1081,44 @@ class gEngine:
         else:
             return self.lightmask.get_mask_value(x, y)
 
-    def particle_explosion(self, num, x, y, r=False, b=False, color=None):
+    def particle_explosion(self, num, x, y, decay=0.055, r=False, b=False, color=None, velocity=1.0, lifetime=1.5, clipping=True, char=None, kill_no_vel=False):
         if SUBCELL:
             x *= 2
             y *= 2
-        particle.explosion(num, self.particles, x, y, r, b, color)
+        particle.explosion(num, self.particles, x, y, decay=decay, random_decay=r, bounce=b, color=color, velocity=velocity, lifetime=lifetime, clipping=clipping, char=char, kill_no_vel=kill_no_vel)
 
-    def particle_nova(self, num, x, y, r=False, b=False):
+    def particle_nova(self, num, x, y, r=False, b=False, kill_no_vel=False):
         if SUBCELL:
             x *= 2
             y *= 2
-        particle.nova(num, self.particles, x, y, r, b)
+        particle.nova(num, self.particles, x, y, r, b, kill_no_vel=kill_no_vel)
 
-    def particle_cone_spray(self, num, ox, oy, dx, dy, r=False, b=False):
+    def particle_cone_spray(self, num, ox, oy, dx, dy, r=False, b=False, clipping=True, char=None, kill_no_vel=False):
         if SUBCELL:
             ox *= 2
             oy *= 2
             dx *= 2
             dy *= 2
-        particle.cone_spray(num, self.particles, ox, oy, dx, dy, r, b)
+        particle.cone_spray(num, self.particles, ox, oy, dx, dy, r, b, clipping=clipping, char=char, kill_no_vel=kill_no_vel)
 
-    def particle_cone(self, num, ox, oy, dx, dy, r=False, b=False):
+    def particle_cone(self, num, ox, oy, dx, dy, r=False, b=False, clipping=True, char=None, kill_no_vel=False):
         if SUBCELL:
             ox *= 2
             oy *= 2
             dx *= 2
             dy *= 2
-        particle.cone(num, self.particles, ox, oy, dx, dy, r, b)
+        particle.cone(num, self.particles, ox, oy, dx, dy, r, b, clipping=clipping, char=char, kill_no_vel=kill_no_vel)
 
-    def particle_projectile(self, num, ox, oy, dx, dy, r=False, b=False, color=None):
+    def particle_projectile(self, num, ox, oy, dx, dy, r=False, b=False, color=None, clipping=True, char=None, kill_no_vel=False):
         if SUBCELL:
             ox *= 2
             oy *= 2
             dx *= 2
             dy *= 2
-        particle.projectile(num, self.particles, ox, oy, dx, dy, r, b, color)
+        particle.projectile(num, self.particles, ox, oy, dx, dy, r, b, color, clipping=clipping, char=char, kill_no_vel=kill_no_vel)
+
+    def particle_clear(self):
+        self.particles.clear()
 
     def particle_update(self, map=None):
         if len(self.particles) >= 1:
@@ -1128,9 +1131,10 @@ class gEngine:
                 self.particles.pop(p)
 
 
-    def particle_draw(self, con, c='*'):
+    def particle_draw(self, con=None, c='*'):
+        # TODO: Add additional Particle array for character particles
         for p in self.particles:
-            p.draw(self)
+            p.draw(self, con)
             #self.console_put_char_ex(con, int(p.x), int(p.y), c, 255, 255, 255, 0, 0, 0)
 
     def random_set_instance(self, seed=None):

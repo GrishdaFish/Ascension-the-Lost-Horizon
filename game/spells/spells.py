@@ -31,12 +31,13 @@ class Spell:
 def heal(min, max, range, radius, targets, target, player, game, effect_color):
     # heal the player
     if target == game.player:
-        if target.fighter.hp == target.fighter.stat.get_stat_base("HP"):
+        """if target.fighter.hp == target.fighter.stat.get_stat_base("HP"):
             game.message.message('You are already at full health.', libtcod.cyan)
-            return 'cancelled'
-        l = lights.Light(target.x, target.y, game.light_handler, decay=0.025, flicker=True, intensity=1.0, color=libtcod.lime)
-        game.level.light_handler.add_light(l)
+            return 'cancelled'"""
         game.message.message('Your wounds start to feel better!', libtcod.light_lime)
+    l = lights.Light(target.x, target.y, game.light_handler, decay=0.025, flicker=True, intensity=1.0, color=libtcod.lime)
+    game.level.light_handler.add_light(l)
+    game.gEngine.particle_explosion(30, target.x, target.y, decay=0.025, color=libtcod.lime, velocity=0.75, lifetime=0.55, clipping=False, char=['+', '%'])
     HEAL_AMOUNT = libtcod.random_get_int(0, min, max)
     game.ai_director.add_player_stat('potions quaffed', 1)
     game.ai_director.add_player_stat('hit points healed', HEAL_AMOUNT)
@@ -52,7 +53,9 @@ def fireball(min, max, range, radius, targets, target, player, game, effect_colo
         return 'cancelled'
     game.ai_director.add_player_stat('spells cast', 1)
     game.message.message('The fireball explodes, burning everything within ' + str(radius) + ' tiles!', 5)
-    game.gEngine.particle_explosion(25, x, y, b=True, color=libtcod.white)
+    color_list = [(libtcod.white), (libtcod.yellow), (libtcod.orange), (libtcod.red), (libtcod.dark_red),
+                  (libtcod.dark_gray)]
+    game.gEngine.particle_explosion(25, x, y, b=True,  velocity=1.5, lifetime=1.0)
     l = lights.Light(x, y, game.light_handler, flicker=True, flicker_intensity=0.15)
     c = [libtcod.white, libtcod.flame]
     l.staged_lerp(2.0, 1.2, 0.075, 0.0075, c)
@@ -65,6 +68,16 @@ def fireball(min, max, range, radius, targets, target, player, game, effect_colo
                                      libtcod.light_crimson)
                 obj.fighter.take_damage(FIREBALL_DAMAGE, player, game)
 
+def explosion(min=5, max=10, range=0, radius=0, targets=None, target=None, player=None, game=None, effect_color=(1,1,1)):
+    # game.gEngine.particle_explosion(10, target.owner.x, target.owner.y, b=True, color=libtcod.white)
+    l = lights.Light(target.owner.x, target.owner.y, game.light_handler, flicker=True, flicker_intensity=0.15)
+    c = [libtcod.white, libtcod.flame]
+    l.staged_lerp(1.8, 0.5, 0.075, 0.0075, c)
+    game.level.light_handler.add_light(l)
+    damage = libtcod.random_get_int(0, min, max)
+    target.take_damage(damage, player, game)
+    color_list = [(libtcod.white), (libtcod.yellow), (libtcod.orange), (libtcod.red), (libtcod.dark_red), (libtcod.dark_gray)]
+    # game.gEngine.particle_explosion(25, target.owner.x, target.owner.y, b=True, color=color_list)
 
 def lightning(min, max, range, radius, targets, target, player, game, effect_color):
     # find closest enemy (inside a maximum range) and damage it
@@ -204,6 +217,9 @@ def magical_mapping(min, max, range, radius, targets, tile, player, game, effect
         tile.explored = True
     game.ai_director.add_player_stat('spells cast', 1)
 
+def blank(min, max, range, radius, targets, tile, player, game, effect_color):
+    '''Just a placeholder spell to not break function pointers'''
+    pass
 
 spells = {
     'heal': heal,
@@ -215,9 +231,9 @@ spells = {
     'confuse': confuse,
     'detect monster': detect_monsters,
     'detect items': detect_loot,
-    'none': None,
-    '': None,
-    None: None,
+    'none': blank,
+    '': blank,
+    None: blank,
 }
 
 
@@ -300,7 +316,7 @@ class TargetRender:
         key, mouse = game.gEngine.handle_input()
         x, y = (mouse.cx, mouse.cy)
         r, g, b = libtcod.white
-        game.gEngine.console_set_default_background(self.targeting_window, r, g, b)
+        game.gEngine.console_set_default_background(self.targeting_window, (r, g, b))
         game.gEngine.console_print_frame(self.targeting_window, 0, 0, self.radius + 2, self.radius + 2, True)
         game.gEngine.console_blit(self.targeting_window, 0, 0, 0, 0, self.target_console,
                                   x - int(self.radius / 2) - 2, y - int(self.radius / 2) - 2, 0.5, 0.5)

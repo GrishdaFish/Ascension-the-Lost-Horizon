@@ -1,8 +1,9 @@
 __author__ = 'GrishdaFish'
 from gEngine.utilities.widget import window_widget, button_widget, text_input_widget, button_group, popups
-from game.debug_modules import module_list, dungeon_status, spawning_tool
+from game.debug_modules import module_list, dungeon_status, spawning_tool, reload_module
 from game.user_interface import help_popup_module
 from game import game
+from game.spells import spells
 import textwrap
 
 
@@ -12,7 +13,7 @@ class CharacterCreator(window_widget.WindowWidget):
         self.max_width = 38
         self.buttons = []
 
-        self.warrior_description = False
+        self.warrior_description = True
         self.wizard_description = False
         self.paladin_description = False
         self.ranger_description = False
@@ -69,6 +70,11 @@ class CharacterCreator(window_widget.WindowWidget):
         # load this module last
         m = module_list.ModuleList(self.gEngine, self.g, 0, 0, 15, 5, 'Module List')
         self.gEngine.add_module(m)
+
+        r = reload_module.ReloadModule(self.gEngine, x=20, y=0, w=15,h=5,title="Reload Tool")
+        r.setup()
+        r.activate()
+        self.gEngine.add_module(r)
 
         help_module = help_popup_module.HelpPopup(self.gEngine, self.g, 5, 5, 70, 30, "Help")
         if self.tutorial_on_button.enabled:
@@ -134,6 +140,8 @@ class CharacterCreator(window_widget.WindowWidget):
         inv = self.g.player.fighter.inventory
         print(self.g.player.name)
         weapon = self.g.build_objects.build_equipment(self.g, 0, 0, name="Great Sword", mat="Iron")
+        # weapon.item.equipment.on_hit_effect = spells.explosion # Testing on hit effects
+
         weapon.item.pick_up(inv)
         chest = self.g.build_objects.build_equipment(self.g, 0, 0, name="plate", mat="Iron")
         chest.item.pick_up(inv)
@@ -142,15 +150,16 @@ class CharacterCreator(window_widget.WindowWidget):
         for i in range(2):
             t = self.g.build_objects.build_light_source(self.g, 0, 0, "torch")
             t.item.pick_up(inv)
-        # t = self.g.build_objects.build_light_source(self.g, 0, 0, "torch")
-        # t.item.pick_up(inv)
         for x in range(5):
             p = self.g.build_objects.build_potion(self.g, 0, 0, 'healing')
             p.item.pick_up(inv)
+        for x in range(20):
+            s = self.g.build_objects.build_scroll(self.g, 0, 0, 'fireball')
+            s.item.pick_up(inv)
         self.g.player.fighter.money = 200
         self.g.player.fighter.stat.set_stat_base("HP", 75)
         self.g.player.fighter.hp = 75
-        self.g.player.fighter.max_consumable_level = 1
+        self.g.player.fighter.max_consumable_level = 3
 
         self.g.player.fighter.restricted_weapons = None
 

@@ -128,6 +128,7 @@ class Equipment:
         self.torch_intensity = intensity
         self.mat = None
 
+        self.on_hit_effect = None
         self.effects = []
 
     """def calc_damage(self):
@@ -142,6 +143,8 @@ class Equipment:
             total_damage = (total_damage * multiplier) + bonus  # + effect_damage
         print(str(total_damage))
         return total_damage"""
+    def on_hit(self, min=0, max=0, range=0, radius=0, targets=None, target=None, player=None, game=None, effect_color=(1,1,1)):
+        self.on_hit_effect(min, max, range, radius, targets, target, player, game, effect_color)
 
     ########################################################  equip is handled by equipped panel now
     def equip(self, target, game=None, owner=None, slot=0):  # TODO REFACTOR unnecessary arguments? this isn't marriage - find calls before deleting

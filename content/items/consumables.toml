@@ -38,8 +38,27 @@
     col=[255, 0, 0]
     value=50
     stackable = true
-    level=3
-    
+    level=0
+
+[["consumable"]]
+    name="great healing"
+    cell='!'
+    type="potion"
+    min_effect=25
+    max_effect=40
+    max_stack=0
+    effect_type="heal"
+    additional_effects="None"
+    spell_effect="None"
+    effect_color=[0, 0, 0]
+    range=0
+    radius=0
+    max_targets=0
+    col=[255, 0, 20]
+    value=50
+    stackable = true
+    level=1
+
 [["consumable" ]]
     name="fireball"
     cell='#'
