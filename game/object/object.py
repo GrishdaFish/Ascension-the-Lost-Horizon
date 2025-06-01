@@ -232,15 +232,6 @@ class Object:
 
         return False
 
-    def short_flash(self):
-        pass
-
-    def long_flash(self):
-        pass
-
-    def blink(self):
-        pass
-
     def hover_description(self):
         names = []
         if self.fighter is not None:
@@ -277,6 +268,9 @@ class Fighter:
         self.perks = PerkTree(self)
         self.stat = StatPanel()      # damage, resistance, effects and conditions
         self.gear = GearPanel(self)  # equipped items and related controls
+        self.passives = []
+        self.weapon_profs = {}
+
 
         self.death_function = death_function
         self.type = 'melee'

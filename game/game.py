@@ -29,6 +29,10 @@ from game import ranged_combat
 from game import input_handler
 from game import render
 from game.ai_director import ai_director
+
+
+from game.classes import warrior_skills
+
 import os
 import sys
 from gEngine import gEngine as _gEngine
@@ -44,7 +48,7 @@ max_room_items = 3
 
 
 class Game:
-    def __init__(self, gEngine):
+    def __init__(self, gEngine): # TODO: Break this up into individual functions for setup
         self.active = True
         self.gEngine = gEngine
         self.gEngine.log_open_block("Initializing game...")
@@ -139,6 +143,9 @@ class Game:
         self.popup = None
         self.is_player_turn = False
 
+        self.weapon_prof_skills = {}
+        self.setup_skills()
+
         self.gEngine.log_message("Game fully initialized")
         self.gEngine.log_close_block()
 
@@ -151,6 +158,21 @@ class Game:
 
     def on_exit(self):
         self.deactivate()
+
+    def setup_skills(self):
+        self.gEngine.log_open_block("Setting up Skills")
+        self.setup_weapon_prof_skills()
+
+    def setup_weapon_prof_skills(self):
+        self.gEngine.log_message("Weapon Proficiencies...")
+        subtype_list = self.build_objects.get_weapon_subtype_list("melee")
+        for subtype in subtype_list:
+            passive = warrior_skills.WeaponProf(name=subtype, owner=self.player, description= "Proficiency in %s weapons."% subtype)
+
+            self.weapon_prof_skills.update({subtype:passive})
+
+        for item in self.weapon_prof_skills:
+            print(item)
 
     def run(self, key, mouse):
         #while True:

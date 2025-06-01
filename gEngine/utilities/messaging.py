@@ -9,7 +9,7 @@ class Message:
         self.message_log = []
         self.message_console = message_console
         self.MESSAGE_SCREEN_HEIGHT = MESSAGE_SCREEN_HEIGHT
-        self.MESSAGE_SCREEN_WIDTH = MESSAGE_SCREEN_WIDTH - MSG_X
+        self.MESSAGE_SCREEN_WIDTH = MESSAGE_SCREEN_WIDTH# - MSG_X
         self.MSG_X = MSG_X
         self.x_pos = x_pos
         self.y_pos = y_pos
@@ -65,11 +65,11 @@ class Message:
         # This is old code, will update later. This is based on how Ascension's UI is set up
 
         self.gEngine.console_set_alignment(self.message_console, libtcod.LEFT)
-        self.gEngine.console_print_frame(self.message_console, 0, 0, self.MESSAGE_SCREEN_WIDTH, self.MESSAGE_SCREEN_HEIGHT, False)
-        #self.gEngine.console_print_frame(self.message_console, self.MSG_X-1, 0, self.MESSAGE_SCREEN_WIDTH +1,
-        #                                 self.MESSAGE_SCREEN_HEIGHT , False)
-        # self.gEngine.console_print(self.message_console, self.MSG_X - 1, 0, chr(libtcod.CHAR_TEES))
-        # self.gEngine.console_print(self.message_console, self.MSG_X - 1, self.MESSAGE_SCREEN_HEIGHT, chr(libtcod.CHAR_TEEN))
+        self.gEngine.console_print_frame(self.message_console, 0, 0, self.MESSAGE_SCREEN_WIDTH, self.MESSAGE_SCREEN_HEIGHT+1, False)
+        self.gEngine.console_print_frame(self.message_console, self.MSG_X-1, 0, self.MESSAGE_SCREEN_WIDTH -21,
+                                        self.MESSAGE_SCREEN_HEIGHT +1, False)
+        self.gEngine.console_print(self.message_console, self.MSG_X - 1, 0, chr(libtcod.CHAR_TEES))
+        self.gEngine.console_print(self.message_console, self.MSG_X - 1, self.MESSAGE_SCREEN_HEIGHT, chr(libtcod.CHAR_TEEN))
         for i in range(len(self.message_list)):
             self.gEngine.console_print(self.message_console, self.MSG_X, 1 + i, self.message_list[i])
 

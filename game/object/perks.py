@@ -69,7 +69,7 @@ class BabyTownFrolics(Perk):
         super().__init__(owner, weapon_type, branch, height, max_level, trigger)
         self.amount = 100
         self.stat_effected = "Strength"
-        super().set_description("Gonna make you strong pussy!")
+        super().set_description("Gonna make you strong!")
 
     def apply_level_up(self):
         self.deactivate()

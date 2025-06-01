@@ -103,6 +103,18 @@ class GameObjects:
         gEngine.log_message("Content Loaded")
         gEngine.log_close_block()
 
+    def get_weapon_subtype_list(self, type=None):
+        subtype_list = []
+        for item in self.weapons:
+            if type is None:
+                subtype_list.append(item.subtype)
+            elif type =="melee":
+                if item.type == "melee":
+                    subtype_list.append(item.subtype)
+            elif type == "ranged":
+                if item.type == "ranged":
+                    subtype_list.append(item.subtype)
+        return subtype_list
 
     def sort_materials(self):
         """

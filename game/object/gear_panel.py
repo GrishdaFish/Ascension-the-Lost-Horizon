@@ -171,6 +171,11 @@ class GearPanel:
             self.light_source = gear
 
         elif self.is_weapon(gear):
+            subtype = gear.item.equipment.subtype
+            if not subtype in self.owner.weapon_profs:
+                self.owner.game.message.message("You do not have the required proficiency to equip this weapon!")
+                #TODO: Create a pop up displaying the error above
+                return
             if self.is_two_hander(gear): #emtpy both hands and equip
                 if self.equipped['1h'] is not None:
                     self.unquip_it(self.equipped['1h'])

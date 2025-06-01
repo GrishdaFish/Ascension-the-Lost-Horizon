@@ -9,6 +9,7 @@ import textwrap
 
 class CharacterCreator(window_widget.WindowWidget):
     def setup(self):
+        self.g = game.Game(self.gEngine)
         self.base_width = 25
         self.max_width = 38
         self.buttons = []
@@ -54,7 +55,6 @@ class CharacterCreator(window_widget.WindowWidget):
         self.gEngine.modules = []
         self.gEngine.additional_modules = []
         self.gEngine.module_adjust_list = []
-        self.g = game.Game(self.gEngine)
         self.g.new_game()
         self.gEngine.add_module(self.g)
         self.create_player()
@@ -136,7 +136,7 @@ class CharacterCreator(window_widget.WindowWidget):
         if self.rogue_description:
             self.create_rogue()
 
-    def create_warrior(self):
+    def create_warrior(self): # TODO: Break this out into its own .py file
         inv = self.g.player.fighter.inventory
         print(self.g.player.name)
         weapon = self.g.build_objects.build_equipment(self.g, 0, 0, name="Great Sword", mat="Iron")
@@ -160,8 +160,9 @@ class CharacterCreator(window_widget.WindowWidget):
         self.g.player.fighter.stat.set_stat_base("HP", 75)
         self.g.player.fighter.hp = 75
         self.g.player.fighter.max_consumable_level = 3
-
-        self.g.player.fighter.restricted_weapons = None
+        weapon_subtype = "Great Sword"
+        self.g.player.fighter.weapon_profs.update({weapon_subtype:self.g.weapon_prof_skills[weapon_subtype]})
+        #self.g.player.fighter.restricted_weapons = None
 
     def create_wizard(self):
         pass

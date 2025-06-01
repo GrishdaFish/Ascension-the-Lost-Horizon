@@ -204,7 +204,6 @@ class Particle:
 
     def draw(self, gEngine, con):  # change this to lightmap drawing once subcell res is implemented
         if self.char:
-            pass
             x = self.x/2
             y = self.y/2
             col = gEngine.get_map_tile_color(int(x), int(y))
