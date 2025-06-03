@@ -171,11 +171,13 @@ class GearPanel:
             self.light_source = gear
 
         elif self.is_weapon(gear):
-            subtype = gear.item.equipment.subtype
-            if not subtype in self.owner.weapon_profs:
-                self.owner.game.message.message("You do not have the required proficiency to equip this weapon!")
-                #TODO: Create a pop up displaying the error above
-                return
+            # TODO VERIFY PLAYER ONLY FOR PROFICIENCIES FOR NOW, CRASH ABUNDAND
+            if self.is_player():
+                subtype = gear.item.equipment.subtype
+                if not subtype in self.owner.weapon_profs:
+                    self.owner.game.message.message("You do not have the required proficiency to equip this weapon!")
+                    #TODO: Create a pop up displaying the error above
+                    return
             if self.is_two_hander(gear): #emtpy both hands and equip
                 if self.equipped['1h'] is not None:
                     self.unquip_it(self.equipped['1h'])
@@ -315,6 +317,9 @@ class GearPanel:
 
     def get_weapon_damage_type(self, gear):
         return self.weapon_panel[gear.item.equipment.subtype][1]
+
+    def is_player(self):
+        return self.owner == self.owner.game.player.fighter
 
     # JUST TELL ME IF ITS A FUCKING WEAPON PLX
     def is_weapon(self, gear):

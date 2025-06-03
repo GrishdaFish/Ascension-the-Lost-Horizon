@@ -1,4 +1,5 @@
 __author__ = 'GrishdaFish'
+import libtcodpy as libtcod
 class Skill:
     def __init__(self, name="", owner=None, description=""):
         self.name = name
@@ -7,30 +8,58 @@ class Skill:
         self.level = 0
         self.level_requirement = 0
         self.required_class = None
-        if owner:
-            self.gEngine = owner.gEngine
-            self.game = owner.game
-        else:
-            self.gEngine = None
-            self.game = None
+        self.char = " "
+        self.color = libtcod.green
 
     def use(self):
         pass
 
 class ActiveSkill(Skill):
-    def __init__(self, name="", owner=None, description=""):
+    def __init__(self, name="", owner=None, description="", game=None, gEngine=None):
         super().__init__(name, owner, description)
+        self.game = game
+        self.gEngine = gEngine
 
 
 class CooldownSkill(ActiveSkill):
-    def __init__(self, name="", owner=None, description=""):
-        super().__init__(name, owner, description)
-        self.cooldown = 0
+    def __init__(self, name="", owner=None, description="", cooldown=0, activate=None, game=None, gEngine=None):
+        """
+
+        :param cooldown: how many turns until reuse
+        :param activate: Function pointer to the skill function
+        """
+        super().__init__(name, owner, description, game, gEngine)
+        self.cooldown = cooldown
         self.current_timer = 0
+        self.activate = activate
+
+    def take_turn(self):
+        if self.current_timer > 0:
+            self.current_timer -= 1
+            self.char = str(self.current_timer)
+            self.color = libtcod.red
+            if self.current_timer == 0:
+                self.char = "/"
+                self.color = libtcod.green
+
+    def use(self):
+        if self.current_timer == 0:
+            self.activate(self.gEngine, self.game, self.owner)
+            self.current_timer = self.cooldown
+            self.owner.fighter.cooldown_skills.append(self)
+            self.char = str(self.current_timer)
+            self.color = libtcod.red
+            return True
+        else:
+            if self.game:
+                self.game.message.message("%s skill on cooldown for %d more turns!"%(self.name, self.current_timer), libtcod.red)
+            return False
+
+
 
 class ResourceSkill(ActiveSkill):
-    def __init__(self, name="", owner=None, description=""):
-        super().__init__(name, owner, description)
+    def __init__(self, name="", owner=None, description="", game=None, gEngine=None):
+        super().__init__(name, owner, description, game, gEngine)
         self.resource_cost = 0
         self.resource_requirement = None
 

@@ -1,9 +1,18 @@
 __author__ = 'GrishdaFish'
+
 from gEngine.utilities.widget import window_widget, button_widget, text_input_widget, button_group, popups
+
 from game.debug_modules import module_list, dungeon_status, spawning_tool, reload_module
+
 from game.user_interface import help_popup_module
+
 from game import game
+
 from game.spells import spells
+
+from game.classes import skills
+from game.classes import warrior_skills
+
 import textwrap
 
 
@@ -162,6 +171,9 @@ class CharacterCreator(window_widget.WindowWidget):
         self.g.player.fighter.max_consumable_level = 3
         weapon_subtype = "Great Sword"
         self.g.player.fighter.weapon_profs.update({weapon_subtype:self.g.weapon_prof_skills[weapon_subtype]})
+        ww = skills.CooldownSkill("Whirlwind", self.g.player, "Whirlwind skill", 3, warrior_skills.whirlwind, self.g, self.gEngine)
+        ww.char = "/"
+        self.g.player.fighter.active_skills.append(ww)
         #self.g.player.fighter.restricted_weapons = None
 
     def create_wizard(self):

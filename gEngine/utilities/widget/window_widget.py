@@ -62,6 +62,7 @@ class WindowWidget:
     def on_exit(self):
         self.deactivate()
         self.gEngine.console_remove_console(self.con)
+        #self.gEngine.remove_module(self)
 
     def update(self, key, mouse):
         pass

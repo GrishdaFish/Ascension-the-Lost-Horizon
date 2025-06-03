@@ -270,7 +270,8 @@ class Fighter:
         self.gear = GearPanel(self)  # equipped items and related controls
         self.passives = []
         self.weapon_profs = {}
-
+        self.active_skills = []
+        self.cooldown_skills = []
 
         self.death_function = death_function
         self.type = 'melee'
@@ -361,6 +362,12 @@ class Fighter:
             combat_controller.attack(self, target, direction=None, force_attack_target=target)
         else:
             combat_controller.attack(self, target, direction)
+        if len(self.cooldown_skills) > 0:
+            for i in range(len(self.cooldown_skills)-1, -1, -1):
+                self.cooldown_skills[i].take_turn()
+                if self.cooldown_skills[i].current_timer == 0:
+                    self.cooldown_skills.remove(self.cooldown_skills[i])
+
 
     def take_damage(self, damage, attacker, game):
         # apply damage if possible
