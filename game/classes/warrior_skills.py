@@ -14,6 +14,13 @@ class WeaponProf(skills.PassiveSkill):
 def whirlwind(gEngine, game, owner):
     if game:
         game.message.message(("%s used whirlwind!"%owner.name))
-
+        return True
     else:
-        return
+        return False
+
+def bash(gEngine, game, owner):
+    if game:
+        game.message.message(("%s used bash!"%owner.name))
+        return True
+    else:
+        return False

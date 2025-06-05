@@ -14,7 +14,9 @@ class StatPanel:
             "modifiers": {
                 "key": ["Penalty", "Modifier", "Base"],
                 "HP": [0, 0, 1],
+                "Stamina":[0,0,1],
                 "Regen": [0, 0, 0],
+                "StaminaRegen": [0, 0, 1],
                 "Accuracy": [0, 0, 1],
                 "Defense": [0, 0, 1],
                 "Block": [0, 0, 0],

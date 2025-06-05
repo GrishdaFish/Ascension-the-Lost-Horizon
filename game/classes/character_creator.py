@@ -13,6 +13,8 @@ from game.spells import spells
 from game.classes import skills
 from game.classes import warrior_skills
 
+from game.object import effects
+
 import textwrap
 
 
@@ -167,14 +169,22 @@ class CharacterCreator(window_widget.WindowWidget):
             s.item.pick_up(inv)
         self.g.player.fighter.money = 200
         self.g.player.fighter.stat.set_stat_base("HP", 75)
+        self.g.player.fighter.stat.set_stat_base("Stamina", 10)
+        self.g.player.fighter.stamina = 1
         self.g.player.fighter.hp = 75
         self.g.player.fighter.max_consumable_level = 3
+
+        #Passive Skills
         weapon_subtype = "Great Sword"
         self.g.player.fighter.weapon_profs.update({weapon_subtype:self.g.weapon_prof_skills[weapon_subtype]})
-        ww = skills.CooldownSkill("Whirlwind", self.g.player, "Whirlwind skill", 3, warrior_skills.whirlwind, self.g, self.gEngine)
-        ww.char = "/"
+
+        #Active Cooldown Skills
+        ww = skills.CooldownSkill("Whirlwind", self.g.player, "Whirlwind skill", 3, warrior_skills.whirlwind, self.g, self.gEngine,"W")
         self.g.player.fighter.active_skills.append(ww)
-        #self.g.player.fighter.restricted_weapons = None
+
+        #Active Spender Skills
+        b = skills.ResourceSkill("Bash", self.g.player,"Bash Skill", 3, warrior_skills.bash, self.g, self.gEngine,"B")
+        self.g.player.fighter.active_skills.append(b)
 
     def create_wizard(self):
         pass

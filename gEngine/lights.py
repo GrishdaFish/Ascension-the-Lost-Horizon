@@ -2,12 +2,13 @@ import tcod as libtcod
 import time
 
 default_light_colors = [
-    libtcod.lighter_amber,
-    libtcod.light_orange,
-    libtcod.lighter_flame,
-    libtcod.lightest_amber,
-    libtcod.lightest_orange,
-    libtcod.lightest_flame,
+    libtcod.Color(225, 159, 0),
+    #libtcod.lighter_amber,
+    #libtcod.light_orange,
+    #libtcod.lighter_flame,
+    #libtcod.lightest_amber,
+    #libtcod.lightest_orange,
+    #libtcod.lightest_flame,
 ]
 
 class LightHandler:
@@ -52,6 +53,12 @@ class Light:
         if not color:
             r = libtcod.random_get_int(0, 0, len(default_light_colors)-1)
             color = default_light_colors[r]
+        if color[0] == 0:
+            color[0] = 1
+        if color[1] == 0:
+            color[1] = 1
+        if color[2] == 0:
+            color[2] = 1
         r = color[0]/255 * intensity
         g = color[1]/255 * intensity
         b = color[2]/255 * intensity

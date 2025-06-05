@@ -7,6 +7,7 @@ from game.user_interface.inventory import *
 
 from game.classes import skills
 
+from game.object import object
 
 def get_centered_text(text, width):
     head = text
@@ -79,7 +80,6 @@ class HotBar():
         """
 
         for slot in self.slots:
-            slot.render()
             self.gEngine.console_blit(slot.window, 0, 0, 3, 3, self.window, slot.position, 1, 1.0, 1.0)
         self.gEngine.console_blit(self.window, 0, 0, 32, 5, self.con, self.x, self.y, 1.0, 1.0)
 
@@ -137,8 +137,7 @@ class HotBarSlot():
 
     def use(self, game, key, mouse):
         """
-        Uses the item in the current slot, or if the slot is empty, opens the inventory
-        to allow the player to select the  item to use
+        Uses the object in the current slot, or if the slot is empty, opens a widget to choose what to add to the bar
 
         Note: change this code to suit item and inventory system per game
         :param game:
@@ -149,23 +148,22 @@ class HotBarSlot():
         turn = False
         if self.obj:
             if isinstance(self.obj, skills.Skill):
-               turn = self.obj.use() # TODO CHECK FOR COOLDOWN BEFORE USE
-               if turn:
-                   game.player_action = 'turn-used'
-                   return 'turn-used'
-            elif self.obj.item.spell:
-                if self.obj.item.qty <= 1:
-                    for slot in self.owner.slots:  # make sure any of the other slots that use this item are also removed
-                        if slot.obj == self.obj and slot != self:
-                            slot.remove_object()
-                    self.obj.item.use(game.player.fighter.inventory, game.player, game)
+               turn = self.obj.use()
+            if isinstance(self.obj, object.Object):
+                if self.obj.item.spell:
+                    if self.obj.item.qty <= 1:
+                        for slot in self.owner.slots:  # make sure any of the other slots that use this item are also removed
+                            if slot.obj == self.obj and slot != self:
+                                slot.remove_object()
+                        self.obj.item.use(game.player.fighter.inventory, game.player, game)
+                        turn = True
+                        self.remove_object()
+                    else:
+                        self.obj.item.use(game.player.fighter.inventory, game.player, game)
+                        turn = True
+                elif self.obj.item.equipment: # change this to equip selected item
+                    self.obj.item.equipment.equip(self.game.player, self.game, self.obj.item)
                     turn = True
-                    self.remove_object()
-                else:
-                    self.obj.item.use(game.player.fighter.inventory, game.player, game)
-                    turn = True
-            elif self.obj.equipment: # change this to equip selected item
-                pass
             if turn:
                 game.player_action = 'turn-used'
                 return 'turn-used'
@@ -195,28 +193,31 @@ class HotBarSlot():
         """
         self.gEngine.console_clear(self.window)
         col = libtcod.white
-        if self.cx <= mouse.cx <= self.cx + 2:
-            if self.cy <= mouse.cy <= self.cy + 2:
-                col = libtcod.green
-                t = self.name.capitalize()
-                t = chr(libtcod.CHAR_TEEW) + t
-                if self.obj:
-                    if isinstance(self.obj, skills.Skill):
-                        pass # TODO Name stuff
-                    elif self.obj.item:
-                        t += ' (%d)' % self.obj.item.qty + chr(libtcod.CHAR_TEEE)
-                    else:
-                        t += chr(libtcod.CHAR_TEEE)
-                else:
-                    t += chr(libtcod.CHAR_TEEE)
-                t, p = get_centered_text(t, 16)
-                self.gEngine.console_print(self.owner.window, p, 0, t)
-                if mouse.lbutton:
-                    col = libtcod.red
-                if mouse.lbutton:
-                    self.use(game, key, mouse)
-                if mouse.rbutton:
-                    self.remove_object()
+
+        if self.in_slot(mouse):
+            col = libtcod.green
+            t = self.name.capitalize()
+            t = chr(libtcod.CHAR_TEEW) + t
+
+            if isinstance(self.obj, skills.Skill):
+                if isinstance(self.obj, skills.ResourceSkill):
+                    t += ' (Cost: %d %s)' % (self.obj.resource_cost, self.obj.resource_requirement)
+                elif isinstance(self.obj, skills.CooldownSkill):
+                    t += ' (%d Turn Cooldown)'% self.obj.cooldown
+            elif isinstance(self.obj, object.Object):
+                if self.obj.item:
+                    t += ' (Qty: %d)' % self.obj.item.qty
+
+            t += chr(libtcod.CHAR_TEEE)
+            t, p = get_centered_text(t, 16)
+            self.gEngine.console_print(self.owner.window, p, 0, t)
+
+            if mouse.lbutton:
+                col = libtcod.red
+            if mouse.lbutton:
+                self.use(game, key, mouse)
+            if mouse.rbutton:
+                self.remove_object()
 
         self.gEngine.console_set_default_foreground(self.window, col)
         self.gEngine.console_print_frame(self.window, 0, 0, 3, 3, True)
@@ -229,14 +230,16 @@ class HotBarSlot():
             c = color_text('X', libtcod.red)
             self.gEngine.console_print(self.window, 1, 1, c)
 
-    def render(self, hovered=False, pressed=False):
+    def in_slot(self, mouse):
         """
-        Renders the Object
-        :param hovered: is the mouse hovering or not being pressed?
-        :param pressed: is the mouse pressing on the button?
-        :return: None
+        Checks to see if the mouse is hovering over this hotbar slot
+        :param mouse:
+        :return:
         """
-        pass
+        if self.cx <= mouse.cx <= self.cx + 2:
+            if self.cy <= mouse.cy <= self.cy + 2:
+                return True
+        return False
 
 
 class SelectPopup(window_widget.WindowWidget):
@@ -271,6 +274,7 @@ class SkillSelectPopup(window_widget.WindowWidget):
             b = SkillButton(self, 1, y, label=skill.name, function=None)
             b.setup(skill, self.slot)
             self.buttons.append(b)
+            y+=1
 
     def update(self, key, mouse):
         if self.slot.obj_selected:

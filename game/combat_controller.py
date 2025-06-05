@@ -62,7 +62,7 @@ def single_target(attacker, target):
             mitigated_damage = get_blocked_amount(target)
 
         final_damage = weapon_damage + elemental_damage - mitigated_damage
-        print("Damage" + str(final_damage))
+        print("Damage " + str(final_damage))
         msg = attacker.owner.name.capitalize() + ' attacks ' + target.owner.name + ' for ' + str(final_damage) + '!'
         if attacker.game:
             attacker.game.message.message(msg, 2)
@@ -84,7 +84,7 @@ def single_target(attacker, target):
 def do_particle_burst(attacker, target, color=libtcod.dark_red):  # does particle burst on elemental weapon damage
     for fx in attacker.stat.elemental_effects:
         attacker.game.gEngine.particle_explosion(fx.amount, target.owner.x, target.owner.y, color=attacker.stat.get_effect_color(fx), kill_no_vel=True)
-    amount = libtcod.random_get_int(None, 5, 10)
+    amount = libtcod.random_get_int(None, 3, 5)
     attacker.game.gEngine.particle_explosion(amount, target.owner.x, target.owner.y,
                                              color=color, kill_no_vel=True)
 

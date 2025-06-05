@@ -185,7 +185,7 @@ class PrefabGenerator:
                                 r = libtcod.random_get_int(0, 0, 100)
                                 if r <= light_spawn_chance:
                                     print("...wall light added to light map")
-                                    i = libtcod.random_get_float(0, 0.75, 1.0)
+                                    i = libtcod.random_get_float(0, 0.90, 1.15)
                                     l = lights.Light(x + room_x - center_x, y + room_y - center_y, light_handler,
                                                      flicker=True, intensity=i)
                                     light_handler.add_light(l)
@@ -196,7 +196,7 @@ class PrefabGenerator:
                                 r = libtcod.random_get_int(0, 0, 100)
                                 if r <= light_spawn_chance:
                                     print("...floor light added")
-                                    i = libtcod.random_get_float(0, 0.75, 1.0)
+                                    i = libtcod.random_get_float(0, 0.90, 1.15)#libtcod.random_get_float(0, 0.75, 1.0)
                                     l = lights.Light(x + room_x - center_x, y + room_y - center_y, light_handler,
                                                      flicker=True, intensity=i)
                                     light_handler.add_light(l)
@@ -617,9 +617,9 @@ class PrefabGenerator:
                 # check for light locations
                 if h[y][x] == "L":
                     self.set_ground(x, y)
-                    i = libtcod.random_get_float(0, 0.85, 1.0)
+                    i = libtcod.random_get_float(0, 0.9, 1.15)#libtcod.random_get_float(0, 0.85, 1.0)
                     if light_handler:
-                        l = lights.Light(x, y, light_handler, color=libtcod.white, flicker=True, intensity=i)
+                        l = lights.Light(x, y, light_handler,  flicker=True, intensity=i)
                         light_handler.add_light(l)
                 # player starting location
                 if h[y][x] == 'X':

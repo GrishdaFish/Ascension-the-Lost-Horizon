@@ -242,6 +242,8 @@ class Game:
 
             if self.player_action == 'turn-used' or self.player_action == 'player-moved':
                 self.ticker.schedule_turn(self.player.fighter.stat.get_stat("Speed"), self.player)
+                self.player.fighter.heal_stamina(self.player.fighter.stat.get_stat("StaminaRegen"))
+                #print("Player Stamina: %d"%self.player.fighter.stamina)
                 self.player.torch.update(self)
                 self.is_player_turn = False
                 self.turns += 1
@@ -287,11 +289,14 @@ class Game:
         self.player = object.Object(self.dungeon_console, 0, 0, '@', 'player',
                                     libtcod.white, blocks=True, fighter=fighter_component)
         self.player.game = self
+
+        # TODO Refactor status bars into their own small class with all relevant data attached to it
+        # this will help manage bars a bit easier
         self.player_hp_bar = status_bar.StatusBar(self.bar_width, libtcod.light_red,
                                                   libtcod.darker_red, self.panel, gEngine=self.gEngine)
 
-        #self.player_torch_bar = status_bar.StatusBar(self.bar_width, libtcod.light_flame,
-        #                                             libtcod.darker_flame, self.panel, gEngine=self.gEngine)
+        self.player_resource_bar = status_bar.StatusBar(self.bar_width, libtcod.light_flame,
+                                                     libtcod.darker_flame, self.panel, gEngine=self.gEngine)
 
         self.player_xp_bar = status_bar.StatusBar(self.bar_width, libtcod.light_grey,
                                                   libtcod.dark_grey, self.panel, gEngine=self.gEngine)

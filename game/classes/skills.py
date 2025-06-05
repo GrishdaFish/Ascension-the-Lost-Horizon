@@ -22,7 +22,7 @@ class ActiveSkill(Skill):
 
 
 class CooldownSkill(ActiveSkill):
-    def __init__(self, name="", owner=None, description="", cooldown=0, activate=None, game=None, gEngine=None):
+    def __init__(self, name="", owner=None, description="", cooldown=0, activate=None, game=None, gEngine=None, char=" "):
         """
 
         :param cooldown: how many turns until reuse
@@ -32,6 +32,8 @@ class CooldownSkill(ActiveSkill):
         self.cooldown = cooldown
         self.current_timer = 0
         self.activate = activate
+        self.char=char
+        self.original_char = char
 
     def take_turn(self):
         if self.current_timer > 0:
@@ -39,7 +41,7 @@ class CooldownSkill(ActiveSkill):
             self.char = str(self.current_timer)
             self.color = libtcod.red
             if self.current_timer == 0:
-                self.char = "/"
+                self.char = self.original_char
                 self.color = libtcod.green
 
     def use(self):
@@ -58,10 +60,22 @@ class CooldownSkill(ActiveSkill):
 
 
 class ResourceSkill(ActiveSkill):
-    def __init__(self, name="", owner=None, description="", game=None, gEngine=None):
+    def __init__(self, name="", owner=None, description="", cost=0, activate=None, game=None, gEngine=None, char=" ", resource="Stamina"):
         super().__init__(name, owner, description, game, gEngine)
-        self.resource_cost = 0
-        self.resource_requirement = None
+        self.resource_cost = cost
+        self.resource_requirement = resource
+        self.activate = activate
+        self.char = char
+        self.original_char = char
+
+    def use(self):
+        if self.owner.fighter.spend_stamina(self.resource_cost):
+            self.activate(self.gEngine, self.game, self.owner)
+            return True
+        else:
+            if self.game:
+                self.game.message.message("Not enough %s to use %s!"%(self.resource_requirement, self.name), libtcod.red)
+            return False
 
 class PassiveSkill(Skill):
     def __init__(self, name="", owner=None, description=""):

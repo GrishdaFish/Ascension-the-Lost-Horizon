@@ -31,7 +31,7 @@ class Effect:
         self.panel_group = None    # combat modifiers or conditions, relating to stat panel.panel[panel_group]
         self.effect_name = effect  # name relating to stat_panel.panel[panel_group][name]
         self.effect_real_name = None  # name relating to stat_panel.panel[panel_group]['key'][effect_real_name] (output)
-        self.index = None          # logical storage index of stat for ease of reference
+        self.index = 0          # logical storage index of stat for ease of reference
 
         self.amount = 0            # strength of effect *should support range (i.e +5 or +5-10) for damage spread
 
@@ -39,7 +39,7 @@ class Effect:
         self.persist = False       # is this a 1 time persistent stat modifier, like STR down or STUN?
         self.target = None         # actor receiving
         self.probability = 0       # % chance to trigger effect
-        self.duration = 0         # inflicted duration in turns, passed to condition : we'll call it base 10 for now, UG w/ perks
+        self.duration = 10         # inflicted duration in turns, passed to condition : we'll call it base 10 for now, UG w/ perks
         self.total_duration = self.duration
         self.ticker = ticker       # ***only give it a ticker if its an active condition / persist = False
         self.can_cancel = None     # effect can be cancelled by item or spell - this variable is reserved for that if needed
@@ -78,6 +78,7 @@ class Effect:
         self.actor = None
         condition = copy.deepcopy(self)
         condition.target = target
+
         condition.item = item
         condition.actor = actor
         self.item = item
@@ -145,10 +146,14 @@ class Effect:
         if self.duration <= 0:            # if effect is expired kill it
             self.deactivate_condition()
         else:                               # if not, reduce duration and do stuff
-            self.duration -= 1
+            if not self.persist:
+                self.duration -= 1
             self.add_turn()
             if self.amount:  # None will indicate special conditions that fire only once, like stun or reduce strength
-                self.inflict_damage()
+                if self.effect_name == "StaminaRegen":
+                    self.actor.fighter.heal_stamina(self.amount)
+                else:
+                    self.inflict_damage()
 
         # game.game.message stuff
 
@@ -169,6 +174,7 @@ class Effect:
 
     def get_real_name(self):
         stat_panel = StatPanel()
+        print("%s, %s"%(str(self.panel_group),str(self.index)))
         self.effect_real_name = stat_panel.panel[self.panel_group]['key'][self.index]
 
     def generate_effect(self):  # TODO this is a basic bitch generator, fix it up
@@ -180,7 +186,7 @@ class Effect:
 
             self.index = libtcod.random_get_int(0, 0, 1)
             name_list.pop(0)
-
+            print("index: %d"%self.index)
             self.effect_name = random.choice(name_list)
         self.amount = libtcod.random_get_int(0, 1, 3)
 

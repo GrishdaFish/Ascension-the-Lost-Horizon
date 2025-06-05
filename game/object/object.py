@@ -291,6 +291,10 @@ class Fighter:
         self.max_hp = self.stat.get_stat("HP")
         self.hp = self.max_hp
 
+        self.max_stamina = self.stat.get_stat("Stamina")
+        self.stamina = self.max_stamina
+        self.stamina_regen_speed = 1
+
         self.max_consumable_level = 0
         self.restricted_weapons = []
 
@@ -413,6 +417,16 @@ class Fighter:
         if self.hp > self.stat.get_stat_base("HP"):
             self.hp = self.stat.get_stat_base("HP")
 
+    def heal_stamina(self, amount):
+        self.stamina += amount
+        if self.stamina > self.stat.get_stat_base("Stamina"):
+            self.stamina = self.stat.get_stat_base("Stamina")
+
+    def spend_stamina(self, amount):
+        if amount > self.stamina:
+            return False
+        self.stamina -= amount
+        return True
 
 class Torch:    # TODO REFACTOR move torch to item.py
     def __init__(self, owner):
