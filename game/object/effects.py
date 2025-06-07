@@ -174,7 +174,6 @@ class Effect:
 
     def get_real_name(self):
         stat_panel = StatPanel()
-        print("%s, %s"%(str(self.panel_group),str(self.index)))
         self.effect_real_name = stat_panel.panel[self.panel_group]['key'][self.index]
 
     def generate_effect(self):  # TODO this is a basic bitch generator, fix it up
@@ -186,7 +185,6 @@ class Effect:
 
             self.index = libtcod.random_get_int(0, 0, 1)
             name_list.pop(0)
-            print("index: %d"%self.index)
             self.effect_name = random.choice(name_list)
         self.amount = libtcod.random_get_int(0, 1, 3)
 

@@ -617,7 +617,7 @@ class PrefabGenerator:
                 # check for light locations
                 if h[y][x] == "L":
                     self.set_ground(x, y)
-                    i = libtcod.random_get_float(0, 0.9, 1.15)#libtcod.random_get_float(0, 0.85, 1.0)
+                    i = libtcod.random_get_float(0, 0.9, 1.45)#libtcod.random_get_float(0, 0.85, 1.0)
                     if light_handler:
                         l = lights.Light(x, y, light_handler,  flicker=True, intensity=i)
                         light_handler.add_light(l)

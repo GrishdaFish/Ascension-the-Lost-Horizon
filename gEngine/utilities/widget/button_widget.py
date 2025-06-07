@@ -38,6 +38,7 @@ class ButtonWidget:
         self.triggered = False
         self.untriggered_color = libtcod.dark_grey
         self.triggered_color = libtcod.white
+        self.background_color = libtcod.lighter_grey
 
     def activate(self):
         self.active = True
@@ -107,7 +108,7 @@ class ButtonWidget:
 
     def pre_draw_widget(self):
         if self.active:
-            self.gEngine.console_set_default_background(self.con, libtcod.lighter_grey)
+            self.gEngine.console_set_default_background(self.con, self.background_color)
             self.gEngine.console_print(self.con, 0, 0, self.label)
 
 

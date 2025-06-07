@@ -23,8 +23,11 @@ from game.object import object
 from game.user_interface import inventory
 from game.user_interface import character
 from game import main_menu
+
 from game.user_interface import menus
 from game.user_interface import hover_description
+from game.user_interface import skill_screen
+
 from game import ranged_combat
 from game import input_handler
 from game import render
@@ -146,6 +149,10 @@ class Game:
         self.weapon_prof_skills = {}
         self.setup_skills()
 
+        self.skill_screen = skill_screen.SkillScreen(self.gEngine, self, 0, 0, self.dungeon_width, self.dungeon_height, "Skills")
+        self.skill_screen.active = False
+
+
         self.gEngine.log_message("Game fully initialized")
         self.gEngine.log_close_block()
 
@@ -171,8 +178,7 @@ class Game:
 
             self.weapon_prof_skills.update({subtype:passive})
 
-        for item in self.weapon_prof_skills:
-            print(item)
+
 
     def run(self, key, mouse):
         #while True:
@@ -312,6 +318,10 @@ class Game:
         #self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
         self.game_state = 'playing'
         self.ai_director.add_player_stat('gold earned', self.player.fighter.money)
+
+        self.skill_screen.setup(self)
+        self.gEngine.add_module(self.skill_screen)
+        print(str(self.skill_screen.__class__.__name__))
 
     def setup_world(self):
         pass

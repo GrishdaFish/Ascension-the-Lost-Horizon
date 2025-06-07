@@ -15,7 +15,7 @@ def get_centered_text(text, width):
     pos = width - s/2
     return head, pos
 
-class HotBar():
+class HotBar:
     def __init__(self, x, y, gEngine, con=0):
         """
         Container class to hold and control all of the hot bar slots.
@@ -88,7 +88,7 @@ class HotBar():
         for slot in self.slots:
             slot.reinit()
 
-class HotBarSlot():
+class HotBarSlot:
     def __init__(self, con, cx, cy, p, label, gEngine):
         """
         Slot that holds a skill or item that the player can quickly use
@@ -199,6 +199,8 @@ class HotBarSlot():
             t = self.name.capitalize()
             t = chr(libtcod.CHAR_TEEW) + t
 
+            # TODO: Refactor this and move it to attach object, add in a UI_NAME type variable for objects
+            # TODO: Additionally, add an update_ui_name() function and call to update cooldowns and stuff
             if isinstance(self.obj, skills.Skill):
                 if isinstance(self.obj, skills.ResourceSkill):
                     t += ' (Cost: %d %s)' % (self.obj.resource_cost, self.obj.resource_requirement)
@@ -214,10 +216,13 @@ class HotBarSlot():
 
             if mouse.lbutton:
                 col = libtcod.red
-            if mouse.lbutton:
+            if mouse.lbutton or key.c == int(self.label):
                 self.use(game, key, mouse)
             if mouse.rbutton:
                 self.remove_object()
+        if key.c:
+            if (int(key.c)-48) == int(self.label): # -48 on the key.c to get the offset keyboard character
+                self.use(game, key, mouse)
 
         self.gEngine.console_set_default_foreground(self.window, col)
         self.gEngine.console_print_frame(self.window, 0, 0, 3, 3, True)

@@ -177,6 +177,7 @@ class CharacterCreator(window_widget.WindowWidget):
         #Passive Skills
         weapon_subtype = "Great Sword"
         self.g.player.fighter.weapon_profs.update({weapon_subtype:self.g.weapon_prof_skills[weapon_subtype]})
+        self.g.player.fighter.passives.append(self.g.weapon_prof_skills[weapon_subtype])
 
         #Active Cooldown Skills
         ww = skills.CooldownSkill("Whirlwind", self.g.player, "Whirlwind skill", 3, warrior_skills.whirlwind, self.g, self.gEngine,"W")

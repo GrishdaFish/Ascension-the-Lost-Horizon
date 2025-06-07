@@ -111,7 +111,14 @@ def handle_char_stats(key, game, turn):
 
 def handle_perk_screen(key, game, turn):
     if key.c is ord(game.keys.key_perks):
-        # insert module here
+        mod = game.gEngine.get_module_by_name("SkillScreen")
+        print(mod)
+        if mod:
+            mod.activate()
+            game.deactivate()
+            mod.setup(game)
+            game.gEngine.bring_module_to_front(mod)
+
         pass
     return turn
 
