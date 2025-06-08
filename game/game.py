@@ -146,6 +146,8 @@ class Game:
         self.popup = None
         self.is_player_turn = False
 
+        self.passive_skills = []
+        self.active_skills = []
         self.weapon_prof_skills = {}
         self.setup_skills()
 
@@ -173,9 +175,10 @@ class Game:
     def setup_weapon_prof_skills(self):
         self.gEngine.log_message("Weapon Proficiencies...")
         subtype_list = self.build_objects.get_weapon_subtype_list("melee")
+        subtype_list = list(set(subtype_list))
         for subtype in subtype_list:
             passive = warrior_skills.WeaponProf(name=subtype, owner=self.player, description= "Proficiency in %s weapons."% subtype)
-
+            self.passive_skills.append(passive)
             self.weapon_prof_skills.update({subtype:passive})
 
 

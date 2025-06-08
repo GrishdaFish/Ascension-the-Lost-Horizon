@@ -7,6 +7,7 @@ from gEngine.utilities.widget import popups
 from gEngine.utilities.widget import button_widget
 import tcod as libtcod
 
+
 close_coords = [
     (0, 1),
     (1, 0),
@@ -112,14 +113,11 @@ def handle_char_stats(key, game, turn):
 def handle_perk_screen(key, game, turn):
     if key.c is ord(game.keys.key_perks):
         mod = game.gEngine.get_module_by_name("SkillScreen")
-        print(mod)
         if mod:
             mod.activate()
             game.deactivate()
             mod.setup(game)
             game.gEngine.bring_module_to_front(mod)
-
-        pass
     return turn
 
 def handle_inventory(key, game, turn):

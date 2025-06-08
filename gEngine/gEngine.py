@@ -176,7 +176,7 @@ class gEngine:
         self.zdepth = 0
 
     def run(self):
-        # try:
+        try:
             while True:
                 # start every frame by flushing all of the screen, then grab and parse any input
                 self.console_flush()
@@ -217,18 +217,19 @@ class gEngine:
                     self.modules_to_remove.clear()
                 self.adjusting = False
 
-                """except BaseException as e:
-                    if str(e) != "None" and str(e) != "69420":
-                        self.log_open_block("*** ERROR ***")
-                        self.log_message("%s" % str(e), "error")
-                        self.log_open_block("*** TRACEBACK***")
-                        tb = traceback.format_exc()
-                        tb = tb.splitlines()
-                        for line in tb:
-                            self.log_message(line,"error")
-                        self.log_close_block()
-                        self.log_close_block()
-                        self.close_engine()"""
+        except BaseException as e:
+            if str(e) != "None" and str(e) != "69420":
+                self.log_open_block("*** ERROR ***")
+                self.log_message("%s" % str(e), "error")
+                self.log_open_block("*** TRACEBACK***")
+                tb = traceback.format_exc()
+                tb = tb.splitlines()
+                for line in tb:
+                    self.log_message(line,"error")
+                    print(line)
+                self.log_close_block()
+                self.log_close_block()
+                self.close_engine()
 
     def render_all(self):
         self.console_flush()

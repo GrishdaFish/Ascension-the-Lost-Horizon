@@ -11,6 +11,7 @@ class Alert(window_widget.WindowWidget):
     '''
 
     def close(self):
+        self.active = False
         self.gEngine.remove_module(self)
         self.ok_button.close()
 
@@ -39,9 +40,9 @@ class Confirm(window_widget.WindowWidget):
     """ Confirm modal asking for a yes or no, we should add line wrapping too """
     def close(self):
         self.deactivate()
-        self.gEngine.remove_module(self)
         self.ok_button.close()
         self.cancel_button.close()
+        self.gEngine.remove_module(self)
 
     def setup(self, message, callback, ok="Ok", cancel="Cancel"):
         """ Wherever you create the popup you will need a callback function that grabs and returns your response
