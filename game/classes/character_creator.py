@@ -15,8 +15,10 @@ from game.classes import warrior_skills
 
 from game.object import effects
 
-import textwrap
+import tcod as libtcod
 
+import textwrap
+import random
 
 class CharacterCreator(window_widget.WindowWidget):
     def setup(self):
@@ -24,6 +26,19 @@ class CharacterCreator(window_widget.WindowWidget):
         self.base_width = 25
         self.max_width = 38
         self.buttons = []
+        self.perk_packages = []
+        p = PerkPackage()
+        l = [
+            'STR  DEX  CON  INT',
+            ' %d   %d   %d   %d'%(p.strength, p.dexterity, p.constitution, p.intelligence),
+            '%s'%p.perk_bonus1.name,
+            '%s'%p.perk_bonus2.name,
+            '%s'%p.perk_bonus3.name,
+            '%s'%p.perk_bonus4.name
+        ]
+        self.test_perk_package = button_widget.BigButtonWidget(self, 1, 9, label=l, function=None)
+        self.test_perk_package.background_color = libtcod.black
+        self.buttons.append(self.test_perk_package)
 
         self.warrior_description = True
         self.wizard_description = False
@@ -205,3 +220,56 @@ class CharacterCreator(window_widget.WindowWidget):
 
     def create_rogue(self):
         pass
+
+    def generate_perk_packages(self):
+        # warrior package
+        pass
+
+        # wizard package
+        pass
+
+        # Ranger package
+        pass
+
+        # rogue package
+        pass
+
+class PerkPackage:
+    def __init__(self):
+        self.perk_bonus1 = self.roll_perk()
+        self.perk_bonus2 = self.roll_perk()
+        self.perk_bonus3 = self.roll_perk()
+        self.perk_bonus4 = self.roll_perk()
+
+        self.strength = 10
+        self.dexterity = 10
+        self.intelligence = 10
+        self.constitution = 10
+
+        self.roll_stats()
+
+    def roll_stats(self):
+        stat_total = 54
+        rolls = []
+        for x in range(3):
+            roll = libtcod.random_get_int(0, 9, 18)
+            rolls.append(roll)
+            stat_total -= roll
+        if stat_total > 20:
+            rollover = stat_total - 20
+            stat_total -= rollover
+            rollover = int(rollover - len(rolls))
+            for roll in rolls:
+                roll += rollover
+        rolls.append(stat_total)
+        r = libtcod.random_get_int(0, 10, 100)
+        for x in range(r):
+            random.shuffle(rolls)
+        self.strength = rolls[0]
+        self.dexterity = rolls[1]
+        self.intelligence = rolls[2]
+        self.constitution = rolls[3]
+
+    def roll_perk(self):
+        s = libtcod.random_get_int(0, 1, 100)
+        return skills.ResourceSkill("TestSkill%s"%int(s))

@@ -11,10 +11,16 @@ class WeaponProf(skills.PassiveSkill):
         super().__init__(name, owner, description)
         self.required_class = required_class
 
+
+war_skills_dict = {
+    "Whirlwind": skills.CooldownSkill,
+    "Bash":      skills.ResourceSkill,
+
+}
+
 def setup_warrior_skills(game, owner):
     warrior_skills = []
     warrior_skills_dict = {}
-
     ww = skills.CooldownSkill("Whirlwind", owner, "Whirlwind skill", 3, whirlwind, game, game.gEngine, "W")
     warrior_skills.append(ww)
     warrior_skills_dict.update({ww.name: ww})

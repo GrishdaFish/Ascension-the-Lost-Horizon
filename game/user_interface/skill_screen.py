@@ -9,7 +9,7 @@ from game.classes import skills
 
 import textwrap
 
-import libtcodpy as libtcod
+import tcod as libtcod
 
 
 
@@ -130,6 +130,7 @@ class LearnSkillButton(SkillButton):
         if self.parent.fighter.unused_skill_points > 0:
             self.popup = popups.Confirm(self.gEngine, x=0, y=self.parent.height/2, w=5, h=5, title="Confirm Spend Skill Point")
             self.popup.setup("Do you want to spend a skill point on %s"%self.skill.name, callback=self.learn_skill, ok="Yes", cancel="No")
+            self.popup.x = self.popup.x + self.popup.width / 2
             self.popup.activate()
             self.gEngine.bring_module_to_front(self.popup)
         else:

@@ -73,9 +73,10 @@ class ButtonWidget:
             return self.function()
 
     def mouse_is_in_console(self, mouse):
-        if math.floor(self.x + self.parent.x) <= math.floor(mouse.cx) <= math.floor(((self.parent.x + self.x)) + self.width):
-            if mouse.cy == (self.y + math.floor(self.parent.y)):
+        if math.floor(self.x + self.parent.x) <= math.floor(mouse.cx) <= math.floor((self.parent.x + self.x) + self.width):
+            if math.floor(self.y + self.parent.y) <= math.floor(mouse.cy) <= math.floor((self.parent.y + self.y) + self.height):
                 return True
+                # if mouse.cy == (self.y + math.floor(self.parent.y)):
         return False
 
     def run(self, key, mouse):
@@ -109,6 +110,7 @@ class ButtonWidget:
     def pre_draw_widget(self):
         if self.active:
             self.gEngine.console_set_default_background(self.con, self.background_color)
+            # print(self.label)
             self.gEngine.console_print(self.con, 0, 0, self.label)
 
 
@@ -124,3 +126,45 @@ class TextButtonWidget(ButtonWidget):
     def pre_draw_widget(self):
         if self.active:
             self.gEngine.console_print(self.con, 0, 0, self.label)
+
+class BigButtonWidget(ButtonWidget):
+    def __init__(self, parent, x, y, label, function, passable=None, height=0):
+        super().__init__(parent, x, y, "", function, passable)
+        self.height = height
+        self.label = []
+        self.original_label = []
+        if isinstance(label, list):
+            print(len(label))
+            if len(label) > self.height:
+                self.height = len(label)
+            width = 0
+            for line in label:
+                self.label.append(line)
+                self.original_label.append(line)
+                if len(line) > width:
+                    width = len(line)
+            self.width = width
+        self.gEngine.console_remove_console(self.con)
+        self.con = self.gEngine.console_new(self.width, self.height)
+
+    def basic_mouse_input(self, mouse):
+        if self.mouse_is_in_console(mouse):
+            self.color_button_text(libtcod.dark_orange)
+            if mouse.lbutton:
+                return self.trigger()
+        else:
+            if not self.triggered:
+                self.color_button_text(self.untriggered_color)
+            else:
+                self.color_button_text(self.triggered_color)
+
+    def pre_draw_widget(self):
+        if self.active:
+            self.gEngine.console_set_default_background(self.con, self.background_color)
+            for i in range(len(self.label)):
+                self.gEngine.console_print(self.con, 0, i, self.label[i])
+
+    def color_button_text(self, color):
+        for x in range(len(self.original_label)):
+            txt = menu.color_text(self.original_label[x], color)
+            self.label[x] = txt
