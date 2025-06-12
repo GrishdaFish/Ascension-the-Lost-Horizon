@@ -1,5 +1,46 @@
 __author__ = 'GrishdaFish'
-import tcod as libtcod
+import os
+import toml
+
+path = os.path.abspath('.')
+custom_font = os.path.join(path, 'custom_font.toml')
+class CustomFontOptions:
+    def __init__(self):
+        f = open(custom_font)
+        font = f.read()
+        f.close()
+        font = toml.loads(font)
+
+        self.fonts = []
+        data = font.get('data')
+        print(data)
+        print("Loading font data")
+
+        self.starting_id = data.get('starting_id')
+        self.font_size = data.get('font_size')
+        self.file_width = data.get('file_width')
+        self.file_height = data.get('file_height')
+        print('Data loaded')
+        print("loading fonts")
+
+        fonts = font.get('custom_font')
+        font_id = self.starting_id
+        for f in fonts:
+            cf = Font()
+            cf.name = f.get("name")
+            cf.location = f.get("location")
+            cf.id = font_id
+            font_id += 1
+            self.fonts.append(cf)
+        print("Fonts loaded")
+
+class Font:
+    def __init__(self):
+        self.name = ""
+        self.location = []
+        self.id = 0
+
+
 # After creating a new font tile, add the name of the tile, and use the next available int
 # Call these to use new font by using chr(long_sword)
 

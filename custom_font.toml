@@ -1,0 +1,101 @@
+[data]
+    starting_id = 256 # The first available id for custom fonts. Depends on your own font file
+    font_size = [16, 16] # Font size in Pixels
+    file_width = 32 # Number of characters wide the file is
+    file_height = 12 # Number of characters high the file is
+
+# Libtcod TCOD_Font fixes
+[[custom_font]]
+    name = "CHAR_ARROW_N" # Unique String Name
+    location = [0, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+    name = "CHAR_ARROW_E"
+    location = [1, 2]
+
+[[custom_font]]
+    name = "CHAR_ARROW_S"
+    location = [2, 2]
+
+[[custom_font]]
+    name = "CHAR_ARROW_W"
+    location = [3, 2]
+
+[[custom_font]]
+    name = "CHAR2_ARROW_N"
+    location = [4, 2]
+
+[[custom_font]]
+    name = "CHAR2_ARROW_E"
+    location = [5, 2]
+
+[[custom_font]]
+    name = "CHAR2_ARROW_S"
+    location = [6, 2]
+
+[[custom_font]]
+    name = "CHAR2_ARROW_W"
+    location = [7, 2]
+
+[[custom_font]]
+    name = "CHARD_ARROW_H"
+    location = [8, 2]
+
+[[custom_font]]
+    name = "CHARD_ARROW_V"
+    location = [9, 2]
+
+# melee weapons
+[[custom_font]]
+    name = "long_sword"
+    location = [0, 5]
+
+[[custom_font]]
+    name = "dagger"
+    location = [1, 5]
+
+[[custom_font]]
+    name = "short_sword"
+    location = [2, 5]
+
+[[custom_font]]
+    name = "great_sword"
+    location = [3, 5]
+
+[[custom_font]]
+    name = "mace"
+    location = [4, 5]
+
+[[custom_font]]
+    name = "hammer"
+    location = [5, 5]
+
+[[custom_font]]
+    name = "two_handed_hammer"
+    location = [6, 5]
+
+[[custom_font]]
+    name = "hand_axe"
+    location = [7, 5]
+
+[[custom_font]]
+    name = "battle_axe"
+    location = [8, 5]
+
+[[custom_font]]
+    name = "shield"
+    location = [9, 5]
+
+[[custom_font]]
+    name = "helm"
+    location = [10, 5]
+
+[[custom_font]]
+    name = "glove"
+    location = [11, 5]
+
+[[custom_font]]
+    name = "boot"
+    location = [12, 5]
+
+

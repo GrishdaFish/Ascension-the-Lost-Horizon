@@ -367,6 +367,8 @@ class Game:
         self.gEngine.log_message('Map made')
         self.setup_world()
         self.message.message('Welcome to %s' % self.gEngine.name)
+        mes = "%s, %s, %s, %s"%(chr(self.gEngine.fonts['CHAR_ARROW_N']), chr(self.gEngine.fonts['CHAR_ARROW_E']), chr(self.gEngine.fonts['CHAR_ARROW_W']), chr(self.gEngine.fonts['CHAR_ARROW_S']) )
+        self.message.message(mes)
         self.path = libtcod.path_new_using_function(self.dungeon_width, self.dungeon_height, path_callback, self)
         #self.newgame = True
         self.gEngine.lightmask_set_ambient(self.ambient)

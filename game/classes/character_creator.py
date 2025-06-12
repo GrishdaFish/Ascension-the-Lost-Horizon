@@ -27,18 +27,12 @@ class CharacterCreator(window_widget.WindowWidget):
         self.max_width = 38
         self.buttons = []
         self.perk_packages = []
-        p = PerkPackage()
-        l = [
-            'STR  DEX  CON  INT',
-            ' %d   %d   %d   %d'%(p.strength, p.dexterity, p.constitution, p.intelligence),
-            '%s'%p.perk_bonus1.name,
-            '%s'%p.perk_bonus2.name,
-            '%s'%p.perk_bonus3.name,
-            '%s'%p.perk_bonus4.name
-        ]
-        self.test_perk_package = button_widget.BigButtonWidget(self, 1, 9, label=l, function=None)
-        self.test_perk_package.background_color = libtcod.black
-        self.buttons.append(self.test_perk_package)
+        self.selected_perk = None
+
+        create_perk_package(1, 10, self)
+        create_perk_package(20, 10, self)
+        create_perk_package(1, 20, self)
+        create_perk_package(20, 20, self)
 
         self.warrior_description = True
         self.wizard_description = False
@@ -68,6 +62,7 @@ class CharacterCreator(window_widget.WindowWidget):
         self.gEngine.console_vline(self.con, self.max_width + 2, 1, self.height - 2)
         self.gEngine.console_print(self.con, 1, 3, "Select your class: ")
         self.gEngine.console_print(self.con, 1, 6, "Tutorial? ")
+        self.gEngine.console_print(self.con, 1, 8, "Select one of the perk packages below ")
         for button in self.buttons:
             button.run(key, mouse)
         self.c_class_group.run(key, mouse)
@@ -182,12 +177,19 @@ class CharacterCreator(window_widget.WindowWidget):
         for x in range(20):
             s = self.g.build_objects.build_scroll(self.g, 0, 0, 'fireball')
             s.item.pick_up(inv)
-        self.g.player.fighter.money = 200
+
+        #Stats
+        self.g.player.fighter.stat.set_stat_base("Strength", self.selected_perk.strength)
+        self.g.player.fighter.stat.set_stat_base("Dexterity", self.selected_perk.dexterity)
+        self.g.player.fighter.stat.set_stat_base("Constitution", self.selected_perk.constitution)
+        self.g.player.fighter.stat.set_stat_base("Intelligence", self.selected_perk.intelligence)
         self.g.player.fighter.stat.set_stat_base("HP", 75)
         self.g.player.fighter.stat.set_stat_base("Stamina", 10)
+
         self.g.player.fighter.stamina = 1
         self.g.player.fighter.hp = 75
         self.g.player.fighter.max_consumable_level = 3
+        self.g.player.fighter.money = 200
 
         #Passive Skills
         weapon_subtype = "Great Sword"
@@ -208,6 +210,7 @@ class CharacterCreator(window_widget.WindowWidget):
         b = skills.ResourceSkill("Bash", self.g.player,"Bash Skill", 3, warrior_skills.bash, self.g, self.gEngine,"B")
         self.g.active_skills.append(b)
         #self.g.player.fighter.active_skills.append(b)
+
 
     def create_wizard(self):
         pass
@@ -233,6 +236,35 @@ class CharacterCreator(window_widget.WindowWidget):
 
         # rogue package
         pass
+
+    def select_package(self, perk, button):
+        self.selected_perk = perk
+        button.background_color = libtcod.grey
+        for b in self.buttons:
+            if isinstance(b, button_widget.BigButtonWidget):
+                if b == button:
+                    pass
+                else:
+                    b.background_color = libtcod.black
+
+
+def create_perk_package(x=0, y=0, owner=None):
+    p = PerkPackage()
+    l = [
+        'Perk Package',
+        'STR DEX CON INT',
+        '%d  %d  %d  %d' % (p.strength, p.dexterity, p.constitution, p.intelligence),
+        '%s' % p.perk_bonus1.name,
+        '%s' % p.perk_bonus2.name,
+        '%s' % p.perk_bonus3.name,
+        '%s' % p.perk_bonus4.name
+    ]
+    test_perk_package = button_widget.BigButtonWidget(owner, x, y, label=l, function=owner.select_package, passable=[p])
+    test_perk_package.passable.append(test_perk_package)
+    test_perk_package.background_color = libtcod.black
+    owner.buttons.append(test_perk_package)
+    owner.perk_packages.append(p)
+    #return p, l
 
 class PerkPackage:
     def __init__(self):

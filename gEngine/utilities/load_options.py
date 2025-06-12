@@ -5,7 +5,7 @@ import toml
 
 path = os.path.abspath('.')
 options = os.path.join(path, 'options.toml')
-
+custom_font = os.path.join(path, 'custom_font.toml')
 
 def load_options():
     f = open(options).read()

@@ -111,7 +111,9 @@ class gEngine:
         self.engine_options = config.EngineConfig()
         self.options = _options.GameOptions()
         self.options.load_options()
+        self.custom_font_options = custom_font.CustomFontOptions()
 
+        self.fonts = {}
         self.w = self.engine_options.screen_width
         self.h = self.engine_options.screen_height
         self.SCREEN_WIDTH = self.w
@@ -431,8 +433,8 @@ class gEngine:
         Initializes the TCOD root console. Call after you create an instance of the engine
         :return:
         """
-        custom_font_width = 32
-        custom_font_height = 12
+        custom_font_width = self.custom_font_options.file_width
+        custom_font_height = self.custom_font_options.file_height
         if cEngine:
             self.engine = cEngine.gEngine(self.w, self.h, self.name, self.fs, self.fps, self.engine_options.font, custom_font_width, custom_font_height)
         else:
@@ -589,8 +591,21 @@ class gEngine:
             src.blit(dest, int(xDest), int(yDest), int(xSrc), int(ySrc), int(wSrc), int(hSrc), foreAlph, backAlph)
 
     def console_put_char_ex(self, con, x, y, c, fore, back):
+        """
+        Sets the destination cell to the specified color and character. Automatically converts to custom fonts if
+            len(c) > 1
+        :param con: destination console
+        :param x: x position of the char
+        :param y: y position of the char
+        :param c: the character to be displayed, will automatically convert a custom_font string
+        :param fore: the foreground color
+        :param back: the background color
+        :return: nothing
+        """
         cr, cg, cb = fore
         br, bg, bb = back
+        if len(c) > 1:
+            c = chr(self.fonts[c]).lower()
         if cEngine:
             self.engine.mPutCharEx(con, int(x), int(y), ord(c), int(cr), int(cg), int(cb), int(br), int(bg), int(bb))
         else:
@@ -1157,8 +1172,9 @@ class gEngine:
         return self.network.send_package(type, package)
 
     def load_custom_font_chars(self):
-        for name, pos in custom_font.Fonts.items():
-            self.engine.mMapAsciiCodeToFont(name, pos[0], pos[1])
+        for font in self.custom_font_options.fonts:
+            self.fonts.update({font.name:font.id})
+            self.engine.mMapAsciiCodeToFont(font.id, font.location[0], font.location[1])
 
     def color_text(self, text, color_f=None, color_b=None):
         # changed to not use color codes, as the items were all colored the same

@@ -74,9 +74,8 @@ class ButtonWidget:
 
     def mouse_is_in_console(self, mouse):
         if math.floor(self.x + self.parent.x) <= math.floor(mouse.cx) <= math.floor((self.parent.x + self.x) + self.width):
-            if math.floor(self.y + self.parent.y) <= math.floor(mouse.cy) <= math.floor((self.parent.y + self.y) + self.height):
+            if mouse.cy == (self.y + math.floor(self.parent.y)):
                 return True
-                # if mouse.cy == (self.y + math.floor(self.parent.y)):
         return False
 
     def run(self, key, mouse):
@@ -127,6 +126,7 @@ class TextButtonWidget(ButtonWidget):
         if self.active:
             self.gEngine.console_print(self.con, 0, 0, self.label)
 
+
 class BigButtonWidget(ButtonWidget):
     def __init__(self, parent, x, y, label, function, passable=None, height=0):
         super().__init__(parent, x, y, "", function, passable)
@@ -134,7 +134,6 @@ class BigButtonWidget(ButtonWidget):
         self.label = []
         self.original_label = []
         if isinstance(label, list):
-            print(len(label))
             if len(label) > self.height:
                 self.height = len(label)
             width = 0
@@ -168,3 +167,10 @@ class BigButtonWidget(ButtonWidget):
         for x in range(len(self.original_label)):
             txt = menu.color_text(self.original_label[x], color)
             self.label[x] = txt
+
+    def mouse_is_in_console(self, mouse):
+        if math.floor(self.x + self.parent.x) <= math.floor(mouse.cx) <= math.floor((self.parent.x + self.x) + self.width):
+            if math.floor(self.y + self.parent.y) <= math.floor(mouse.cy) <= math.floor((self.parent.y + self.y) + self.height):
+                return True
+                # if mouse.cy == (self.y + math.floor(self.parent.y)):
+        return False
