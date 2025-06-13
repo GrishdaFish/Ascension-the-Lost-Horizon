@@ -125,6 +125,8 @@ class HotBarSlot:
         self.obj = obj
         self.name = obj.name
         self.obj_selected = True
+        #if len(self.obj.char) > 0:
+
 
     def remove_object(self):
         """
@@ -229,7 +231,10 @@ class HotBarSlot:
         self.gEngine.console_print(self.window, 0, 0, self.label)
 
         if self.obj:
-            c = color_text(self.obj.char, self.obj.color)
+            char = self.obj.char
+            if len(self.obj.char) > 1:
+                char = chr(self.gEngine.fonts[char])
+            c = color_text(char, self.obj.color)
             self.gEngine.console_print(self.window, 1, 1, c)
         else:
             c = color_text('X', libtcod.red)

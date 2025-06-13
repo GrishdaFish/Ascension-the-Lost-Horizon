@@ -4,7 +4,7 @@
 #===============================================*/
 [["armor"]]
     name = "plate"
-    cell = ']'
+    cell = 'torso'
     type = "armor"
     location = "Torso"
     base_value = 75
@@ -16,7 +16,7 @@
 
 [["armor"]]
     name = "plate helm"
-    cell = '^'
+    cell = 'helm'
     type = "armor"
     location = "Head"
     base_value = 50
@@ -28,7 +28,7 @@
 
 [["armor"]]
     name = "plate gloves"
-    cell = '!'
+    cell = 'glove'
     type = "armor"
     location = "Hands"
     base_value = 75
@@ -40,7 +40,7 @@
 
 [["armor"]]
     name = "plate greaves"
-    cell = 'W'
+    cell = 'boots'
     type = "armor"
     location = "Legs"
     base_value = 65
@@ -52,7 +52,7 @@
 
 [["armor"]]
     name = "plate boots"
-    cell = 'L'
+    cell = 'boots'
     type = "armor"
     location = "Feet"
     base_value = 50
@@ -64,7 +64,7 @@
 
 [["armor"]]
     name = "plate bracers"
-    cell = '='
+    cell = 'arms'
     type = "armor"
     location = "Arms"
     base_value = 50
@@ -76,7 +76,7 @@
 
 [["armor"]]
     name = "death spaulders"
-    cell = '='
+    cell = 'shoulder'
     type = "armor"
     location = "Shoulders"
     base_value = 40
@@ -88,7 +88,7 @@
 
 [["armor"]]
     name = "magic cloak"
-    cell = '='
+    cell = 'cloak'
     type = "armor"
     location = "Cloak"
     base_value = 20
@@ -100,7 +100,7 @@
 
 [["armor"]]
     name = "endless ring"
-    cell = '='
+    cell = 'ring'
     type = "armor"
     location = "Ring"
     base_value = 10
@@ -112,7 +112,7 @@
 
 [["armor"]]
     name = "choker of destiny"
-    cell = '='
+    cell = 'neck'
     type = "armor"
     location = "Neck"
     base_value = 50

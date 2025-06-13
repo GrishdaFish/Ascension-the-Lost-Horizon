@@ -255,6 +255,7 @@ def inventory(con, player, game, width=80, height=43):
                 # if mouse.cy-3 <= len(player.fighter.inventory):
                 item = player.fighter.inventory[mouse.cy - 3]
                 current_selection = mouse.cy - 3
+
                 if item.item.ammo:
                     game.gEngine.console_print(compare_window, 1, 2,
                                                'Name       : ' + color_text(item.name.capitalize(), item.color))
@@ -302,11 +303,14 @@ def inventory(con, player, game, width=80, height=43):
                             show_effects(item, game, compare_window)
 
                 if item.item.spell:
-                    if item.item.level > game.player.fighter.max_consumable_level: # this includes potions
-                        lvl = game.gEngine.color_text(str(item.item.level), libtcod.red)
-                        lvl = lvl + unusable
-                    else:
-                        lvl = game.gEngine.color_text(str(item.item.level), libtcod.green)
+                    if item.item.level:
+                        if item.item.level > game.player.fighter.max_consumable_level: # this includes potions
+                            lvl = game.gEngine.color_text(str(item.item.level), libtcod.red)
+                            lvl = lvl + unusable
+                        else:
+                            lvl = game.gEngine.color_text(str(item.item.level), libtcod.green)
+                        game.gEngine.console_print(compare_window, 1, 8, 'Level : ' + lvl)
+
                     game.gEngine.console_print(compare_window, 1, 2,
                                                'Name  : ' + color_text(item.name.capitalize(), item.color))
                     game.gEngine.console_print(compare_window, 1, 3, 'Type  : ' + item.item.spell.type.capitalize())
@@ -315,7 +319,6 @@ def inventory(con, player, game, width=80, height=43):
                     game.gEngine.console_print(compare_window, 1, 5, 'Range : ' + str(item.item.spell.range))
                     game.gEngine.console_print(compare_window, 1, 6, 'Radius: ' + str(item.item.spell.radius))
                     game.gEngine.console_print(compare_window, 1, 7, 'Value : ' + str(item.item.value))
-                    game.gEngine.console_print(compare_window, 1, 8, 'Level : ' + lvl)
                 if mouse.lbutton and item.item.spell:
                     i_n = color_text(item.name.capitalize(), item.color)
                     message = 'Do you want to use %s?' % i_n

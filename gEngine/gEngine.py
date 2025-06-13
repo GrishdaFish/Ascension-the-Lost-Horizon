@@ -223,7 +223,7 @@ class gEngine:
             if str(e) != "None" and str(e) != "69420":
                 self.log_open_block("*** ERROR ***")
                 self.log_message("%s" % str(e), "error")
-                self.log_open_block("*** TRACEBACK***")
+                self.log_open_block("*** TRACEBACK ***")
                 tb = traceback.format_exc()
                 tb = tb.splitlines()
                 for line in tb:
@@ -605,7 +605,7 @@ class gEngine:
         cr, cg, cb = fore
         br, bg, bb = back
         if len(c) > 1:
-            c = chr(self.fonts[c]).lower()
+            c = chr(self.fonts[c])
         if cEngine:
             self.engine.mPutCharEx(con, int(x), int(y), ord(c), int(cr), int(cg), int(cb), int(br), int(bg), int(bb))
         else:

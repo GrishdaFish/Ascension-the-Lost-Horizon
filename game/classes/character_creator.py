@@ -58,6 +58,9 @@ class CharacterCreator(window_widget.WindowWidget):
 
         self.c_class_group.add_button(button_group.GroupButton(self.c_class_group, 1, 0, "Ranger"))
 
+
+        self.g.new_game()
+
     def update(self, key, mouse):
         self.gEngine.console_vline(self.con, self.max_width + 2, 1, self.height - 2)
         self.gEngine.console_print(self.con, 1, 3, "Select your class: ")
@@ -76,9 +79,9 @@ class CharacterCreator(window_widget.WindowWidget):
         self.gEngine.modules = []
         self.gEngine.additional_modules = []
         self.gEngine.module_adjust_list = []
-        self.g.new_game()
-        self.gEngine.add_module(self.g)
+
         self.create_player()
+        self.gEngine.add_module(self.g)
 
         d = dungeon_status.DungeonStatus(self.gEngine, self.g, 5, 6, self.gEngine.SCREEN_WIDTH / 2, 7, "Dungeon Status")
         d.deactivate()

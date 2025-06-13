@@ -4,98 +4,471 @@
     file_width = 32 # Number of characters wide the file is
     file_height = 12 # Number of characters high the file is
 
-# Libtcod TCOD_Font fixes
 [[custom_font]]
-    name = "CHAR_ARROW_N" # Unique String Name
-    location = [0, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+   name = "CHAR_ARROW_N" # Unique String Name
+   location = [0, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "CHAR_ARROW_E"
-    location = [1, 2]
+   name = "CHAR_ARROW_S" # Unique String Name
+   location = [1, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "CHAR_ARROW_S"
-    location = [2, 2]
+   name = "CHAR_ARROW_E" # Unique String Name
+   location = [2, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "CHAR_ARROW_W"
-    location = [3, 2]
+   name = "CHAR_ARROW_W" # Unique String Name
+   location = [3, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "CHAR2_ARROW_N"
-    location = [4, 2]
+   name = "CHAR_ARROW2_N" # Unique String Name
+   location = [4, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "CHAR2_ARROW_E"
-    location = [5, 2]
+   name = "CHAR_ARROW2_S" # Unique String Name
+   location = [5, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "CHAR2_ARROW_S"
-    location = [6, 2]
+   name = "CHAR_ARROW2_E" # Unique String Name
+   location = [6, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "CHAR2_ARROW_W"
-    location = [7, 2]
+   name = "CHAR_ARROW2_W" # Unique String Name
+   location = [7, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "CHARD_ARROW_H"
-    location = [8, 2]
+   name = "CHAR_DARROW_H" # Unique String Name
+   location = [8, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "CHARD_ARROW_V"
-    location = [9, 2]
-
-# melee weapons
-[[custom_font]]
-    name = "long_sword"
-    location = [0, 5]
+   name = "CHAR_DARROW_V" # Unique String Name
+   location = [9, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "dagger"
-    location = [1, 5]
+   name = "long_sword" # Unique String Name
+   location = [0, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "short_sword"
-    location = [2, 5]
+   name = "dagger" # Unique String Name
+   location = [1, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "great_sword"
-    location = [3, 5]
+   name = "short_sword" # Unique String Name
+   location = [2, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "mace"
-    location = [4, 5]
+   name = "great_sword" # Unique String Name
+   location = [3, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "hammer"
-    location = [5, 5]
+   name = "mace" # Unique String Name
+   location = [4, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "two_handed_hammer"
-    location = [6, 5]
+   name = "hammer" # Unique String Name
+   location = [5, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "hand_axe"
-    location = [7, 5]
+   name = "two_handed_hammer" # Unique String Name
+   location = [6, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "battle_axe"
-    location = [8, 5]
+   name = "hand_axe" # Unique String Name
+   location = [7, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "shield"
-    location = [9, 5]
+   name = "battle_axe" # Unique String Name
+   location = [8, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "helm"
-    location = [10, 5]
+   name = "bow_and_arrow" # Unique String Name
+   location = [0, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "glove"
-    location = [11, 5]
+   name = "bow" # Unique String Name
+   location = [1, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
-    name = "boot"
-    location = [12, 5]
+   name = "throwing_axe" # Unique String Name
+   location = [2, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
+[[custom_font]]
+   name = "javelin" # Unique String Name
+   location = [3, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "big_potion" # Unique String Name
+   location = [0, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "small_potion" # Unique String Name
+   location = [1, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "scroll" # Unique String Name
+   location = [2, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "helm" # Unique String Name
+   location = [10, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "glove" # Unique String Name
+   location = [11, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "boot" # Unique String Name
+   location = [12, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "torso" # Unique String Name
+   location = [13, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "cloak" # Unique String Name
+   location = [14, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "ring" # Unique String Name
+   location = [15, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "neck" # Unique String Name
+   location = [16, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "shoulder" # Unique String Name
+   location = [17, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "arms" # Unique String Name
+   location = [18, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "legs" # Unique String Name
+   location = [19, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "shield" # Unique String Name
+   location = [9, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "sling" # Unique String Name
+   location = [4, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "xbow" # Unique String Name
+   location = [5, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "arrow" # Unique String Name
+   location = [3, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "bolt" # Unique String Name
+   location = [4, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "quiver" # Unique String Name
+   location = [5, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "flail" # Unique String Name
+   location = [6, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "staff" # Unique String Name
+   location = [7, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "spear" # Unique String Name
+   location = [8, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "lantern" # Unique String Name
+   location = [6, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "torch" # Unique String Name
+   location = [7, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "shovel" # Unique String Name
+   location = [10, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "bomb" # Unique String Name
+   location = [9, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "buff_hp" # Unique String Name
+   location = [11, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "debuff_hp" # Unique String Name
+   location = [13, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "buff_str" # Unique String Name
+   location = [12, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "debuff_str" # Unique String Name
+   location = [14, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "beast" # Unique String Name
+   location = [11, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "lava_monster" # Unique String Name
+   location = [12, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "bull_demon" # Unique String Name
+   location = [13, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "scale" # Unique String Name
+   location = [15, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "money_bag" # Unique String Name
+   location = [14, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "stalag_a" # Unique String Name
+   location = [3, 9] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "stalag_b" # Unique String Name
+   location = [4, 9] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "stalag_c" # Unique String Name
+   location = [5, 9] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "stalac_a" # Unique String Name
+   location = [3, 8] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "stalac_b" # Unique String Name
+   location = [4, 8] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "stalac_c" # Unique String Name
+   location = [5, 8] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "pillar_top" # Unique String Name
+   location = [2, 8] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "pillar_bottom" # Unique String Name
+   location = [2, 9] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "rocks_a" # Unique String Name
+   location = [6, 8] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "rocks_b" # Unique String Name
+   location = [7, 8] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "rocks_c" # Unique String Name
+   location = [8, 8] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "rocks_d" # Unique String Name
+   location = [9, 8] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "boulder_1a" # Unique String Name
+   location = [0, 8] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "boulder_1b" # Unique String Name
+   location = [1, 8] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "boulder_1c" # Unique String Name
+   location = [0, 9] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "boulder_1d" # Unique String Name
+   location = [1, 9] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "esc_menu_a" # Unique String Name
+   location = [20, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "esc_menu_b" # Unique String Name
+   location = [21, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "esc_menu_c" # Unique String Name
+   location = [20, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "esc_menu_d" # Unique String Name
+   location = [21, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_pot_a" # Unique String Name
+   location = [22, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_pot_b" # Unique String Name
+   location = [23, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_pot_c" # Unique String Name
+   location = [22, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_pot_d" # Unique String Name
+   location = [23, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_shovel_a" # Unique String Name
+   location = [24, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_shovel_b" # Unique String Name
+   location = [25, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_shovel_c" # Unique String Name
+   location = [24, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_shovel_d" # Unique String Name
+   location = [25, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_bow_a" # Unique String Name
+   location = [26, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_bow_b" # Unique String Name
+   location = [27, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_bow_c" # Unique String Name
+   location = [26, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_bow_d" # Unique String Name
+   location = [27, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_hammer_a" # Unique String Name
+   location = [28, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_hammer_b" # Unique String Name
+   location = [29, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_hammer_c" # Unique String Name
+   location = [28, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_hammer_d" # Unique String Name
+   location = [29, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_q_a" # Unique String Name
+   location = [30, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_q_b" # Unique String Name
+   location = [31, 6] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_q_c" # Unique String Name
+   location = [30, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "fat_q_d" # Unique String Name
+   location = [31, 7] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "lava_pit_a" # Unique String Name
+   location = [1, 10] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "lava_pit_b" # Unique String Name
+   location = [2, 10] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "lava_pit_c" # Unique String Name
+   location = [1, 11] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "lava_pit_d" # Unique String Name
+   location = [2, 12] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "headstone_a" # Unique String Name
+   location = [0, 10] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "headstone_b" # Unique String Name
+   location = [1, 10] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "headstone_c" # Unique String Name
+   location = [2, 10] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "headstone_d" # Unique String Name
+   location = [3, 10] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "headstone_e" # Unique String Name
+   location = [4, 10] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "headstone_f" # Unique String Name
+   location = [5, 10] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "headstone_g" # Unique String Name
+   location = [6, 10] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "bone_pile_a" # Unique String Name
+   location = [0, 11] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "bone_pile_b" # Unique String Name
+   location = [1, 11] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "bone_pile_c" # Unique String Name
+   location = [3, 11] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "shrine" # Unique String Name
+   location = [2, 11] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "webs_a" # Unique String Name
+   location = [4, 11] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "webs_b" # Unique String Name
+   location = [5, 11] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "webs_c" # Unique String Name
+   location = [6, 11] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "webs_d" # Unique String Name
+   location = [7, 11] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 

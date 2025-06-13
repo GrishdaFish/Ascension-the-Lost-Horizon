@@ -1,0 +1,13 @@
+[[passive]]
+    name = "None"
+
+[[active_cooldown]]
+    name = "none"
+    cooldown_length = 0
+    char = "N"
+
+[[active_spender]]
+    name = "None"
+    resource_cost = 0
+    resource_type = "None"
+    char = "N"

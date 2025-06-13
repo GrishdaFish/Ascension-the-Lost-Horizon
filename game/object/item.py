@@ -74,10 +74,11 @@ class Item:
     def use(self, inventory, creature, game, player=True):
         # just call the "use_function" if it is defined
         if player:
-            if game.player.fighter.max_consumable_level < self.level:
-                mes = game.gEngine.color_text(self.owner.name, self.owner.color)
-                game.message.message("Your class is unable to use the " + mes)
-                return
+            if self.level:
+                if game.player.fighter.max_consumable_level < self.level:
+                    mes = game.gEngine.color_text(self.owner.name, self.owner.color)
+                    game.message.message("Your class is unable to use the " + mes)
+                    return
             if self.use_function is None:
                 game.message.message('The ' + self.owner.name + ' cannot be used.')
             else:

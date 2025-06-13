@@ -3,7 +3,7 @@
 
 [["consumable"]]
     name="light healing"
-    cell='!'
+    cell='small_potion'
     type="potion"
     min_effect=4 #min damage or turns the spell lasts
     max_effect=6
@@ -23,7 +23,7 @@
     
 [["consumable"]]
     name="healing"
-    cell='!'
+    cell='big_potion'
     type="potion"
     min_effect=10
     max_effect=12
@@ -42,7 +42,7 @@
 
 [["consumable"]]
     name="great healing"
-    cell='!'
+    cell='big_potion'
     type="potion"
     min_effect=25
     max_effect=40
@@ -61,7 +61,7 @@
 
 [["consumable" ]]
     name="fireball"
-    cell='#'
+    cell="scroll"
     type="scroll"
     min_effect=12
     max_effect=20
@@ -80,7 +80,7 @@
     
 [["consumable"]]
     name="chain lightning"
-    cell='#'
+    cell="scroll"
     type="scroll"
     min_effect=10
     max_effect=20
@@ -99,7 +99,7 @@
 
 [["consumable"]]
     name="lightning"
-    cell='#'
+    cell="scroll"
     type="scroll"
     min_effect=20
     max_effect=30
@@ -118,7 +118,7 @@
     
 [["consumable"]]
     name="confusion"
-    cell='#'
+    cell="scroll"
     type="scroll"
     min_effect=10
     max_effect=12
@@ -137,7 +137,7 @@
 
 [["consumable"]]
     name="minor light"
-    cell='#'
+    cell="scroll"
     type="scroll"
     min_effect=0.5 # light value
     max_effect=0.75
@@ -156,7 +156,7 @@
 
 [["consumable"]]
     name="light"
-    cell='#'
+    cell="scroll"
     type="scroll"
     min_effect=0.75
     max_effect=1.0
@@ -175,7 +175,7 @@
 
 [["consumable"]]
     name="major light"
-    cell='#'
+    cell="scroll"
     type="scroll"
     min_effect=1.0
     max_effect=1.25
@@ -194,7 +194,7 @@
 
 [["consumable"]]
     name="detect monsters"
-    cell='#'
+    cell="scroll"
     type="scroll"
     min_effect=15
     max_effect=25
@@ -213,7 +213,7 @@
 
 [["consumable"]]
     name="detect items"
-    cell='#'
+    cell="scroll"
     type="scroll"
     min_effect=15
     max_effect=25

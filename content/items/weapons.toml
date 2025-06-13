@@ -4,7 +4,7 @@
 #=======================================================*/
 [["weapon"]]
     name="Great Sword"
-    cell='/' #should keep weapons this character
+    cell='great_sword' #should keep weapons this character
     type="melee" #can be only melee for now, ranged will come later
     subtype="Great Sword"
     handed=2  #how many hands it takes to wield
@@ -20,7 +20,7 @@
 
 [["weapon"]]
     name="Berzerker"
-    cell='/'
+    cell='great_sword'
     type="melee"
     subtype="Great Sword"
     handed=1
@@ -36,7 +36,7 @@
 
 [["weapon"]]
     name="Long Sword"
-    cell='/'
+    cell='long_sword'
     type="melee"
     subtype="Long Sword"
     handed=1
@@ -52,7 +52,7 @@
 
 [["weapon"]]
     name="Dagger"
-    cell='/'
+    cell='dagger'
     type="melee"
     subtype="Dagger"
     handed=1
@@ -68,7 +68,7 @@
 
 [["weapon"]]
     name="Tower Shield"
-    cell='/'
+    cell='shield'
     type="melee"
     subtype="Shield"
     handed=1
@@ -84,7 +84,7 @@
 
 [["weapon"]]
     name="Medium Buckler"
-    cell='/'
+    cell='shield'
     type="melee"
     subtype="Shield"
     handed=1
@@ -100,7 +100,7 @@
 
 [["weapon"]]
     name="Battle Axe"
-    cell='/'
+    cell='battle_axe'
     type="melee"
     subtype="Battle Axe"
     handed=2
@@ -116,7 +116,7 @@
 
 [["weapon"]]
     name="Short Sword"
-    cell='/'
+    cell='short_sword'
     type="melee"
     subtype="Short Sword"
     handed=1
@@ -132,7 +132,7 @@
 
 [["weapon"]]
     name="Hand Axe"
-    cell='/'
+    cell='hand_axe'
     type="melee"
     subtype="Hand Axe"
     handed=1
@@ -148,7 +148,7 @@
 
 [["weapon"]]
     name="Throwing Axe"
-    cell='/'
+    cell='throwing_axe'
     type="ranged"
     subtype="Throwing Axe"
     handed=1
@@ -164,7 +164,7 @@
 
 [["weapon"]]
     name="Mace"
-    cell='/'
+    cell='mace'
     type="melee"
     subtype="Mace"
     handed=1
@@ -180,7 +180,7 @@
 
 [["weapon"]]
     name="Hammer"
-    cell='/'
+    cell='hammer'
     type="melee"
     subtype="Hammer"
     handed=1
@@ -196,7 +196,7 @@
 
 [["weapon"]]
     name="Great Hammer"
-    cell='/'
+    cell='two_handed_hammer'
     type="melee"
     subtype="Great Hammer"
     handed=2
@@ -212,7 +212,7 @@
 
 [["weapon"]]
     name="Flail"
-    cell='/'
+    cell='flail'
     type="melee"
     subtype="Flail"
     handed=1
@@ -228,7 +228,7 @@
 
 [["weapon"]]
     name="Staff"
-    cell='/'
+    cell='staff'
     type="melee"
     subtype="Staff"
     handed=2
@@ -244,7 +244,7 @@
 
 [["weapon"]]
     name="Sling"
-    cell='/'
+    cell='sling'
     type="ranged"
     subtype="Sling"
     handed=1
@@ -260,7 +260,7 @@
 
 [["weapon"]]
     name="Long Bow"
-    cell='/'
+    cell='bow_and_arrow'
     type="ranged"
     subtype="Bow"
     handed=2
@@ -276,7 +276,7 @@
 
 [["weapon"]]
     name="Short Bow"
-    cell='/'
+    cell='bow'
     type="ranged"
     subtype="Bow"
     handed=2
@@ -292,7 +292,7 @@
 
 [["weapon"]]
     name="Crossbow"
-    cell='/'
+    cell='xbow'
     type="ranged"
     subtype="Crossbow"
     handed=1
@@ -308,7 +308,7 @@
 
 [["weapon"]]
     name="Throw Dagger"
-    cell='/'
+    cell='dagger'
     type="ranged"
     subtype="Throw Dagger"
     handed=1
@@ -324,7 +324,7 @@
 
 [["weapon"]]
     name="Glaive"
-    cell='/'
+    cell='spear'
     type="melee"
     subtype="Polearm"
     handed=2
@@ -340,7 +340,7 @@
 
 [["weapon"]]
     name="Javelin"
-    cell='/'
+    cell='javalin'
     type="ranged"
     subtype="Javelin"
     handed=1

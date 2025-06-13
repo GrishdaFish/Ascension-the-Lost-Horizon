@@ -1,7 +1,7 @@
 
 [["light_source"]]
     name="torch"
-    cell="|"
+    cell="torch"
     max_fuel=1135
     color = [94, 75, 47]
     effect_color=[255, 63, 0]
@@ -10,7 +10,7 @@
 
 [["light_source"]]
     name="lantern"
-    cell="|"
+    cell="lantern"
     max_fuel=1540
     color = [225, 225, 0]
     effect_color=[225, 159, 0]
