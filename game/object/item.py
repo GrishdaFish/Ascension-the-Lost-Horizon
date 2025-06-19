@@ -4,11 +4,12 @@ from gEngine.utilities.user_interface import menu
 
 class Item:
     # an item that can be picked up and used.
-    def __init__(self, spell=None, equipment=None, ammo=None):
+    def __init__(self, spell=None, equipment=None, ammo=None, book=None):
         self.owner = None
         self.value = 0
         self.spell = spell
         self.stackable = False
+        self.book = book
         self.qty = 1
         if self.spell:
             self.use_function = self.spell.cast
@@ -155,112 +156,6 @@ class Equipment:
     def un_equip(self, target, item):
         if item is not None:
             target.fighter.gear.unquip_it(item)
-            """
-print("now you've done it: " + str(owner))
-    def equip(self, target, game=None, owner=None, slot=0):
-        locations = {
-            'torso': 0,
-            'head': 1,
-            'hands': 2,
-            'legs': 3,
-            'feet': 4,
-            'arms': 5,
-            'shoulders': 6,
-            'back': 7
-        }
-        torch = None
-        if self.type == 'armor':
-            if target.fighter.equipment[locations[self.location]] is None:
-                target.fighter.equipment[locations[self.location]] = owner
-                if game:
-                    game.message.message(owner.name + " equipped.", 1)
-                    target.fighter.inventory.remove(owner)
-                    for effect in self.effects:
-                        effect.activate_effect(target.fighter)
-                # target.fighter.defense+=self.defense
-                target.fighter.set_armor_bonus()
-                target.fighter.set_armor_penalty()
-                return
-            else:
-                remove = target.fighter.equipment[locations[self.location]]
-                self.un_equip(target, remove)
-                target.fighter.equipment[locations[self.location]] = owner
-                # target.fighter.defense-=remove.item.equipment.defense
-                # target.fighter.defense+=self.defense
-                target.fighter.set_armor_bonus()
-                target.fighter.set_armor_penalty()
-                if game:
-                    game.message.message(owner.name + " equipped.", 1)
-                    target.fighter.inventory.remove(owner)
-
-                return
-
-        if self.type == 'melee':
-            if self.handed == 1:
-                if target.fighter.wielded[1] is not None:
-                    if target.fighter.wielded[1].item.equipment.handed == 2:
-                        target.fighter.wielded[1] = None
-                if not self.dual_wield:
-                    if target.fighter.wielded[0]:
-                        self.un_equip(target, target.fighter.wielded[0])
-                        self.put_on(target, 0, owner, game)
-                        if target.fighter.wielded[1]:
-                            self.un_equip(target, target.fighter.wielded[1])
-                            return
-                    else:
-                        self.put_on(target, 0, owner, game)
-                        return
-
-                ##Non dual wielding 1 handed weapons   
-                else:
-                    if target.fighter.wielded[0]:  # something in hand 1
-                        self.un_equip(target, target.fighter.wielded[0])
-                        self.put_on(target, 0, owner, game)
-                    else:
-                        self.put_on(target, 0, owner, game)
-                    # something in hand 2
-                    if target.fighter.wielded[1]:
-                        if target.fighter.wielded[1].item.equipment.type != 'armor':
-                            self.put_on(target, 1, owner, game)
-                    return
-
-            if self.handed == 2:
-                if target.fighter.wielded[0]:
-                    self.un_equip(target, target.fighter.wielded[0])
-                    self.put_on(target, 0, owner, game)
-                    if target.fighter.wielded[1]:
-                        self.un_equip(target, target.fighter.wielded[1])
-                    target.fighter.wielded[1] = owner
-                    # self.put_on(target, 1, owner, game)
-                else:
-                    self.put_on(target, 0, owner, game)
-                    if target.fighter.wielded[1]:
-                        self.un_equip(target, target.fighter.wielded[1])
-                    target.fighter.wielded[1] = owner
-                    # self.put_on(target, 1, owner, game)
-
-        if self.type == 'light_source':
-            if target.fighter.light_source is None:
-                target.fighter.light_source = owner
-                target.fighter.inventory.remove(owner)
-                if game:
-                    game.message.message(owner.name + " equipped.", 1)
-                    return
-            else:
-                remove = target.fighter.light_source
-                self.un_equip(target, remove)
-                target.fighter.inventory.remove(owner)
-                target.fighter.light_source = owner
-
-    def put_on(self, target, slot, owner, game, type='wep'):
-        if type == 'wep':
-            target.fighter.wielded[slot] = owner
-            target.fighter.inventory.remove(owner)
-            if game:
-                game.message.message(owner.name + " equipped.", 1)
-
-    def un_equip(self, target, item):
-        target.fighter.inventory.append(item)"""
 
 
 class Ammo:

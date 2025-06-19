@@ -1,6 +1,59 @@
 __author__ = 'GrishdaFish'
 import os
 import toml
+import tcod as libtcod
+
+class CellAnimation:
+    def __init__(self, gEngine, con, frames=None, loop=False, x=0, y=0, color=libtcod.white, delay=0, fore=True):
+        self.gEngine = gEngine
+        self.con = con
+        if frames is None:
+            frames = []
+        self.frames = frames
+        self.loop = loop
+        self.x = x
+        self.y = y
+        self.color = color
+        self.index = 0
+        self.max_delay = delay
+        self.delay = 0
+        self.finished = False
+        self.fore = fore
+
+    def draw(self, map=True):
+        if self.delay > self.max_delay:
+            self.index += 1
+            self.delay = 0
+        self.delay += 1
+        char = self.get_frame()
+        if map:
+            if self.gEngine.map_is_in_fov(int(self.x), int(self.y)):
+                col = self.gEngine.get_map_tile_color(int(self.x), int(self.y))
+                br, bg, bb = col
+                fr, fg, fb = self.color
+                brightness = self.gEngine.lightmask_get_mask_value(self.x, self.y)
+                fr *= brightness[0]
+                fg *= brightness[1]
+                fb *= brightness[2]
+                br *= brightness[0]
+                bg *= brightness[1]
+                bb *= brightness[2]
+                fr = int(min(255, fr))
+                fg = int(min(255, fg))
+                fb = int(min(255, fb))
+                br = int(min(255, br))
+                bg = int(min(255, bg))
+                bb = int(min(255, bb))
+                self.gEngine.console_put_char_ex(self.con, int(self.x), int(self.y), char, (fr, fg, fb), (br, bg, bb))
+        else:
+            br, bg, bb = libtcod.black
+            fr, fg, fb = self.color
+            self.gEngine.console_put_char_ex(self.con, int(self.x), int(self.y), char, (fr, fg, fb), (br, bg, bb))
+
+    def get_frame(self):
+        if self.index > len(self.frames)-1:
+            self.index = 0
+        return self.frames[self.index]
 
 class Animation:
     def __init__(self, animation, loop, hold_last_frame, name, reverse):
@@ -50,7 +103,12 @@ class Animations:
         :param gEngine:
         """
         self.animations = []  # TODO Consider making this a dict
+        self.cell_animations = []
         self.gEngine = gEngine
+
+    def add_cell_animation(self, cell_animation):
+        self.cell_animations.append(cell_animation)
+
 
     def load_animations(self, root_path=None):
         """
@@ -118,8 +176,28 @@ class Animations:
                     self.gEngine.image_blit_2x(img, target, x, y)
                 return animation.update()
 
+    def draw_cell_animations_back(self, map):
+        for animation in self.cell_animations:
+            if not animation.fore:
+                animation.draw(map)
+                if animation.finished:
+                    self.cell_animations.remove(animation)
+
+    def draw_cell_animations_fore(self, map):
+        for animation in self.cell_animations:
+            if animation.fore:
+                animation.draw(map)
+                if animation.finished:
+                    self.cell_animations.remove(animation)
+
     def reset_animation(self, animation_name):
         for animation in self.animations:
             if animation.name == animation_name:
                 animation.reset()
                 return
+
+    def clear_cell_animations(self):
+        self.cell_animations.clear()
+
+    def remove_cell_animation(self, cell):
+        self.cell_animations.remove(cell)

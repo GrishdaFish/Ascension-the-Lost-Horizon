@@ -181,3 +181,23 @@
     can_equip_gear = true
     size = 'large'
     color = [140,3,140]
+
+[[monster]]
+    name = 'werewolf'
+    cell = 'W'
+    hp = 50
+    defense = 18
+    power = 22
+    type = 'melee'
+    threat_level = 4.0
+    starting_depth = 4
+    deepest_depth = 20
+    speed = 25
+    strength = 18
+    dexterity = 5
+    intelligence = 4
+    xp_reward = 340
+    defense_bonus = -25
+    can_equip_gear = true
+    size = 'large'
+    color = [140,3,140]

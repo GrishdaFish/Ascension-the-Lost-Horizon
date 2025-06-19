@@ -1168,6 +1168,23 @@ class gEngine:
     def animation_draw_animation(self, name, target, x, y):
         return self.animation_engine.draw_animation(name, target, x, y)
 
+    def animation_clear_cell(self):
+        self.animation_engine.clear_cell_animations()
+
+    def animation_remove_cell(self, cell):
+        self.animation_engine.remove_cell_animation(cell)
+
+    def animation_add_cell_animation(self, con, frames=None, loop=False, x=0, y=0, color=libtcod.white, delay=0, fore=True):
+        a = animations.CellAnimation(self, con, frames, loop, x, y, color, delay, fore)
+        self.animation_engine.add_cell_animation(a)
+        return a
+
+    def animation_draw_animations_back(self, map=True):
+        self.animation_engine.draw_cell_animations_back(map)
+
+    def animation_draw_animations_fore(self, map=True):
+        self.animation_engine.draw_cell_animations_fore(map)
+
     def network_send_package(self, type, package):
         return self.network.send_package(type, package)
 

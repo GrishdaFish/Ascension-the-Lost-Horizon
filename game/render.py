@@ -19,7 +19,11 @@ def render_all(game, injected_render_list=None):  # break this up to render ui a
 
         game.gEngine.particle_draw(game.dungeon_console) # TODO: Add additional Particle array for character particles
 
+        game.gEngine.animation_draw_animations_back()
+
         draw_objects(game)
+
+        game.gEngine.animation_draw_animations_fore()
 
     draw_user_interface(game)
     player = game.get_names_under_player()
@@ -85,6 +89,7 @@ def draw_objects(game):
             else:
                 object.draw(game.fov, game.gEngine)
     game.player.draw(game.fov, game.gEngine)
+
 
 
 def draw_user_interface(game):

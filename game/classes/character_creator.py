@@ -58,16 +58,32 @@ class CharacterCreator(window_widget.WindowWidget):
 
         self.c_class_group.add_button(button_group.GroupButton(self.c_class_group, 1, 0, "Ranger"))
 
-
         self.g.new_game()
 
+        frames = ['wall_torch_a', 'wall_torch_b', 'wall_torch_c', 'wall_torch_d']
+        self.gEngine.animation_add_cell_animation(self.con, frames, True, 2, 2, delay=5, fore=False)
+        frames = ['wall_torch_a', 'wall_torch_b', 'wall_torch_c', 'wall_torch_d']
+        self.gEngine.animation_add_cell_animation(self.con, frames, True, 3, 2, delay=5, fore=True)
+
+
+
     def update(self, key, mouse):
+        #self.gEngine.console_clear(self.con)
         self.gEngine.console_vline(self.con, self.max_width + 2, 1, self.height - 2)
         self.gEngine.console_print(self.con, 1, 3, "Select your class: ")
         self.gEngine.console_print(self.con, 1, 6, "Tutorial? ")
         self.gEngine.console_print(self.con, 1, 8, "Select one of the perk packages below ")
+
+        self.gEngine.console_hline(self.con, self.width / 2, self.height / 2, self.width / 2)
+        self.gEngine.console_print(self.con, self.width / 2, self.height / 2, chr(libtcod.CHAR_TEEE))
+
+        self.gEngine.console_print(self.con, self.width - 1, self.height / 2, chr(libtcod.CHAR_TEEW))
+
         for button in self.buttons:
             button.run(key, mouse)
+
+        self.gEngine.animation_draw_animations_back(False)
+        self.gEngine.animation_draw_animations_fore(False)
         self.c_class_group.run(key, mouse)
         self.m_tutorial_group.run(key, mouse)
         self.description()
@@ -76,6 +92,7 @@ class CharacterCreator(window_widget.WindowWidget):
         pass
 
     def finish(self):
+
         self.gEngine.modules = []
         self.gEngine.additional_modules = []
         self.gEngine.module_adjust_list = []
@@ -110,8 +127,8 @@ class CharacterCreator(window_widget.WindowWidget):
     def activate_warrior(self):
         self.warrior_description = True
         self.wizard_description = False
-
         self.display_description = True
+        self.create_warrior()
 
     def activate_wizard(self):
         self.wizard_description = True
@@ -145,6 +162,25 @@ class CharacterCreator(window_widget.WindowWidget):
             for line in self.wrapped_text:
                 l += 1
                 self.gEngine.console_print(self.con, self.max_width+3, l, line)
+        text = ""
+        inv = "Inventory Items: "
+        for item in self.g.player.fighter.inventory:
+            t = self.gEngine.color_text(item.name, item.color)
+            t += t + " (%d)"%item.item.qty
+            inv += "%s, "%t
+        p = self.g.player.fighter
+        self.gEngine.console_print(self.con, self.width / 2 +1, self.height / 2 +1, 'STR DEX CON INT')
+        self.gEngine.console_print(self.con, self.width / 2 + 1, self.height / 2 + 2, '%d  %d  %d  %d'
+                                   % (p.stat.get_stat('Strength'),
+                                      p.stat.get_stat('Dexterity'),
+                                      p.stat.get_stat('Constitution'),
+                                      p.stat.get_stat('Intelligence')))
+        text += inv
+        l = self.height/2 + 3
+        wrapped = textwrap.wrap(text, self.width/2 - 2)
+        for line in wrapped:
+            self.gEngine.console_print(self.con, self.width /2 + 1, l, line)
+            l += 1
 
     def create_player(self):
         self.g.player.name = self.c_name.text_field
@@ -162,6 +198,7 @@ class CharacterCreator(window_widget.WindowWidget):
 
     def create_warrior(self): # TODO: Break this out into its own .py file
         inv = self.g.player.fighter.inventory
+        # inv = []
         print(self.g.player.name)
         weapon = self.g.build_objects.build_equipment(self.g, 0, 0, name="Great Sword", mat="Iron")
         # weapon.item.equipment.on_hit_effect = spells.explosion # Testing on hit effects
@@ -182,10 +219,11 @@ class CharacterCreator(window_widget.WindowWidget):
             s.item.pick_up(inv)
 
         #Stats
-        self.g.player.fighter.stat.set_stat_base("Strength", self.selected_perk.strength)
-        self.g.player.fighter.stat.set_stat_base("Dexterity", self.selected_perk.dexterity)
-        self.g.player.fighter.stat.set_stat_base("Constitution", self.selected_perk.constitution)
-        self.g.player.fighter.stat.set_stat_base("Intelligence", self.selected_perk.intelligence)
+        if self.selected_perk:
+            self.g.player.fighter.stat.set_stat_base("Strength", self.selected_perk.strength)
+            self.g.player.fighter.stat.set_stat_base("Dexterity", self.selected_perk.dexterity)
+            self.g.player.fighter.stat.set_stat_base("Constitution", self.selected_perk.constitution)
+            self.g.player.fighter.stat.set_stat_base("Intelligence", self.selected_perk.intelligence)
         self.g.player.fighter.stat.set_stat_base("HP", 75)
         self.g.player.fighter.stat.set_stat_base("Stamina", 10)
 
@@ -195,17 +233,19 @@ class CharacterCreator(window_widget.WindowWidget):
         self.g.player.fighter.money = 200
 
         #Passive Skills
+        self.g.player.fighter.passives = []
         weapon_subtype = "Great Sword"
         self.g.player.fighter.weapon_profs.update({weapon_subtype:self.g.weapon_prof_skills[weapon_subtype]})
         self.g.player.fighter.passives.append(self.g.weapon_prof_skills[weapon_subtype])
-        self.g.passive_skills.remove(self.g.weapon_prof_skills[weapon_subtype])
+        # self.g.passive_skills.remove(self.g.weapon_prof_skills[weapon_subtype])
 
         weapon_subtype = "Long Sword"
         self.g.player.fighter.weapon_profs.update({weapon_subtype: self.g.weapon_prof_skills[weapon_subtype]})
         self.g.player.fighter.passives.append(self.g.weapon_prof_skills[weapon_subtype])
-        self.g.passive_skills.remove(self.g.weapon_prof_skills[weapon_subtype])
+        # self.g.passive_skills.remove(self.g.weapon_prof_skills[weapon_subtype])
 
         #Active Cooldown Skills
+        self.g.player.fighter.active_skills = []
         ww = skills.CooldownSkill("Whirlwind", self.g.player, "Whirlwind skill", 3, warrior_skills.whirlwind, self.g, self.gEngine,"W")
         self.g.player.fighter.active_skills.append(ww)
 
@@ -242,6 +282,11 @@ class CharacterCreator(window_widget.WindowWidget):
 
     def select_package(self, perk, button):
         self.selected_perk = perk
+        if self.selected_perk:
+            self.g.player.fighter.stat.set_stat_base("Strength", self.selected_perk.strength)
+            self.g.player.fighter.stat.set_stat_base("Dexterity", self.selected_perk.dexterity)
+            self.g.player.fighter.stat.set_stat_base("Constitution", self.selected_perk.constitution)
+            self.g.player.fighter.stat.set_stat_base("Intelligence", self.selected_perk.intelligence)
         button.background_color = libtcod.grey
         for b in self.buttons:
             if isinstance(b, button_widget.BigButtonWidget):

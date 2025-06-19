@@ -33,6 +33,9 @@ class GameObjects:
         self.melee_weapons = []
         self.monster_weapons = []
         self.light_sources = []
+        self.books = []
+        self.spells = []
+
         self.gEngine = gEngine
         self.load_content(gEngine)
         # Need to sort all of the different content
@@ -52,11 +55,6 @@ class GameObjects:
         Calls the content parser to load all of the items from disk
         :return:
         """
-        # if gEngine.RELEASE:
-        #     path = getattr(sys, "_MEIPASS", ".")
-        # else:
-        #     path = sys.path[0]
-
         path = os.path.abspath('.')
         gEngine.log_open_block("Loading content...")
         gEngine.log_message("Loading monsters")
@@ -73,8 +71,7 @@ class GameObjects:
         self.materials = content_parser.load_content(os.path.join(path, 'content', 'items', 'materials.toml'))
 
         gEngine.log_message("Loading monster weapons")
-        self.monster_weapons = content_parser.load_content(
-            os.path.join(path, 'content', 'items', 'monster_weapons.toml'))
+        self.monster_weapons = content_parser.load_content(os.path.join(path, 'content', 'items', 'monster_weapons.toml'))
 
         gEngine.log_message("Loading armors")
         self.armor = content_parser.load_content(os.path.join(path, 'content', 'items', 'armor.toml'))
@@ -88,7 +85,11 @@ class GameObjects:
         gEngine.log_message("Loading ammos")
         self.ammo = content_parser.load_content(os.path.join(path, 'content', 'items', 'ammo.toml'))
 
-        gEngine.log_message("Loading monsters")
+        gEngine.log_message("Loading books")
+        self.books = content_parser.load_content(os.path.join(path, 'content', 'items', 'books.toml'))
+
+        gEngine.log_message("Loading books")
+        self.spells = content_parser.load_content(os.path.join(path, 'content', 'items', 'spells.toml'))
 
         for item in self.armor:
             self.equipment.append(item)
@@ -185,13 +186,18 @@ class GameObjects:
         if type == "potion":
             if name:
                sp = self.get_pot_from_name(name)
-            if not name:  # in case you pass a name that doesnt exist, you get a random item
+            else:  # in case you pass a name that doesnt exist, you get a random item
                sp = self.potions[libtcod.random_get_int(0, 0, (len(self.potions) - 1))]
         elif type == "scroll":
             if name:
                 sp = self.get_scroll_from_name(name)
-            if not name:
+            else:
                 sp = self.scrolls[libtcod.random_get_int(0, 0, (len(self.scrolls) - 1))]
+        elif type == "spellbook":
+            if name:
+                pass
+            else:
+                pass
 
         spell_component = spells.Spell()
         spell_component.min = sp.min_effect
@@ -601,3 +607,47 @@ class GameObjects:
 
     def get_random_material(self):
         return self.materials[libtcod.random_get_int(0, 0, len(self.materials) - 1)]
+
+    def build_book(self, name=None, type=None):
+        """
+        Builds a book from a supplied name or type, with the supplied spells
+        If no name or type supplied, a random book is chosen
+        If both a name or a type, randomly choose between name and type
+        :param name: The name of the book to be chosen
+        :param type: The type of book to be chosen
+        :return: The completed book item
+        """
+        if name:
+            book_component = self.get_book_from_name(name)
+        elif type:
+            book_component = self.get_book_from_type(type)
+        elif name and type:
+            r = libtcod.random_get_int(0, 0, 1)
+            if r == 0:
+                book_component = self.get_book_from_name(name)
+            else:
+                book_component = self.get_book_from_type(type)
+        else:
+            book_component = self.books[libtcod.random_get_int(0, 0, len(self.books)-1)]
+
+    def get_book_from_name(self, name):
+        """
+        returns parse book class from given name
+        :param name: the book requested
+        :return: either the book requested, or None
+        """
+        for book in self.books:
+            if book.name == name:
+                return book
+        return None
+
+    def get_book_from_type(self, type):
+        """
+
+        :param type:
+        :return:
+        """
+        for book in self.books:
+            if book.type == type:
+                return book
+        return None

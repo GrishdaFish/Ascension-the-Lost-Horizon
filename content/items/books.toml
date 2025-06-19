@@ -1,0 +1,78 @@
+
+[[spellbook]]
+    name = 'basic spellbook'
+    cell = 'scroll'
+    type = 'book'
+    starting_spells = 3
+    maximum_spells = 8
+    max_stack = 1
+    stackable = false
+    value = 1000
+    level = 3
+    specialty = 'any'
+    color = [255, 125, 75]
+
+[[spellbook]]
+    name = 'advanced spellbook'
+    cell = 'scroll'
+    type = 'book'
+    starting_spells = 5
+    maximum_spells = 12
+    max_stack = 1
+    stackable = false
+    value = 4000
+    level = 3
+    specialty = 'any'
+    color = [255, 125, 75]
+
+[[spellbook]]
+    name = 'expert spellbook'
+    cell = 'scroll'
+    type = 'book'
+    starting_spells = 10
+    maximum_spells = 20
+    max_stack = 1
+    stackable = false
+    value = 10000
+    level = 3
+    specialty = 'any'
+    color = [255, 125, 75]
+
+[[spellbook]]
+    name = 'elemental spellbook'
+    cell = 'scroll'
+    type = 'book'
+    starting_spells = 3
+    maximum_spells = 8
+    max_stack = 1
+    stackable = false
+    value = 1000
+    level = 3
+    specialty = 'elemental'
+    color = [255, 125, 75]
+
+[[spellbook]]
+    name = 'multispectral spellbook'
+    cell = 'scroll'
+    type = 'book'
+    starting_spells = 3
+    maximum_spells = 8
+    max_stack = 1
+    stackable = false
+    value = 1000
+    level = 3
+    specialty = 'multispectral'
+    color = [255, 125, 75]
+
+[[spellbook]]
+    name = 'ancilliary spellbook'
+    cell = 'scroll'
+    type = 'book'
+    starting_spells = 3
+    maximum_spells = 8
+    max_stack = 1
+    stackable = false
+    value = 1000
+    level = 3
+    specialty = 'misc'
+    color = [255, 125, 75]

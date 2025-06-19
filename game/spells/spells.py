@@ -8,6 +8,8 @@ from game import render
 from game.spells import spell_effects
 import time
 
+
+
 class Spell:
     def __init__(self, min=0, max=0, range=0, radius=0, targets=0, ef_type=None, ad_eff=None, spel_eff=None,
                  eff_col=None):
@@ -327,3 +329,40 @@ def line_listener(x, y):
 
 def path_listener(x, y):
     pass
+
+
+spell_list = {
+    "elemental": [
+        "fire",
+        "ice",
+        "stone",
+        "storm"
+    ],
+    "fire": [
+        fireball,
+        explosion,
+    ],
+    "ice": [
+
+    ],
+    "stone": [
+
+    ],
+    "storm": [
+        lightning,
+        chain_lightning,
+    ],
+    "holy": [
+        heal,
+    ],
+    "evil": [
+
+    ],
+    "misc": [
+        detect_loot,
+        detect_monsters,
+        light,
+        magical_mapping,
+        confuse,
+    ]
+}

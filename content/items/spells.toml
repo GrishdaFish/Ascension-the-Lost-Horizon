@@ -1,0 +1,69 @@
+[[spell]]
+    name = "fireball"
+    min_effect = 5
+    max_effect = 10
+    radius = 3
+    num_targets = 9
+    type = 'fire'
+    range = 10
+    effect_per_level = [5, 10]
+    additional_effect = ['burn']
+    additional_effect_magnitude = 5
+    magnitude_per_level = 10
+    spell_fx = 'fireball'
+
+[[spell]]
+    name = "explosion"
+    min_effect = 15
+    max_effect = 20
+    radius = 2
+    num_targets = 4
+    type = 'fire'
+    range = 10
+    effect_per_level = [5, 5]
+    additional_effect = ['stun']
+    additional_effect_magnitude = 5
+    magnitude_per_level = 5
+    spell_fx = 'explosion'
+
+[[spell]]
+    name = "lightning"
+    min_effect = 5
+    max_effect = 40
+    radius = 1
+    num_targets = 1
+    type = 'storm'
+    range = 10
+    effect_per_level = [5, 20]
+    additional_effect = ['shock', 'stun']
+    additional_effect_magnitude = 5
+    magnitude_per_level = 5
+    spell_fx = 'lightning'
+
+[[spell]]
+    name = "chain lightning"
+    min_effect = 1
+    max_effect = 20
+    radius = 3
+    num_targets = 3
+    type = 'storm'
+    range = 20
+    effect_per_level = [2, 10]
+    additional_effect = ['shock', 'stun']
+    additional_effect_magnitude = 5
+    magnitude_per_level = 5
+    spell_fx = 'lightning'
+
+[[spell]]
+    name = "heal"
+    min_effect = 5
+    max_effect = 10
+    radius = 1
+    num_targets = 1
+    type = 'holy'
+    range = 0
+    effect_per_level = [5, 10]
+    additional_effect = []
+    additional_effect_magnitude = 0
+    magnitude_per_level = 0
+    spell_fx = 'lightning'

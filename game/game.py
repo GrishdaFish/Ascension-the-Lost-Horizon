@@ -333,6 +333,7 @@ class Game:
 
         # self.ticker.get_next_tick()
     def go_to_town(self, first_visit=False):
+        self.gEngine.animation_clear_cell()
         self.bark_manager.empty(self.gEngine)
         self.objects = []
         self.light_handler.empty()
@@ -381,6 +382,7 @@ class Game:
         self.panel = self.gEngine.console_new(self.screen_width, self.panel_height)  # for messages and others
         self.toolbar = self.gEngine.console_new(self.screen_width, 5)  # for the hotbar
         self.hotbar.reinit_all(self.toolbar)'''
+        self.gEngine.animation_clear_cell()
         self.ambient -= 0.025
         self.gEngine.lightmask_set_ambient(self.ambient)
         self.bark_manager.empty(self.gEngine)

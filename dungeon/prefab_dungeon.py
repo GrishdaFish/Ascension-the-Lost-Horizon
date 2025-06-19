@@ -3,30 +3,26 @@ from dungeon import tile
 from dungeon import level
 from dungeon import rect
 from dungeon import spawn_node
-from dungeon.prefabs import prefabs
+
 from dungeon.prefabs import color_sets
+
 from game.user_interface import shop
+
 from game.object import misc
 from game.object import object as objects
 from game.object import npc
-from game.object import build_objects
+
 from gEngine import lights
-from gEngine import gEngine as _gEngine
-from gEngine.utilities import xp_loader
+
 import os
-import sys
 import tcod as libtcod
 from copy import deepcopy
 import math
-import time
+import random
 
 width = 80
 height = 43
 
-# if _gEngine.RELEASE:
-#     path = getattr(sys, "_MEIPASS", ".")
-# else:
-#     path = sys.path[0]
 path = os.path.abspath('.')
 path = os.path.join(path, 'content')
 
@@ -189,6 +185,11 @@ class PrefabGenerator:
                                     l = lights.Light(x + room_x - center_x, y + room_y - center_y, light_handler,
                                                      flicker=True, intensity=i)
                                     light_handler.add_light(l)
+                                    frames = ['wall_torch_a', 'wall_torch_b', 'wall_torch_c', 'wall_torch_d']
+                                    random.shuffle(frames)
+                                    self.gEngine.animation_add_cell_animation(self.game.dungeon_console, frames, True,
+                                                                              x + room_x - center_x,
+                                                                              y + room_y - center_y, delay=5, fore=False)
                         elif new_room_tiles[y][x] == 'l':
                             print("Found floor light...")
                             self.set_ground(x + room_x - center_x, y + room_y - center_y, map)
@@ -200,6 +201,12 @@ class PrefabGenerator:
                                     l = lights.Light(x + room_x - center_x, y + room_y - center_y, light_handler,
                                                      flicker=True, intensity=i)
                                     light_handler.add_light(l)
+                                    frames = ['wall_torch_a', 'wall_torch_b', 'wall_torch_c', 'wall_torch_d']
+                                    random.shuffle(frames)
+                                    self.gEngine.animation_add_cell_animation(self.game.dungeon_console, frames, True,
+                                                                              x + room_x - center_x,
+                                                                              y + room_y - center_y, delay=5,fore=False)
+
                         elif new_room_tiles[y][x] == 's':
                             self.set_ground(x + room_x - center_x, y + room_y - center_y, map)
                             if self.game:
@@ -621,6 +628,10 @@ class PrefabGenerator:
                     if light_handler:
                         l = lights.Light(x, y, light_handler,  flicker=True, intensity=i)
                         light_handler.add_light(l)
+                        frames = ['wall_torch_a', 'wall_torch_b', 'wall_torch_c', 'wall_torch_d']
+                        random.shuffle(frames)
+                        self.gEngine.animation_add_cell_animation(self.game.dungeon_console, frames, True, x, y,
+                                                                  delay=5, fore=False)
                 # player starting location
                 if h[y][x] == 'X':
                     self.set_ground(x, y)

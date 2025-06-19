@@ -1,6 +1,4 @@
 __author__ = 'GrishdaFish'
-import sys
-import os
 import toml
 import tcod as libtcod
 
@@ -25,6 +23,10 @@ def load_content(path):
         return load_light_sources(content.get('light_source'))
     if content.get('ammo'):
         return load_ammo(content.get('ammo'))
+    if content.get('spellbook'):
+        return load_books(content.get('spellbook'))
+    if content.get('spell'):
+        return load_spells(content.get('spell'))
 
 def load_monsters(content):
     monster_array = []
@@ -77,6 +79,24 @@ def load_consumables(content):
         c.level = consumable.get('level')
         consumable_array.append(c)
     return consumable_array
+
+def load_books(content):
+    books = []
+    for book in content:
+        b = Book()
+        b.name = book.get('name')
+        b.cell = book.get('cell')
+        b.type = book.get('type')
+        b.starting_spells = book.get('starting_spells')
+        b.maximum_spells = book.get('maximum_spells')
+        b.max_stacks = book.get('max_stacks')
+        b.stackable = book.get('stackable')
+        b.value = book.get('value')
+        b.level = book.get('level')
+        b.specialty = book.get('speciality')
+        b.color = book.get('color')
+        books.append(b)
+    return books
 
 
 def load_currency(content):
@@ -204,6 +224,24 @@ def load_ammo(content):
         ammos.append(a)
     return ammos
 
+def load_spells(content):
+    spells = []
+    for spell in content:
+        s = SpellSkills()
+        s.name = spell.get("name")
+        s.min_effect = spell.get("min_effect")
+        s.max_effect = spell.get('max_effect')
+        s.radius = spell.get('radius')
+        s.num_targets = spell.get('num_targets')
+        s.type = spell.get('type')
+        s.range = spell.get('range')
+        s.effect_per_level = spell.get('effect_per_level')
+        s.additional_effect = spell.get('additional_effect')
+        s.additional_effect_magnitude = spell.get('additional_effect_magnitude')
+        s.magnitude_per_level = spell.get('magnitude_per_level')
+        s.spell_fx = spell.get('spell_fx')
+        spells.append(s)
+    return spells
 
 class Ammo:
     def __init__(self):
@@ -248,6 +286,19 @@ class Consumable:
         self.stackable = None
         self.level = 0
 
+class Book:
+    def __init__(self):
+        self.name = ""
+        self.cell = ""
+        self.type = ""
+        self.starting_spells = 0
+        self.maximum_spells = 0
+        self.max_stacks = 0
+        self.stackable = False
+        self.value = 0
+        self.level = 0
+        self.specialty = ''
+        self.color = None
 
 class Currency:
     def __init__(self):
@@ -371,3 +422,18 @@ class MonsterWeapon:
 class GameOptions:
     def __init__(self):
         self.key_set = ""
+
+class SpellSkills:
+    def __init__(self):
+        self.name = ""
+        self.min_effect = 0
+        self.max_effect = 0
+        self.radius = 0
+        self.num_targets = 0
+        self.type = ""
+        self.range = 0
+        self.effect_per_level = []
+        self.additional_effect = []
+        self.additional_effect_magnitude = 0
+        self.magnitude_per_level = 0
+        self.spell_fx = ""
