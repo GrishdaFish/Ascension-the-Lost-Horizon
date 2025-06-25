@@ -16,7 +16,11 @@ from gEngine.utilities.user_interface import menu
 from gEngine.utilities.user_interface import hot_bar
 from gEngine.utilities.user_interface import dialog_box
 
+from gEngine.utilities.widget import window_widget
+from gEngine.utilities.widget import button_widget
+
 from gEngine import lights
+
 from game import bark
 from game.object import build_objects
 from game.object import object
@@ -36,6 +40,7 @@ from game.ai_director import ai_director
 
 from game.classes import warrior_skills
 
+from game.debug_modules import module_list, dungeon_status, spawning_tool, reload_module
 import os
 import sys
 from gEngine import gEngine as _gEngine
@@ -49,6 +54,8 @@ max_rooms = 25
 max_room_monsters = 0
 max_room_items = 3
 
+def dummy_func():
+    pass
 
 class Game:
     def __init__(self, gEngine): # TODO: Break this up into individual functions for setup
@@ -120,6 +127,8 @@ class Game:
         self.gEngine.log_message("Hotbar initialized")
         self.gEngine.log_close_block()
 
+        self.big_ui_button_widget = None
+
         self.player_action = None
         self.bark_manager = bark.BarkManager()
         self.ambient = 0.15
@@ -131,13 +140,8 @@ class Game:
         self.turns = 0
         self.hover_description = hover_description.HoverDescription(self.dungeon_console, self.gEngine, True)
 
-        # if _gEngine.RELEASE:
-        #     path = getattr(sys, "_MEIPASS", ".")
-        # else:
-        #     path = sys.path[0]
         path = os.path.abspath('.')
         path = os.path.join(path, 'content')
-        #print(path)
         back = os.path.join(path, 'img', 'BurntTorch.png')
         fore = os.path.join(path, 'img', 'Torch.png')
         self.player_torch_bar = status_bar.AnimatedStatusBar(back, fore, "torch flame", self.toolbar, self.gEngine, 0, 0)
@@ -157,6 +161,34 @@ class Game:
 
         self.gEngine.log_message("Game fully initialized")
         self.gEngine.log_close_block()
+
+    def setup_ui_modules(self):
+        self.big_ui_button_widget = BigUIButtonContainer(self.gEngine, self, 56, self.panel_y-5, 24, 5, "")
+        self.big_ui_button_widget.activate()
+        self.gEngine.add_module(self.big_ui_button_widget)
+        self.big_ui_button_widget.setup()
+        self.skill_screen.setup(self)
+        self.gEngine.add_module(self.skill_screen)
+        self.setup_debug_modules()
+
+    def setup_debug_modules(self):
+        d = dungeon_status.DungeonStatus(self.gEngine, self, 5, 6, self.gEngine.SCREEN_WIDTH / 2, 7, "Dungeon Status")
+        d.deactivate()
+        self.gEngine.add_module(d)
+
+        spawn_tool = spawning_tool.SpawningTools(self.gEngine, self, 0, 0, 18, 9, "Spawning Tools")
+        spawn_tool.setup()
+        self.gEngine.add_module(spawn_tool)
+
+        # load this module last
+        m = module_list.ModuleList(self.gEngine, self, 0, 0, 15, 5, 'Module List')
+        m.deactivate()
+        self.gEngine.add_module(m)
+
+        r = reload_module.ReloadModule(self.gEngine, x=20, y=0, w=15, h=5, title="Reload Tool")
+        r.setup()
+        r.deactivate()
+        self.gEngine.add_module(r)
 
     def activate(self):
         self.active = True
@@ -182,13 +214,17 @@ class Game:
             self.weapon_prof_skills.update({subtype:passive})
 
 
+    def handle_input(self, key, mouse):
+        turn = input_handler.handle_keys(key, self)
 
+
+        return turn
     def run(self, key, mouse):
-        #while True:
         self.player_moved = False
+
         # erase all objects at their old locations, before they move
-        for object in self.objects:
-            object.clear(self.gEngine)
+        #for object in self.objects:
+        #    object.clear(self.gEngine)
 
         # Monsters faster than the player, take turns first
         if not self.is_player_turn:
@@ -201,14 +237,15 @@ class Game:
             self.player_moved = False
         if self.is_player_turn:
             self.player_moved = False
-            # while self.player_action == 'didnt-take-turn':
-            #key, mouse = self.gEngine.handle_input()
+
             self.hover_description.reset()
             self.hover_description.update(mouse, self.get_names_under_mouse(), self.dungeon_height)
-            self.player_action = input_handler.handle_keys(key, self)
+            self.player_action = self.handle_input(key,mouse)
+
             if self.player_action == 'exit':
                 self.return_to_main_menu()
                 return
+
             if mouse.lbutton:
                 if not self.popup and self.player.fighter.gear.get_combat_type() == 'ranged':
                     target = self.check_for_target(mouse.cx, mouse.cy)
@@ -239,6 +276,7 @@ class Game:
 
                     self.hotbar.update(mouse, key, self)
                     self.bark_manager.update_barks()
+
             if self.player_action == 'player-moved':
                 self.player_moved = True
 
@@ -298,6 +336,8 @@ class Game:
         self.player = object.Object(self.dungeon_console, 0, 0, '@', 'player',
                                     libtcod.white, blocks=True, fighter=fighter_component)
         self.player.game = self
+        self.player.idle_frames = ['player_1', 'player_2', 'player_3', 'player_4', 'player_5']
+        self.player.add_idle_animation()
 
         # TODO Refactor status bars into their own small class with all relevant data attached to it
         # this will help manage bars a bit easier
@@ -322,9 +362,6 @@ class Game:
         self.game_state = 'playing'
         self.ai_director.add_player_stat('gold earned', self.player.fighter.money)
 
-        self.skill_screen.setup(self)
-        self.gEngine.add_module(self.skill_screen)
-        print(str(self.skill_screen.__class__.__name__))
 
     def setup_world(self):
         pass
@@ -334,6 +371,8 @@ class Game:
         # self.ticker.get_next_tick()
     def go_to_town(self, first_visit=False):
         self.gEngine.animation_clear_cell()
+        self.player.add_idle_animation()
+
         self.bark_manager.empty(self.gEngine)
         self.objects = []
         self.light_handler.empty()
@@ -374,6 +413,7 @@ class Game:
         #self.newgame = True
         self.gEngine.lightmask_set_ambient(self.ambient)
 
+        render.render_all(self)
         #self.gEngine.mMap = self.level.dungeon
 
     def new_level(self):
@@ -383,6 +423,7 @@ class Game:
         self.toolbar = self.gEngine.console_new(self.screen_width, 5)  # for the hotbar
         self.hotbar.reinit_all(self.toolbar)'''
         self.gEngine.animation_clear_cell()
+        self.player.add_idle_animation()
         self.ambient -= 0.025
         self.gEngine.lightmask_set_ambient(self.ambient)
         self.bark_manager.empty(self.gEngine)
@@ -427,17 +468,20 @@ class Game:
         self.levels.append(level)
         self.level = level
         self.fov = self.level.fov_map
-        self.ticker.schedule_turn(10, self.player)
-        self.ticker.get_next_tick()
+
         # self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
-        self.game_state = 'playing'
         for object in self.objects:
             if object.misc:
                 if object.misc.type == 'up':  # place the player at the down stairs on the previous level
                     self.player.x = object.x
                     self.player.y = object.y
         #self.objects = []
+        self.game_state = 'playing'
         self.ai_director.take_turn()
+        render.render_all(self)
+        self.ticker.schedule_turn(10, self.player)
+        self.ticker.get_next_tick()
+        render.render_all(self)
 
     def prev_level(self):
         self.objects = []
@@ -456,10 +500,11 @@ class Game:
 
         # self.objects = self.level.objects
         self.fov = self.level.fov_map
+        self.game_state = 'playing'
+        render.render_all(self)
         self.ticker.schedule_turn(10, self.player)
         # add in spawn node or monster turns
         # self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
-        self.game_state = 'playing'
 
     def check_for_target(self, x, y):
         for object in self.objects:
@@ -518,7 +563,35 @@ class Game:
                     msg += menu.color_text(' here.', libtcod.white)
                 self.message.message(msg, 0)
 
+    def big_ui_button_help(self):
+        self.gEngine.toggle_module(self.gEngine.get_module_by_name("HelpPopup"))
 
+    def big_ui_button_inventory(self):
+        chosen_item = inventory.inventory(self.dungeon_console, self.player, self)
+
+        if chosen_item is not None:
+            chosen_item.item.use(self.player.fighter.inventory, self.player, self)
+            self.player_action = 'turn-used'
+
+    def big_ui_button_skills(self):
+        mod = self.gEngine.get_module_by_name("SkillScreen")
+        if mod:
+            mod.activate()
+            self.deactivate()
+            mod.setup(self)
+            self.gEngine.bring_module_to_front(mod)
+
+    def small_ui_button_debug(self):
+        mod = self.gEngine.get_module_by_name("ModuleList")
+        if mod:
+            self.gEngine.toggle_module(mod)
+            if mod.active:
+                self.gEngine.bring_module_to_front(mod)
+        mod = self.gEngine.get_module_by_name("ReloadModule")
+        if mod:
+            self.gEngine.toggle_module(mod)
+            if mod.active:
+                self.gEngine.bring_module_to_front(mod)
 def path_callback(xFrom, yFrom, xTo, yTo, userData):
     for obj in userData.objects:
         if obj.is_blocked(xTo, yTo, userData.level.dungeon, userData.objects):
@@ -530,3 +603,72 @@ def path_callback(xFrom, yFrom, xTo, yTo, userData):
         return 0.0
     else:
         return 1.0
+
+
+class BigUIButton(button_widget.BigButtonWidget):
+    def __init__(self, parent, x, y, function=None, passable=None, button_cells=None):
+        if button_cells is None:
+            button_cells = ['','','','']
+        super().__init__(parent, x, y, button_cells, function, passable)
+        self.height = 2
+        self.width = 2
+        self.char_a = button_cells[0]
+        self.char_b = button_cells[1]
+        self.char_c = button_cells[2]
+        self.char_d = button_cells[3]
+        self.untriggered_color = libtcod.white
+        self.triggered_color = libtcod.green
+        self.background_color = libtcod.black
+        self.fore_color = libtcod.white
+        self.gEngine.console_remove_console(self.con)
+        self.con = self.gEngine.console_new(self.width, self.height)
+
+    def pre_draw_widget(self):
+        if self.active:
+            self.gEngine.console_set_default_background(self.con, self.background_color)
+            self.gEngine.console_put_char_ex(self.con, 0, 0, self.char_a, self.fore_color, self.background_color)
+            self.gEngine.console_put_char_ex(self.con, 1, 0, self.char_b, self.fore_color, self.background_color)
+            self.gEngine.console_put_char_ex(self.con, 0, 1, self.char_c, self.fore_color, self.background_color)
+            self.gEngine.console_put_char_ex(self.con, 1, 1, self.char_d, self.fore_color, self.background_color)
+
+    def color_button_text(self, color):
+        pass
+
+    def basic_mouse_input(self, mouse):
+        if self.mouse_is_in_console(mouse):
+            self.fore_color = libtcod.dark_orange
+            if mouse.lbutton:
+                return self.trigger()
+        else:
+            if not self.triggered:
+                self.fore_color = self.untriggered_color
+            else:
+                self.fore_color = self.triggered_color
+
+class BigUIButtonContainer(window_widget.StaticWindowWidget):
+    def __init__(self,gEngine, game, x, y, w, h, title):
+        super().__init__(gEngine, game, x, y, w, h, title)
+        self.buttons = []
+        #self.buttons.append(BigUIButton(self, 1, 1, dummy_func, button_cells=cells))
+
+    def update(self, key, mouse):
+        if self.active:
+            for button in self.buttons:
+                if button:
+                    button.run(key, mouse)
+                pass
+    def setup(self):
+        cells = ['inv_a', 'inv_b', 'inv_c', 'inv_d']
+        f = self.game.big_ui_button_inventory
+        self.buttons.append(BigUIButton(self, 1, 1, f, button_cells=cells))
+
+        f = self.game.big_ui_button_help
+        cells = ['help_a', 'help_b', 'help_c', 'help_d']
+        self.buttons.append(BigUIButton(self, 4, 1, f, button_cells=cells))
+
+        f = self.game.big_ui_button_skills
+        cells = ['skill_a', 'skill_b', 'skill_c', 'skill_d']
+        self.buttons.append(BigUIButton(self, 7, 1, f, button_cells=cells))
+
+        f = self.game.small_ui_button_debug
+        self.buttons.append(button_widget.TextButtonWidget(self, 22, 3, "D", f))

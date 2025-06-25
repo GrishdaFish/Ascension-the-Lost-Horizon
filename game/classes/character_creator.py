@@ -2,7 +2,7 @@ __author__ = 'GrishdaFish'
 
 from gEngine.utilities.widget import window_widget, button_widget, text_input_widget, button_group, popups
 
-from game.debug_modules import module_list, dungeon_status, spawning_tool, reload_module
+
 
 from game.user_interface import help_popup_module
 
@@ -100,23 +100,6 @@ class CharacterCreator(window_widget.WindowWidget):
         self.create_player()
         self.gEngine.add_module(self.g)
 
-        d = dungeon_status.DungeonStatus(self.gEngine, self.g, 5, 6, self.gEngine.SCREEN_WIDTH / 2, 7, "Dungeon Status")
-        d.deactivate()
-        self.gEngine.add_module(d)
-
-        spawn_tool = spawning_tool.SpawningTools(self.gEngine, self.g, 0, 0, 18, 9, "Spawning Tools")
-        spawn_tool.setup()
-        self.gEngine.add_module(spawn_tool)
-
-        # load this module last
-        m = module_list.ModuleList(self.gEngine, self.g, 0, 0, 15, 5, 'Module List')
-        self.gEngine.add_module(m)
-
-        r = reload_module.ReloadModule(self.gEngine, x=20, y=0, w=15,h=5,title="Reload Tool")
-        r.setup()
-        r.activate()
-        self.gEngine.add_module(r)
-
         help_module = help_popup_module.HelpPopup(self.gEngine, self.g, 5, 5, 70, 30, "Help")
         if self.tutorial_on_button.enabled:
             help_module.activate()
@@ -124,6 +107,7 @@ class CharacterCreator(window_widget.WindowWidget):
             help_module.deactivate()
         self.gEngine.add_module(help_module)
 
+        self.g.setup_ui_modules()
     def activate_warrior(self):
         self.warrior_description = True
         self.wizard_description = False

@@ -231,7 +231,11 @@ class GameObjects:
         item_component.level = potion.level
 
         name = "potion of %s" % potion.name
-        item = Object(game.dungeon_console, x, y, potion.cell, name, potion.color, item=item_component)
+        if isinstance(potion.cell, list):
+            cell = potion.cell[libtcod.random_get_int(0, 0, len(potion.cell)-1)]
+        else:
+            cell = potion.cell
+        item = Object(game.dungeon_console, x, y, cell, name, potion.color, item=item_component)
 
         return item
 
@@ -254,7 +258,11 @@ class GameObjects:
         item_component.level = scroll.level
 
         name = "scroll of %s" % scroll.name
-        item = Object(game.dungeon_console, x, y, scroll.cell, name, scroll.color, item=item_component)
+        if isinstance(scroll.cell, list):
+            cell = scroll.cell[libtcod.random_get_int(0, 0, len(scroll.cell)-1)]
+        else:
+            cell = scroll.cell
+        item = Object(game.dungeon_console, x, y, cell, name, scroll.color, item=item_component)
 
         return item
 
@@ -439,11 +447,25 @@ class GameObjects:
         fighter_component.current_xp = mob.xp_value
 
         fighter_component.game = game
+        if len(mob.attack_animation) > 0:
+            fighter_component.attack_animation = mob.attack_animation
+        if len(mob.hit_animation) > 0:
+            fighter_component.hit_animation = mob.hit_animation
+        if len(mob.miss_animation) > 0:
+            fighter_component.miss_animation = mob.miss_animation
+        if len(mob.death_animation) > 0:
+            fighter_component.death_animation = mob.death_animation
 
         ai_component = WanderingMonster(x=x, y=y)  # BasicMonster()
 
         monster = Object(game.dungeon_console, x, y, mob.cell, mob.name, mob.color,
                          blocks=True, fighter=fighter_component, ai=ai_component)
+
+        if len(mob.idle_animation) > 0:
+            monster.idle_animation = self.gEngine.animation_add_cell_animation(game.dungeon_console, mob.idle_animation,
+                                                                               x=monster.x, y=monster.y, loop=True,
+                                                                               color=monster.color)
+
         monster.game = game
         #monster.fighter.ticker.schedule_turn(monster.fighter.speed, monster)  # TODO REFACTOR
 

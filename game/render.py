@@ -77,7 +77,7 @@ def draw_objects(game):
             if object.misc.type == 'up' or object.misc.type == 'down':
                 # Draw stairs if they are already found
                 if game.gEngine.map_is_explored(object.x, object.y):
-                    object.draw(game.fov, game.gEngine, force_display=True)
+                    object.draw(game.fov, game.gEngine, force_display=False)
 
             else:
                 object.draw(game.fov, game.gEngine)
@@ -93,6 +93,8 @@ def draw_objects(game):
 
 
 def draw_user_interface(game):
+    game.gEngine.animation_draw_ui()
+
     col = libtcod.black
     game.gEngine.console_set_default_background(game.panel, col)
     game.gEngine.console_clear(game.panel)

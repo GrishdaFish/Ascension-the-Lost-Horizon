@@ -3,7 +3,7 @@
 
 [["consumable"]]
     name="light healing"
-    cell='small_potion'
+    cell=['small_potion', 'big_potion', 'potion_1', 'potion_2', 'potion_3', 'potion_4', 'potion_5']
     type="potion"
     min_effect=4 #min damage or turns the spell lasts
     max_effect=6
@@ -23,7 +23,7 @@
     
 [["consumable"]]
     name="healing"
-    cell='big_potion'
+    cell=['small_potion', 'big_potion', 'potion_1', 'potion_2', 'potion_3', 'potion_4', 'potion_5']
     type="potion"
     min_effect=10
     max_effect=12
@@ -42,7 +42,7 @@
 
 [["consumable"]]
     name="great healing"
-    cell='big_potion'
+    cell=['small_potion', 'big_potion', 'potion_1', 'potion_2', 'potion_3', 'potion_4', 'potion_5']
     type="potion"
     min_effect=25
     max_effect=40
@@ -61,7 +61,8 @@
 
 [["consumable" ]]
     name="fireball"
-    cell="scroll"
+    cell=["scroll", 'scroll_1', 'scroll_2', 'scroll_3', 'scroll_4', 'scroll_5', 'scroll_6',
+        'scroll_7', 'scroll_8', 'scroll_9', 'scroll_10']
     type="scroll"
     min_effect=12
     max_effect=20
@@ -73,14 +74,15 @@
     range=80
     radius=3
     max_targets=1
-    col=[255, 255, 0]
+    col=[255, 0, 0]
     value = 150
     stackable = true
     level = 3
     
 [["consumable"]]
     name="chain lightning"
-    cell="scroll"
+    cell=["scroll", 'scroll_1', 'scroll_2', 'scroll_3', 'scroll_4', 'scroll_5', 'scroll_6',
+        'scroll_7', 'scroll_8', 'scroll_9', 'scroll_10']
     type="scroll"
     min_effect=10
     max_effect=20
@@ -99,7 +101,8 @@
 
 [["consumable"]]
     name="lightning"
-    cell="scroll"
+    cell=["scroll", 'scroll_1', 'scroll_2', 'scroll_3', 'scroll_4', 'scroll_5', 'scroll_6',
+        'scroll_7', 'scroll_8', 'scroll_9', 'scroll_10']
     type="scroll"
     min_effect=20
     max_effect=30
@@ -118,7 +121,8 @@
     
 [["consumable"]]
     name="confusion"
-    cell="scroll"
+    cell=["scroll", 'scroll_1', 'scroll_2', 'scroll_3', 'scroll_4', 'scroll_5', 'scroll_6',
+        'scroll_7', 'scroll_8', 'scroll_9', 'scroll_10']
     type="scroll"
     min_effect=10
     max_effect=12
@@ -137,7 +141,8 @@
 
 [["consumable"]]
     name="minor light"
-    cell="scroll"
+    cell=["scroll", 'scroll_1', 'scroll_2', 'scroll_3', 'scroll_4', 'scroll_5', 'scroll_6',
+        'scroll_7', 'scroll_8', 'scroll_9', 'scroll_10']
     type="scroll"
     min_effect=0.5 # light value
     max_effect=0.75
@@ -156,7 +161,8 @@
 
 [["consumable"]]
     name="light"
-    cell="scroll"
+    cell=["scroll", 'scroll_1', 'scroll_2', 'scroll_3', 'scroll_4', 'scroll_5', 'scroll_6',
+        'scroll_7', 'scroll_8', 'scroll_9', 'scroll_10']
     type="scroll"
     min_effect=0.75
     max_effect=1.0
@@ -175,7 +181,8 @@
 
 [["consumable"]]
     name="major light"
-    cell="scroll"
+    cell=["scroll", 'scroll_1', 'scroll_2', 'scroll_3', 'scroll_4', 'scroll_5', 'scroll_6',
+        'scroll_7', 'scroll_8', 'scroll_9', 'scroll_10']
     type="scroll"
     min_effect=1.0
     max_effect=1.25
@@ -194,7 +201,8 @@
 
 [["consumable"]]
     name="detect monsters"
-    cell="scroll"
+    cell=["scroll", 'scroll_1', 'scroll_2', 'scroll_3', 'scroll_4', 'scroll_5', 'scroll_6',
+        'scroll_7', 'scroll_8', 'scroll_9', 'scroll_10']
     type="scroll"
     min_effect=15
     max_effect=25
@@ -213,7 +221,8 @@
 
 [["consumable"]]
     name="detect items"
-    cell="scroll"
+    cell=["scroll", 'scroll_1', 'scroll_2', 'scroll_3', 'scroll_4', 'scroll_5', 'scroll_6',
+        'scroll_7', 'scroll_8', 'scroll_9', 'scroll_10']
     type="scroll"
     min_effect=15
     max_effect=25

@@ -4,7 +4,7 @@ import toml
 import tcod as libtcod
 
 class CellAnimation:
-    def __init__(self, gEngine, con, frames=None, loop=False, x=0, y=0, color=libtcod.white, delay=0, fore=True):
+    def __init__(self, gEngine, con, frames=None, loop=False, x=0, y=0, color=libtcod.white, delay=5, fore=True):
         self.gEngine = gEngine
         self.con = con
         if frames is None:
@@ -52,7 +52,10 @@ class CellAnimation:
 
     def get_frame(self):
         if self.index > len(self.frames)-1:
-            self.index = 0
+            if self.loop:
+                self.index = 0
+            else:
+                self.finished = True
         return self.frames[self.index]
 
 class Animation:
@@ -103,13 +106,19 @@ class Animations:
         :param gEngine:
         """
         self.animations = []  # TODO Consider making this a dict
-        self.cell_animations = []
+        self.cell_animations_fore = []
+        self.cell_animations_back = []
+        self.cell_animations_ui = []
         self.gEngine = gEngine
 
     def add_cell_animation(self, cell_animation):
-        self.cell_animations.append(cell_animation)
+        if cell_animation.fore:
+            self.cell_animations_fore.append(cell_animation)
+        else:
+            self.cell_animations_back.append(cell_animation)
 
-
+    def add_cell_ui_animation(self, cell_animation):
+        self.cell_animations_ui.append(cell_animation)
     def load_animations(self, root_path=None):
         """
         Loads all animations from the content/img/animations directory
@@ -177,18 +186,24 @@ class Animations:
                 return animation.update()
 
     def draw_cell_animations_back(self, map):
-        for animation in self.cell_animations:
+        for animation in self.cell_animations_back:
             if not animation.fore:
                 animation.draw(map)
                 if animation.finished:
-                    self.cell_animations.remove(animation)
+                    self.cell_animations_back.remove(animation)
 
     def draw_cell_animations_fore(self, map):
-        for animation in self.cell_animations:
+        for animation in self.cell_animations_fore:
             if animation.fore:
                 animation.draw(map)
                 if animation.finished:
-                    self.cell_animations.remove(animation)
+                    self.cell_animations_fore.remove(animation)
+
+    def draw_cell_ui_animation(self):
+        for animation in self.cell_animations_ui:
+            animation.draw()
+            if animation.finished:
+                self.cell_animations_ui.remove(animation)
 
     def reset_animation(self, animation_name):
         for animation in self.animations:
@@ -197,7 +212,20 @@ class Animations:
                 return
 
     def clear_cell_animations(self):
-        self.cell_animations.clear()
+        self.cell_animations_back.clear()
+        self.cell_animations_fore.clear()
+
+    def clear_cell_ui_animations(self):
+        self.cell_animations_ui.clear()
 
     def remove_cell_animation(self, cell):
-        self.cell_animations.remove(cell)
+        if cell in self.cell_animations_back:
+            self.cell_animations_back.remove(cell)
+        elif cell in self.cell_animations_fore:
+            self.cell_animations_fore.remove(cell)
+        else:
+            return None
+
+    def remove_cell_ui_animation(self, cell):
+        if cell in self.cell_animations_ui:
+            self.cell_animations_ui.remove(cell)

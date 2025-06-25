@@ -212,3 +212,42 @@ class WindowWidget:
             self.con = self.gEngine.console_new(self.width, self.height)
             self.minimized = True
             self.title = '='
+
+
+class StaticWindowWidget(WindowWidget):
+    def __init__(self, gEngine, game=None, x=0, y=0, w=0, h=5, title="", target_console=0):
+        '''
+        Window Widget that cannot be moved, closed, or minimized. Ideal for static UI elements
+
+        :param gEngine: Active instance of gEngine
+        :param game: Active Game instance
+        :param x: The starting X position for the widget
+        :param y: The Starting Y position for the widget
+        :param w: The width of the widget
+        :param h: The Height of the widget
+        :param title: The title to be displayed
+        :param target_console: Console to blit this on top of. Defaults to root
+        '''
+        super().__init__(gEngine=gEngine, game=game, x=x, y=y, w=w, h=h, title=title, target_console=target_console)
+
+
+    def pre_draw_widgit(self):
+        if self.active:
+            self.gEngine.console_print_frame(self.con, 0, 0, self.width, self.height, True)
+            self.gEngine.console_print(self.con, self.title_x_position, 0, self.title)
+
+
+    def basic_mouse_input(self, mouse):
+        if self.mouse_is_in_console(mouse):
+            if mouse.lbutton:
+                other_module = self.in_overlap_zone(mouse)
+                if other_module:
+                    if self.gEngine.modules.index(self) > self.gEngine.modules.index(other_module):
+                        return
+                elif self.gEngine.modules.index(self) < len(self.gEngine.modules) - 1:
+                    self.gEngine.bring_module_to_front(self)
+
+    def close(self):
+        return
+
+

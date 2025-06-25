@@ -29,6 +29,11 @@ path = os.path.join(path, 'content')
 
 # path = path.replace('core.exe', '')
 
+door_options = [
+    'door_1',
+    'door_2',
+
+]
 class PrefabGenerator:
     """
     Prefabricated map generator. Can be used as a standaone and build an entire level out of prefab rooms,
@@ -272,8 +277,9 @@ class PrefabGenerator:
 
             mat = self.game.build_objects.get_random_material()
             m = misc.Misc(type='door')
-            door = objects.Object(self.game.dungeon_console, origin_door[0], origin_door[1], '=', '%s door' % mat.name,
-                                  mat.color, blocks=True, misc=m)
+            d = door_options[libtcod.random_get_int(0, 0, len(door_options)-1)]
+            door = objects.Object(self.game.dungeon_console, origin_door[0], origin_door[1], d, '%s door' % mat.name,
+                                  libtcod.white, blocks=True, misc=m)
             door.game = self.game
             m.attach_owner(door)
             m.set_use_function(m.open)
@@ -454,7 +460,7 @@ class PrefabGenerator:
                 y = libtcod.random_get_int(0, 0, self.height - 1)
                 if not self.dungeon[x][y].blocked:
                     m = misc.Misc(type='down')
-                    down = objects.Object(self.game.dungeon_console, x, y, '>', 'set of stairs going down',
+                    down = objects.Object(self.game.dungeon_console, x, y, 'stairs_down', 'set of stairs going down',
                                           libtcod.white, blocks=False, misc=m)
                     self.game.objects.append(down)
                     down.send_to_back(self.game.objects)
@@ -465,7 +471,7 @@ class PrefabGenerator:
                 y = libtcod.random_get_int(0, 0, self.height - 1)
                 if not self.dungeon[x][y].blocked:
                     m = misc.Misc(type='up')
-                    up = objects.Object(self.game.dungeon_console, x, y, '<', 'set of stairs going up',
+                    up = objects.Object(self.game.dungeon_console, x, y, 'stairs_up', 'set of stairs going up',
                                         libtcod.white, blocks=False, misc=m)
                     self.game.objects.append(up)
                     up.send_to_back(self.game.objects)
@@ -569,7 +575,7 @@ class PrefabGenerator:
                     r = libtcod.random_get_int(0, 0, len(floor_color) - 1)
                     self.dungeon[x][y].color = floor_color[r]
                     m = misc.Misc(type='down')
-                    down = objects.Object(self.game.dungeon_console, x, y, '>', 'set of stairs going down',
+                    down = objects.Object(self.game.dungeon_console, x, y, 'stairs_down', 'set of stairs going down',
                                           libtcod.white,
                                           blocks=False, misc=m)
                     self.game.objects.append(down)

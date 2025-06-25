@@ -45,6 +45,8 @@ class Object:
         self.flash_frames = self.flash_max_frames
         self.flash_hit = True
 
+        self.idle_animation = None
+        self.idle_frames = []
         self.game = None
 
         self.fighter = fighter
@@ -82,7 +84,17 @@ class Object:
         if not self.is_blocked(self.x + dx, self.y + dy, map, objects):
             self.x += dx
             self.y += dy
+        if self.idle_animation:
+            self.update_idle_animation()
 
+    def update_idle_animation(self):
+        self.idle_animation.x = self.x
+        self.idle_animation.y = self.y
+
+    def add_idle_animation(self):
+        self.idle_animation = self.game.gEngine.animation_add_cell_animation(self.game.dungeon_console,
+                                                                             self.idle_frames, x=self.x, y=self.y,
+                                                                             loop=True, color=self.color)
     def move_towards(self, target_x, target_y, map, objects):
         # vector from this object to the target, and distance
         dx = target_x - self.x
@@ -192,7 +204,6 @@ class Object:
             fr, fg, fb = 0, 0, 0
             if self.flashing:
                 fr, fg, fb = self.calc_flash()
-
             else:  # TODO CONSIDER calculate final colors in a separate function? This may be the only spot to do this
                 fr, fg, fb = self.color
                 brightness = gEngine.lightmask_get_mask_value(self.x, self.y)
@@ -208,6 +219,17 @@ class Object:
             br = min(255, br)
             bg = min(255, bg)
             bb = min(255, bb)
+            if self.fighter:
+                if self.fighter.hit_anim:
+                    if not self.fighter.hit_anim.finished:
+                        self.fighter.hit_anim.color = (fr, fg, fb)
+                    else:
+                        self.fighter.hit_anim = None
+                elif self.fighter.miss_anim:
+                    if not self.fighter.miss_anim.finished:
+                        self.fighter.miss_anim.color = (fr, fg, fb)
+                    else:
+                        self.fighter.miss_anim = None
 
             if is_player:  # TODO NOTE This  will be needed if we do a scrolling map
                 gEngine.console_put_char_ex(self.con, gEngine.w / 2, gEngine.h / 2 - 6, self.char, (int(fr), int(fg),
@@ -272,6 +294,17 @@ class Fighter:
         self.weapon_profs = {}
         self.active_skills = []
         self.cooldown_skills = []
+        self.game = None
+
+        self.attack_animation = None # List of animation frames
+
+        self.hit_animation = None # list of animation frames
+        self.hit_anim = None # gEngine animation object
+
+        self.miss_animation = None # list of animation frames
+        self.miss_anim = None # gEngine animation object
+
+        self.death_animation = None # list of animation frames
 
         self.death_function = death_function
         self.type = 'melee'
@@ -299,6 +332,15 @@ class Fighter:
         self.restricted_weapons = []
 
         self.skills = copy.deepcopy(combat.skill_list)  # skill list needs to have its own copies
+
+    def clear_animations(self):
+        if self.game:
+            if self.hit_anim:
+                self.game.gEngine.animation_remove_cell(self.hit_anim)
+                self.hit_anim = None
+            if self.miss_anim:
+                self.game.gEngine.animation_remove_cell(self.miss_anim)
+                self.miss_anim = None
 
     def get_attribute_package(self):
         """ sets up an array of data we want to save about the fighter """
@@ -362,6 +404,10 @@ class Fighter:
         return None
 
     def attack(self, target=None, player=False, direction=None, game=None, force_attack=False):
+        if self.attack_animation:
+            game.gEngine.animation_add_cell_animation(game.dungeon_console, self.attack_animation,
+                                                      x=self.owner.x, y=self.owner.y,
+                                                      color=self.owner.color)
         if force_attack:
             combat_controller.attack(self, target, direction=None, force_attack_target=target)
         else:
@@ -387,6 +433,10 @@ class Fighter:
             game.ai_director.add_player_stat('total damage dealt', damage)
 
         if damage > 0 and self.hp > 0:
+            if self.hit_animation:
+                self.hit_anim = game.gEngine.animation_add_cell_animation(game.dungeon_console, self.hit_animation,
+                                                                          x=self.owner.x, y=self.owner.y,
+                                                                          color=self.owner.color)
             self.hp -= damage
 
             self.owner.flashing = True
@@ -405,6 +455,9 @@ class Fighter:
                 if self.owner != game.player:
                     game.ai_director.add_player_stat('kills', 1)
                 attacker.fighter.current_xp += self.current_xp
+                if self.death_animation:
+                    game.gEngine.animation_add_cell_animation(game.dungeon_console,self.death_animation,x=self.owner.x,
+                                                              y=self.owner.y, color=self.owner.color)
                 function = self.death_function
                 if function is not None:
                     function(self.owner, game)
@@ -653,7 +706,7 @@ def monster_death(monster, game=None):
         for item in monster.fighter.inventory:
             item.item.drop(monster.fighter.inventory, monster, False)
             item.send_to_back()
-
+        monster.fighter.clear_animations()
         game.gEngine.log_message("Loot drops")
         # Add loot drops
         game.gEngine.log_message("Gore")

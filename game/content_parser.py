@@ -51,6 +51,18 @@ def load_monsters(content):
         m.size = monster.get('size')
         color = monster.get('color')
         m.color = libtcod.Color(color[0], color[1], color[2])
+        
+        if monster.get('idle_animation'):
+            m.idle_animation = monster.get('idle_animation')
+        if monster.get('attack_animation'):
+            m.attack_animation = monster.get('attack_animation')
+        if monster.get('hit_animation'):
+            m.hit_animation = monster.get('hit_animation')
+        if monster.get('miss_animation'):
+            m.miss_animation = monster.get('miss_animation')
+        if monster.get('death_animation'):
+            m.death_animation = monster.get('death_animation')
+
         monster_array.append(m)
     return monster_array
 
@@ -369,6 +381,11 @@ class Monster:
         self.size = None
         self.can_equip_gear = False
         self.defense_bonus = 0
+        self.idle_animation = []
+        self.attack_animation = []
+        self.hit_animation = []
+        self.miss_animation = []
+        self.death_animation = []
 
 
 class Material:

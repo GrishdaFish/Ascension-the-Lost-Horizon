@@ -39,6 +39,10 @@
     can_equip_gear = true
     size = 'small'
     color = [197, 136, 124]
+    idle_animation = [] # list of chars/sprites/tiles played as an idle animation. Loops.
+    attack_animation = [] # list of chars/sprites/tiles played as an attack animation. Does not Loop
+    hit_animation = ['*', 'g', '*'] # list of chars/sprites/tiles played when this monsters is hit with an attack. Does not loop
+    miss_animation = ['/', '|', '\\'] # list of chars/sprites/tiles played when this monster is attacked, but is missed. Does not Loop
 
 [[monster]]
     name = 'orc'

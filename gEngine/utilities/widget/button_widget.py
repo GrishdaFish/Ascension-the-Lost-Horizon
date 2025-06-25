@@ -169,8 +169,8 @@ class BigButtonWidget(ButtonWidget):
             self.label[x] = txt
 
     def mouse_is_in_console(self, mouse):
-        if math.floor(self.x + self.parent.x) <= math.floor(mouse.cx) <= math.floor((self.parent.x + self.x) + self.width):
-            if math.floor(self.y + self.parent.y) <= math.floor(mouse.cy) <= math.floor((self.parent.y + self.y) + self.height):
+        if math.floor(self.x + self.parent.x) <= math.floor(mouse.cx) <= math.floor((self.parent.x + self.x) + self.width-1):
+            if math.floor(self.y + self.parent.y) <= math.floor(mouse.cy) <= math.floor((self.parent.y + self.y) + self.height-1):
                 return True
                 # if mouse.cy == (self.y + math.floor(self.parent.y)):
         return False

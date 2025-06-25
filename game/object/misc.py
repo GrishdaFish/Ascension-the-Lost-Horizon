@@ -8,9 +8,9 @@ def dummy_function():
 
 
 class Misc:
-    def __init__(self, use_function=dummy_function, type=None, game=None):
+    def __init__(self, use_function=dummy_function, type=None, game=None, owner=None):
         '''
-        This class is used for any kind of miscellaneous interatable objects, such as doors, chests, traps, stairs, etc..
+        This class is used for any kind of miscellaneous interactable objects, such as doors, chests, traps, stairs, etc..
         :param use_function: this is a function pointer that gets called on activate
         :param type: is a string descriptor "door", "chest", etc..
         :param game: the main game instance
@@ -26,13 +26,18 @@ class Misc:
         self.pick_lock_button = None
         self.bash_lock_button = None
         self.cancel_button = None
+        self.owner = owner
+        if self.owner:
+            self.base_char = self.owner.char
 
 
     def activate(self, args=None):
-        self.use_function(args)
+        if self.use_function:
+            self.use_function(args) # function pointer
 
     def attach_owner(self, owner):
         self.owner = owner
+        self.base_char = owner.char
 
     def set_use_function(self, function):
         self.use_function = function
@@ -53,7 +58,10 @@ class Misc:
         if not self.is_open:
             if not self.locked:
                 self.owner.blocks = not self.owner.blocks
-                self.owner.char = '-'
+                if self.type == 'door':
+                    self.owner.char = 'door_open'
+                elif self.type == 'chest':
+                    self.owner.char = 'chest_open'
                 self.owner.game.gEngine.map_change_tile_blocking(self.owner.x, self.owner.y, False, False)
                 self.use_function = self.close
                 self.is_open = True
@@ -82,7 +90,7 @@ class Misc:
     def close(self, args=None):
         if self.is_open:
             self.owner.blocks = not self.owner.blocks
-            self.owner.char = '='
+            self.owner.char = self.base_char
             self.owner.game.gEngine.map_change_tile_blocking(self.owner.x, self.owner.y, False, True)
             self.owner.game.message.message("%s is closed." % self.owner.name, 5)
             self.use_function = self.open

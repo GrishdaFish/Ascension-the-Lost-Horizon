@@ -218,8 +218,8 @@ class HotBarSlot:
 
             if mouse.lbutton:
                 col = libtcod.red
-            if mouse.lbutton or key.c == int(self.label):
                 self.use(game, key, mouse)
+            #if mouse.lbutton or key.c == int(self.label):
             if mouse.rbutton:
                 self.remove_object()
         if key.c:

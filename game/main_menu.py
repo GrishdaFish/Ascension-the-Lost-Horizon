@@ -159,7 +159,7 @@ class MainMenu:
         # self.menu_widget.activate()
 
 
-class MenuWidget(window_widget.WindowWidget):
+class MenuWidget(window_widget.StaticWindowWidget):
     def close(self):
         for button in self.buttons:
             button.close()
@@ -284,4 +284,4 @@ class LogoutButton(button_widget.TextButtonWidget):
 
 class DiscordButton(button_widget.TextButtonWidget):
     def trigger(self):
-        webbrowser.open_new("https://discord.gg/34qASF4")
+        webbrowser.open_new("https://discord.gg/Gs2JPQAXvd")
