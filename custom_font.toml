@@ -45,6 +45,14 @@
    location = [9, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 
 [[custom_font]]
+   name = "RADIO_UNCHECKED" # Unique String Name
+   location = [12, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
+   name = "RADIO_CHECKED" # Unique String Name
+   location = [13, 2] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
+
+[[custom_font]]
    name = "long_sword" # Unique String Name
    location = [0, 5] # [X, Y] location in the font file. [0, 0] is upper left corner [COLUMN, ROW]
 

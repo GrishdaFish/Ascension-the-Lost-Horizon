@@ -31,11 +31,11 @@ def single_target(attacker, target):
         target.owner.flashing = True
         target.owner.flash_duration = 10
         target.owner.flash_hit = False
-        if target.miss_animation:
+        '''if target.miss_animation:
             target.miss_anim = target.game.gEngine.animation_add_cell_animation(target.game.dungeon_console,
                                                                                 target.miss_animation,
                                                                                 x=target.owner.x, y=target.owner.y,
-                                                                                color=target.owner.color)
+                                                                                color=target.owner.color)'''
 
     # Parry chance is basically a second chance to evade
     elif target.gear.can_parry(target.gear.equipped['1h']) or \
@@ -45,11 +45,11 @@ def single_target(attacker, target):
         target.owner.flashing = True
         target.owner.flash_duration = 10
         target.owner.flash_hit = False
-        if target.miss_animation:
+        '''if target.miss_animation:
             target.miss_anim = target.game.gEngine.animation_add_cell_animation(target.game.dungeon_console,
                                                                                 target.miss_animation,
                                                                                 x=target.owner.x, y=target.owner.y,
-                                                                                color=target.owner.color)
+                                                                                color=target.owner.color)'''
     else:  # you hit, do some damage
         # TODO when weapon crits are added they will get checked at the same time as conditions:
         if attacker.stat.conditions:

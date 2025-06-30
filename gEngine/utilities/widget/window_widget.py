@@ -5,7 +5,7 @@ import tcod as libtcod
 
 # TODO Figure out how widgets are automatically getting added to gEngine module list??????
 class WindowWidget:
-    def __init__(self, gEngine, game=None, x=0, y=0, w=0, h=5, title="", target_console=0):
+    def __init__(self, gEngine, game=None, x=0, y=0, w=0, h=5, title="", target_console=0, draw_frame=True):
         """
         Basic widget for the engine. Inheret this class. Override update. Add to gEngine.modules
         All required functions are set up to work with nothing over-ridden. Only over-ride functions if you know what
@@ -18,6 +18,7 @@ class WindowWidget:
         :param h: The Height of the widget
         :param title: The title to be displayed
         :param target_console: Console to blit this on top of. Defaults to root
+        :param draw_frame: Boolean to toggle drawing the frame and title
         """
         self.active = True
         self.game = game
@@ -46,6 +47,8 @@ class WindowWidget:
         self.collapse_button = '-'
         self.minimize_button = 'x'
 
+        self.draw_frame = draw_frame
+
     def activate(self):
         self.active = True
         self.minimized = False
@@ -67,6 +70,9 @@ class WindowWidget:
     def update(self, key, mouse):
         pass
 
+    def is_active(self):
+        return self.active
+
     def run(self, key, mouse):
         if self.active:
             self.gEngine.console_clear(self.con)
@@ -79,7 +85,7 @@ class WindowWidget:
             key = libtcod.Key()
         self.update(key, mouse)
         if self.active:
-            self.gEngine.console_blit(self.con, 0, 0, 0, 0, 0, self.x, self.y, 1.0, 1.0)
+            self.gEngine.console_blit(self.con, 0, 0, 0, 0, self.target_console, self.x, self.y, 1.0, 1.0)
 
     def mouse_is_in_console(self, mouse):
         if self.x <= mouse.cx <= self.x + math.floor(self.width):
@@ -172,7 +178,8 @@ class WindowWidget:
         if self.active:
             #libtcod
             #self.gEngine.console_set_default_Foreground(self.con,)
-            self.gEngine.console_print_frame(self.con, 0, 0, self.width, self.height, True)
+            if self.draw_frame:
+                self.gEngine.console_print_frame(self.con, 0, 0, self.width, self.height, True)
             self.gEngine.console_print(self.con, self.title_x_position, 0, self.title)
             self.gEngine.console_print(self.con, 0, 0, self.collapse_button)
             self.gEngine.console_print(self.con, self.width - 1, 0, self.minimize_button)
@@ -215,7 +222,7 @@ class WindowWidget:
 
 
 class StaticWindowWidget(WindowWidget):
-    def __init__(self, gEngine, game=None, x=0, y=0, w=0, h=5, title="", target_console=0):
+    def __init__(self, gEngine, game=None, x=0, y=0, w=0, h=5, title="", target_console=0, draw_frame=True):
         '''
         Window Widget that cannot be moved, closed, or minimized. Ideal for static UI elements
 
@@ -228,12 +235,13 @@ class StaticWindowWidget(WindowWidget):
         :param title: The title to be displayed
         :param target_console: Console to blit this on top of. Defaults to root
         '''
-        super().__init__(gEngine=gEngine, game=game, x=x, y=y, w=w, h=h, title=title, target_console=target_console)
+        super().__init__(gEngine=gEngine, game=game, x=x, y=y, w=w, h=h, title=title, target_console=target_console, draw_frame=draw_frame)
 
 
     def pre_draw_widgit(self):
         if self.active:
-            self.gEngine.console_print_frame(self.con, 0, 0, self.width, self.height, True)
+            if self.draw_frame:
+                self.gEngine.console_print_frame(self.con, 0, 0, self.width, self.height, True)
             self.gEngine.console_print(self.con, self.title_x_position, 0, self.title)
 
 

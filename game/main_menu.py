@@ -6,9 +6,12 @@ from game.debug_modules import dungeon_status
 from game.debug_modules import spawning_tool
 from game.modules import login_module, options_module
 from gEngine.utilities.user_interface.menu import Menus
+
 from gEngine.utilities.widget import button_widget
 from gEngine.utilities.widget import window_widget
 from gEngine.utilities.widget import button_group
+from gEngine.utilities.widget import check_list_boxes
+
 from game.user_interface import help_popup_module
 import os
 import sys
@@ -182,11 +185,13 @@ class MenuWidget(window_widget.StaticWindowWidget):
         self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, chr(custom_font.CHAR_ARROW2_N)))
         self.button_group.add_button(button_group.GroupButton(self.button_group, 1, 0, chr(custom_font.CHAR_DARROW_H)))
 
+
     def update(self, key, mouse):
-        self.button_group.run(key, mouse)
-        for button in self.buttons:
-            if self.active:
-                button.run(key, mouse)
+        if self.active:
+            self.button_group.run(key, mouse)
+            for button in self.buttons:
+                if self.active:
+                    button.run(key, mouse)
 
 
 class NewGame(button_widget.TextButtonWidget):
@@ -199,28 +204,7 @@ class NewGame(button_widget.TextButtonWidget):
         c.activate()
         c.setup()
         self.gEngine.add_module(c)
-        '''self.gEngine.log_close_block()
-        self.gEngine.modules = []
-        self.gEngine.additional_modules = []
-        self.gEngine.module_adjust_list = []
-        g = game.Game(self.gEngine)
-        g.new_game()
-        self.gEngine.add_module(g)
 
-        d = dungeon_status.DungeonStatus(self.gEngine, g, 5, 6, self.gEngine.SCREEN_WIDTH / 2, 7, "Dungeon Status")
-        d.deactivate()
-        self.gEngine.add_module(d)
-
-        spawn_tool = spawning_tool.SpawningTools(self.gEngine, g, 0, 0, 18, 9, "Spawning Tools")
-        spawn_tool.setup()
-        self.gEngine.add_module(spawn_tool)
-
-        # load this module last
-        m = module_list.ModuleList(self.gEngine, g, 0, 0, 15, 5, 'Module List')
-        self.gEngine.add_module(m)
-
-        help_module = help_popup_module.HelpPopup(self.gEngine, g, 5, 5, 70, 30, "Help")
-        self.gEngine.add_module(help_module)'''
 
 
 class CloseGame(button_widget.TextButtonWidget):

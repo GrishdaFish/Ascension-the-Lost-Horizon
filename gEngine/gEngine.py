@@ -2,7 +2,6 @@
 
 # Ignore all of the force casting variables to ints. Python 3 is dumb when you divide odd ints,
 #   it will convert to a float, which does not play nice with the engine.
-# TODO: remove r, g, b from method calls and accept  tcod color, then grab r, g, b in the engine to simply calls
 # TODO: ADD 64 Bit Version of _cEngine.pyd!
 
 import tcod as libtcod
@@ -31,7 +30,10 @@ if int(sys.version[0]) >= REQ_PY_MAJ and int(sys.version[2]) < REQ_PY_MIN:
     raise Exception("Python Version %s Or higher Required!" % REQ_PY)
 
 if PY_BIT == 32:
-    from gEngine import cEngine  # TODO change pyd name to cEngine32.pyd
+    try:
+        from gEngine import cEngine  # TODO change pyd name to cEngine32.pyd
+    except ImportError:
+        raise ImportError("cEngine.py import failed! Make sure it is in the gEngine folder along side cEngine.pyd")
 elif PY_BIT == 64:
     raise ImportError("64 Bit Python Not Supported Yet. Please use 32 Bit Python!")
     # TODO import cEngine64.pyd here when compiled
@@ -67,7 +69,7 @@ class gEngineModule:
     """
     Basic module class to inherit for your modules
     Override update with your logic here
-    Override setup or call super()__init__ to define initial variables
+    Override setup or call super().__init__ to define initial variables
     """
     def __init__(self):
         self.active = False
@@ -243,7 +245,29 @@ class gEngine:
         self.modules_to_remove.append(module)
         module.on_exit()
 
+    def get_module(self, name):
+        """
+        Returns a module if it exists
+        :param name: __name__ of the module, or the module object its self
+        :return: The module if it exists, or None
+        """
+        if isinstance(name, str):
+            return self.get_module_by_name(name)
+        else:
+            if name in self.modules:
+                return name
+            else:
+                return None
+
     def get_module_by_name(self, name):
+        """
+        Returns a module from self.modules, if it exists, using __name__
+        :param name: __name__ of the module
+        :return: The module if it exists, or None
+        """
+        if not isinstance(name, str):
+            raise TypeError("Name must be a string!")
+
         for module in self.modules:
             if str(module.__class__.__name__) == name:
                 return module
@@ -252,21 +276,22 @@ class gEngine:
     def get_module_status(self, name):
         """
         Gets the status of the named module
-        :param name: string of the module class name
+        :param name: __name__ of the module, or the module object its self
         :return: the status of the named module, or none if the module is not in the list
         """
-        module = self.get_module_by_name(name)
+        module = self.get_module(name)
         if module:
             return module.active
         else:
             return None
 
-    def bring_module_to_front(self, module):
+    def bring_module_to_front(self, name):
         """
         Used for bringing widgets to the front of the game screen
-        :param module: the module reference
+        :param name: __name__ of the module, or the module object its self
         :return: Nothing
         """
+        module = self.get_module(name)
         if self.adjusting:
             return
         self.adjusting = True
@@ -277,11 +302,11 @@ class gEngine:
 
     def activate_module(self, name):
         """
-        Activates a module with the specified name
-        :param name: A string of the module class name
+        Activates the named module
+        :param name: __name__ of the module, or the module object its self
         :return: True if a module was activated, otherwise False
         """
-        module = self.get_module_by_name(name)
+        module = self.get_module(name)
         if module:
             module.activate()
             return True
@@ -290,22 +315,26 @@ class gEngine:
     def deactivate_module(self, name):
         """
         Deactivates a module with the specified name
-        :param name: A string of the module class name
+        :param name: __name__ of the module, or the module object its self
         :return: True if a module was deactivated, otherwise False
         """
-        module = self.get_module_by_name(name)
+        module = self.get_module(name)
         if module:
             module.deactivate()
             return True
         return False
 
-    def toggle_module(self, module):
+    def toggle_module(self, name):
         """
         Toggles the status of a module
-        :param module: A reference of a module
+        :param name: __name__ of the module, or the module object its self
         :return:
         """
-        module.active = not module.active
+        module = self.get_module(name)
+        if module:
+            module.active = not module.active
+            return True
+        return False
 
     def clear_modules(self):
         """

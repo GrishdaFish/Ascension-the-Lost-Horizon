@@ -20,7 +20,7 @@ import tcod as libtcod
 import textwrap
 import random
 
-class CharacterCreator(window_widget.WindowWidget):
+class CharacterCreator(window_widget.StaticWindowWidget):
     def setup(self):
         self.g = game.Game(self.gEngine)
         self.base_width = 25

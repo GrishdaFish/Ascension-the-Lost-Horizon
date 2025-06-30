@@ -7,7 +7,7 @@ import tcod as libtcod
 
 # TODO This popup needs to be able to tell if the key is already mapped to something else and deal with it
 #       we could unset the previously mapped key, or just cancel mapping the new key with error message
-class KeySelectPopup(window_widget.WindowWidget):
+class KeySelectPopup(window_widget.StaticWindowWidget):
     """ Popup used to grab the new key to use from input """
     def close(self):
         """ take out the trash """
@@ -41,7 +41,7 @@ class KeySelectPopup(window_widget.WindowWidget):
             self.message = "Press a key to re-map:" + nice_name
             self.prompt = "Press escape to cancel."
 
-class OptionsModule(window_widget.WindowWidget):
+class OptionsModule(window_widget.StaticWindowWidget):
     """ This is the OPTIONS SELECTION module.
         for default/saved options see options.toml
         for options setup see options.py
@@ -50,6 +50,7 @@ class OptionsModule(window_widget.WindowWidget):
         """ close and cleanup children of the module """
         self.gEngine.remove_module(self)
         self.deactivate()
+        self.gEngine.activate_module("MainMenu")
         for button in self.widgets:
             button.close()
         for button in self.keymap_widgets:
@@ -107,6 +108,8 @@ class OptionsModule(window_widget.WindowWidget):
         self.selected_key_set = self.content['game_options']['key_set']
         self.key_options = self.content.get('keys')
         self.set_keymap_keys(self.selected_key_set)
+        self.fullscreen = self.content['game_options']['fullscreen']
+        self.fps = self.content['game_options']['fps']
 
     def set_keymap_keys(self, key_map):
         """ update your keymap settings """

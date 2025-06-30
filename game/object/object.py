@@ -219,7 +219,7 @@ class Object:
             br = min(255, br)
             bg = min(255, bg)
             bb = min(255, bb)
-            if self.fighter:
+            '''if self.fighter:
                 if self.fighter.hit_anim:
                     if not self.fighter.hit_anim.finished:
                         self.fighter.hit_anim.color = (fr, fg, fb)
@@ -229,7 +229,7 @@ class Object:
                     if not self.fighter.miss_anim.finished:
                         self.fighter.miss_anim.color = (fr, fg, fb)
                     else:
-                        self.fighter.miss_anim = None
+                        self.fighter.miss_anim = None'''
 
             if is_player:  # TODO NOTE This  will be needed if we do a scrolling map
                 gEngine.console_put_char_ex(self.con, gEngine.w / 2, gEngine.h / 2 - 6, self.char, (int(fr), int(fg),
