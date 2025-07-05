@@ -1,12 +1,9 @@
-import time
-
 __author__ = 'Grishnak'
-from copy import deepcopy
+
 from dungeon import dungeon
 from dungeon import prefab_dungeon
 from dungeon.prefabs import prefabs
 import tcod as libtcod
-import esper
 #from game.ecs import systems
 from gEngine.utilities.timing import ticker
 from gEngine.utilities import console
@@ -14,7 +11,6 @@ from gEngine.utilities import status_bar
 from gEngine.utilities import messaging
 from gEngine.utilities.user_interface import menu
 from gEngine.utilities.user_interface import hot_bar
-from gEngine.utilities.user_interface import dialog_box
 
 from gEngine.utilities.widget import window_widget
 from gEngine.utilities.widget import button_widget
@@ -24,13 +20,14 @@ from gEngine import lights
 from game import bark
 from game.object import build_objects
 from game.object import object
+
 from game.user_interface import inventory
-from game.user_interface import character
+from game.user_interface.widgets import inventory_widget
+
 from game import main_menu
 
-from game.user_interface import menus
 from game.user_interface import hover_description
-from game.user_interface import skill_screen
+from game.user_interface.widgets import skill_screen
 
 from game import ranged_combat
 from game import input_handler
@@ -42,8 +39,6 @@ from game.classes import warrior_skills
 
 from game.debug_modules import module_list, dungeon_status, spawning_tool, reload_module
 import os
-import sys
-from gEngine import gEngine as _gEngine
 
 # todo externalize this data
 dungeon_height = 55
@@ -149,6 +144,7 @@ class Game:
         self.ranged_ammo_index = None
         self.popup = None
         self.is_player_turn = False
+        self.player_inventory_widget = None
 
         self.passive_skills = []
         self.active_skills = []
@@ -162,6 +158,8 @@ class Game:
         self.gEngine.log_message("Game fully initialized")
         self.gEngine.log_close_block()
 
+
+
     def setup_ui_modules(self):
         self.big_ui_button_widget = BigUIButtonContainer(self.gEngine, self, 56, self.panel_y-5, 24, 5, "")
         self.big_ui_button_widget.activate()
@@ -170,6 +168,9 @@ class Game:
         self.skill_screen.setup(self)
         self.gEngine.add_module(self.skill_screen)
         self.setup_debug_modules()
+
+        self.gEngine.add_module(self.player_inventory_widget)
+
 
     def setup_debug_modules(self):
         d = dungeon_status.DungeonStatus(self.gEngine, self, 5, 6, self.gEngine.SCREEN_WIDTH / 2, 7, "Dungeon Status")
@@ -196,6 +197,19 @@ class Game:
 
     def deactivate(self):
         self.active = False
+
+    def toggle(self):
+        self.active = not self.active
+    def show_player_inventory(self):
+        self.toggle()
+        self.player_inventory_widget.toggle()
+        self.gEngine.bring_module_to_front(self.player_inventory_widget)
+        """# show the inventory; if an item is selected, use it
+        chosen_item = inventory.inventory(self.dungeon_console, self.player, self)
+
+        if chosen_item is not None:
+            chosen_item.item.use(self.player.fighter.inventory, self.player, self)
+            self.player_action = 'turn-used'"""
 
     def on_exit(self):
         self.deactivate()
@@ -361,6 +375,8 @@ class Game:
         #self.ticker.schedule_turn(self.light_handler.tick_speed, self.light_handler)
         self.game_state = 'playing'
         self.ai_director.add_player_stat('gold earned', self.player.fighter.money)
+        self.player_inventory_widget = inventory_widget.Inventory(self.gEngine, self, w=self.dungeon_width, h=self.dungeon_height, owner=self.player)
+        self.player_inventory_widget.deactivate()
 
 
     def setup_world(self):
@@ -567,11 +583,12 @@ class Game:
         self.gEngine.toggle_module(self.gEngine.get_module_by_name("HelpPopup"))
 
     def big_ui_button_inventory(self):
-        chosen_item = inventory.inventory(self.dungeon_console, self.player, self)
+        self.show_player_inventory()
+        """chosen_item = inventory.inventory(self.dungeon_console, self.player, self)
 
         if chosen_item is not None:
             chosen_item.item.use(self.player.fighter.inventory, self.player, self)
-            self.player_action = 'turn-used'
+            self.player_action = 'turn-used'"""
 
     def big_ui_button_skills(self):
         mod = self.gEngine.get_module_by_name("SkillScreen")

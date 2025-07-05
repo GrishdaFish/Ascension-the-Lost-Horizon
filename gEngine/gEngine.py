@@ -1,17 +1,167 @@
-#Pyton interface for the Horizion engine
+__author__ = 'GrishdaFish'
+##Pyton interface for the Horizion engine##
 
-# Ignore all of the force casting variables to ints. Python 3 is dumb when you divide odd ints,
-#   it will convert to a float, which does not play nice with the engine.
+##====================================================================================================================##
+## Table of Contents
+##====================================================================================================================##
+"""
+gEngine Packages and contents
+Notes
+TODO List
+Change Log
+Imports
+Globals
+Version Checking
+gEngine related imports
+Helper functions
+Dummy Classes and functions
+Module Base Classes
+gEngine
+Internal Engine Functions
+System functions
+Main Loop
+Module functions
+Logging functions
+Non-Drawing Console functions
+Drawing console functions
+Image functions
+Map/Dungeon/Fov functions
+Lightmask/Lightmap functions
+Light Manager functions
+Particle functions
+Random functions
+Network functions
+"""
+
+##====================================================================================================================##
+## gEngine Packages and contents
+##====================================================================================================================##
+"""
+animations
+    animations.py 
+        ## Cutscene style animations
+    splash_screen.py 
+        ## Engine splash screen
+
+modules  ## debug and utility modules
+    module_list.py 
+        ## Creates a widget that will display all modules in the engine
+    
+utilities
+    timing
+        ticker.py ## turn based timing system
+        
+    user_interface ## mostly depreciated, use widgets instead
+        button.py 
+            ## Depreciated
+        check_box.py 
+            ## Depreciated
+        dialog_box.py 
+            ## Depreciated
+        hot_bar.py 
+            ## Not depreciated!
+        menu.py 
+            ## Depreciated
+        tab.py 
+            ## Depreciated
+        
+    widget ## UI widgets, see each individual module for more info and usage
+        button_group.py
+        button_widget.py
+        check_list_boxes.py
+        panels.py
+        popups.py
+        text_input_widget.py
+        window_widget.py 
+            ## This is the main widget
+    
+    config.py 
+        ## loads and parse the engine config file
+    console.py 
+        ## old tool to embedd the python interpreter in game to modify code during runtime
+    dijikstra_map.py 
+        ## a basic interpretation of dijikstra maps - _very slow_
+    load_options.py 
+        ## function for loading game options
+    messaging.py 
+        ## UI class for drawing messages for the player to read in game
+    network.py 
+        ## old networking controller - unused currently
+    options.py 
+        ## loads the game options file
+    status_bar.py 
+        ## for colored visual UI elements like HP/Mana/XP bars
+    vector.py 
+        ## some vector math utility functions
+    xp_loader.py 
+        ## for loading REXPaint files - unused currently
+        
+custom_font.py 
+    ## handling for custom font chars via the tileset.png
+light_mask.py 
+    ## deprecated, will remove in the future
+lights.py 
+    ## Light object and Light Handler for the lighting system
+particle.py 
+    ## particle object, and particle functions
+
+tcod_event.py 
+    ## slight custom logic for mouse handling via tcod events
+
+_cEngine.pyd  
+    ## the c++ engine compiled down
+cEngine.py 
+    ## The python interface to the _cEngine.pyd
+
+config.toml 
+    ## The Engine config file
+engine_changelog  
+    ## Not very accurate!
+libtcod.dll 
+    ## This is the dll version used by the C++ TCOD version (Currently 1.15, might upgrade to 1.19)
+SDL2.dll 
+    ## This is the dll version used by the C++ TCOD version (Currently 1.15, might upgrade to 1.19)
+
+"""
+##====================================================================================================================##
+## Notes
+##====================================================================================================================##
+"""
+Ignore all of the force casting variables to ints. Python 3 is dumb when you divide odd ints,
+    it will convert to a float, which does not play nice with the engine.
+    
+"""
+##====================================================================================================================##
+## TODO LIST
+##====================================================================================================================##
 # TODO: ADD 64 Bit Version of _cEngine.pyd!
+# TODO: Clean up unused functions
+# TODO: Add missing docstrings
+# TODO: add libtcod constants to this engine to avoid depreciation warnings from future libtcod versions
+# TODO: Add libtcod.Random() functions wrapped here
+# TODO: Remove all non cEngine related code
 
+##====================================================================================================================##
+## Change Log
+##====================================================================================================================##
+"""
+7/4/2025 - Added doc strings, table of contents, visual function block separators
+
+"""
+
+##====================================================================================================================##
+## Imports
+##====================================================================================================================##
 import tcod as libtcod
 import os
 import sys
 import numpy as np
-import textwrap
 import traceback
 import struct
 
+##====================================================================================================================##
+## Globals
+##====================================================================================================================##
 RELEASE = False
 SUBCELL = True
 
@@ -24,6 +174,11 @@ REQ_PY = "%i.%i.0" % (REQ_PY_MAJ, REQ_PY_MIN)
 
 PY_BIT = (struct.calcsize("P") * 8)
 
+MAIN_PATH = os.path.abspath('.')
+
+##====================================================================================================================##
+## Version Checking
+##====================================================================================================================##
 if int(sys.version[0]) < REQ_PY_MAJ:
     raise Exception("Python Version %s Or higher Required!" % REQ_PY)
 if int(sys.version[0]) >= REQ_PY_MAJ and int(sys.version[2]) < REQ_PY_MIN:
@@ -40,7 +195,9 @@ elif PY_BIT == 64:
 else:
     raise ImportError("Unrecognized Python Bit type, make sure you are using 32 or 64 bit python 3.8.0 or higher")
 
-# gEngine utilities
+##====================================================================================================================##
+## gEngine related imports
+##====================================================================================================================##
 from gEngine import particle
 from gEngine import lights
 from gEngine.utilities import options as _options
@@ -50,13 +207,17 @@ from gEngine.animation import animations, splash_screen
 from gEngine import custom_font
 
 
-path = os.path.abspath('.')
 
 
+##====================================================================================================================##
+## Helper Functions
+##====================================================================================================================##
 def in_rect(x, y, w, h):
     return x < w and y < h
 
-
+##====================================================================================================================##
+## Dummy classes and functions
+##====================================================================================================================##
 class NetworkDummy:
     def __init__(self):
         pass
@@ -64,6 +225,9 @@ class NetworkDummy:
     def send_package(self, package):
         pass
 
+##====================================================================================================================##
+## Module Base Classes
+##====================================================================================================================##
 
 class gEngineModule:
     """
@@ -106,9 +270,14 @@ class Tile:
         self.color = color
         self.opacity = opacity
 
-
+##====================================================================================================================##
+## gEngine
+##====================================================================================================================##
 class gEngine:
     def __init__(self):
+        """
+
+        """
         self.release = RELEASE
         self.engine_options = config.EngineConfig()
         self.options = _options.GameOptions()
@@ -170,7 +339,7 @@ class gEngine:
         except ImportError as imp_err:
             print(imp_err)
             print("using networking dummy")
-            #self.network = NetworkDummy()
+            self.network = NetworkDummy()
 
         self.additional_modules = []
         self.modules_to_remove = []
@@ -179,7 +348,180 @@ class gEngine:
         self.player_id = None
         self.zdepth = 0
 
+    ##================================================================================================================##
+    ## Internal Engine Functions
+    ##================================================================================================================##
+    def init_root(self):  # Root's id will ALWAYS be 0.
+        """
+        Initializes the TCOD root console. Call after you create an instance of the engine
+        Also finishes initializing the rest of the engine that __init__ doesnt do
+        :return:
+        """
+        custom_font_width = self.custom_font_options.file_width
+        custom_font_height = self.custom_font_options.file_height
+        if cEngine:
+            self.engine = cEngine.gEngine(self.w, self.h, self.name, self.fs, self.fps, self.engine_options.font,
+                                          custom_font_width, custom_font_height)
+        else:
+            self.root = libtcod.console_init_root(self.w, self.h, self.name, self.fs,
+                                                  renderer=libtcod.RENDERER_OPENGL2)
+            libtcod.sys_set_fps(self.fps)
+            self.console_dict[self.console_id_counter] = self.root
+            self.console_id_counter += 1
+
+        self.log_open_block("Python info:")
+        self.log_message("%s" % sys.version)
+        self.log_message("%i bit." % PY_BIT)
+        self.log_close_block()
+
+        self.log_open_block("Loading Engine Animations...")
+        p = os.path.abspath('.')
+        p = os.path.join(p, 'gEngine', 'animation', 'img', 'animations')
+        self.animation_engine.load_animations(p)
+        self.log_close_block()
+
+        self.animation_engine.load_animations()
+        self.load_custom_font_chars()
+
+        s = splash_screen.SplashScreen(self)
+        self.add_module(s)
+
+        # self.map_image = self.image_new(self.w, self.h)
+        # self.subcell_map_image = self.image_new(self.w * 2, self.h * 2)
+        # self.light_map = self.image_new(self.w, self.h)
+        # self.subcell_light_map = self.image_new(self.w * 2, self.h * 2)
+
+    def handle_input(self, key=None, mouse=None, clear=False):
+        """
+        Only call this module if you pull control from the main engine loop and need keyboard or mouse control
+        :param key:
+        :param mouse:
+        :param clear:
+        :return: returns key and mouse data
+        """
+        key_conv = {
+            44: libtcod.KEY_SPACE,
+            41: libtcod.KEY_ESCAPE,
+            42: libtcod.KEY_BACKSPACE,
+            40: libtcod.KEY_ENTER,
+            80: libtcod.KEY_LEFT,
+            79: libtcod.KEY_RIGHT,
+            82: libtcod.KEY_UP,
+            81: libtcod.KEY_DOWN,
+        }
+        if cEngine:
+            if not key:
+                key = libtcod.Key()
+            if not mouse or clear:
+                mouse = libtcod.Mouse()
+            mouse.cx = self.mouse.cx
+            mouse.cy = self.mouse.cy
+
+            for event in tcod_event.get():
+                if event.type == 'MOUSEMOTION':
+                    mouse.cx = self.mouse.cx = int(event.pixel[0] / 16)
+                    mouse.cy = self.mouse.cy = int(event.pixel[1] / 16)
+
+                if event.type == 'MOUSEBUTTONDOWN':
+                    mouse.cx = self.mouse.cx = int(event.pixel[0] / 16)
+                    mouse.cy = self.mouse.cy = int(event.pixel[1] / 16)
+
+                    if event.button == tcod_event.BUTTON_LEFT:
+                        # self.mouse.lbutton = True
+                        mouse.lbutton = True
+                    if event.button == tcod_event.BUTTON_RIGHT:
+                        # self.mouse.rbutton = True
+                        mouse.rbutton = True
+
+                if event.type == "MOUSEBUTTONUP":
+                    mouse.cx = self.mouse.cx = int(event.pixel[0] / 16)
+                    mouse.cy = self.mouse.cy = int(event.pixel[1] / 16)
+
+                    if event.button == tcod_event.BUTTON_LEFT:
+                        # self.mouse.lbutton_pressed = True
+                        mouse.lbutton_pressed = True
+
+                    if event.button == tcod_event.BUTTON_RIGHT:
+                        # self.mouse.rbutton_pressed = True
+                        mouse.rbutton_pressed = True
+
+                if event.type == "TEXTINPUT":
+                    key.c = ord(event.text)
+
+                if event.type == "KEYDOWN":
+                    if event.scancode in key_conv:
+                        key.vk = key_conv[event.scancode]
+
+                if event.type == "WINDOWCLOSE":
+                    self.close_engine()
+
+            return key, mouse
+        else:
+            key = libtcod.Key()
+            mouse = libtcod.Mouse()
+            libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY, key, mouse)
+            return key, mouse
+
+    def close_engine(self):
+        self.log_message("Closing game")
+        self.log_close_block()
+        exit(69420)  # :D
+
+    def load_custom_font_chars(self):
+        for font in self.custom_font_options.fonts:
+            self.fonts.update({font.name:font.id})
+            self.engine.mMapAsciiCodeToFont(font.id, font.location[0], font.location[1])
+
+    ##================================================================================================================##
+    ## System related functions
+    ##================================================================================================================##
+    def sys_get_fps(self):
+        if cEngine:
+            return self.engine.mSysGetFPS()
+        else:
+            return libtcod.sys_get_fps()
+
+    def sys_save_screenshot(self, path):
+        self.engine.mSaveScreenshot(path)
+
+    # @staticmethod
+    def console_set_custom_font(self, font_file, flags=libtcod.FONT_LAYOUT_ASCII_INCOL, h=0, v=0):
+        if cEngine:
+            libtcod.console_set_custom_font(font_file, flags, h, v)
+            pass
+        else:
+            font_file = font_file.replace('core.exe', '')
+            libtcod.console_set_custom_font(font_file, flags, h, v)
+
+    ##================================================================================================================##
+    ## Main Loop
+    ##================================================================================================================##
     def run(self):
+        """
+        This is the main game loop while using the engine, where all of the modules are executed
+        Active modules in the module list are ran using their run(key,mouse) function. Deactivated modules are
+        essentially paused. Do not pull control away from this loop unless you know what you're doing or the engine
+        will not work properly.
+
+        Each module will have key and mouse input passed to it from the handle_input function
+
+        Do not modify modules from the engine manually, instead use the appropriate functions instead:
+            add_module
+            remove_module
+            get_module
+            bring_module_to_front
+            clear_moodules
+
+        The following functions are useful if you don't have a direct reference to a module, but you have the class name:
+            activate_module
+            deactivate_module
+            toggle_module
+
+        Other useful module functions:
+            get_module_status
+
+        :return:
+        """
         try:
             while True:
                 # start every frame by flushing all of the screen, then grab and parse any input
@@ -238,12 +580,25 @@ class gEngine:
     def render_all(self):
         self.console_flush()
 
+    ##================================================================================================================##
+    ## Module related functions
+    ##================================================================================================================##
     def add_module(self, module):
         self.additional_modules.append(module)
 
     def remove_module(self, module):
-        self.modules_to_remove.append(module)
-        module.on_exit()
+        """
+        Scheduls a module to be removed from the engine
+        :param module: __name__ of the module, or the module object its self
+        :return: True if the module was found and is ready to be removed, False otherwise
+        """
+        module = self.get_module(module)
+        if module:
+            self.modules_to_remove.append(module)
+            module.on_exit()
+            return True
+        else:
+            return False
 
     def get_module(self, name):
         """
@@ -346,6 +701,9 @@ class gEngine:
         self.module_adjust_list = []
         self.modules_to_remove = []
 
+    ##================================================================================================================##
+    ## Logging related functions
+    ##================================================================================================================##
     def log_open_block(self, message=""):
         """
         Creates a new indentation block in the logger
@@ -381,137 +739,10 @@ class gEngine:
     def logger_set_level(self, level='debug'):
         pass
 
-    def handle_input(self, key=None, mouse=None, clear=False):
-        """
-        Only call this module if you pull control from the main engine loop and need keyboard or mouse control
-        :param key:
-        :param mouse:
-        :param clear:
-        :return: returns key and mouse data
-        """
-        key_conv = {
-            44: libtcod.KEY_SPACE,
-            41: libtcod.KEY_ESCAPE,
-            42: libtcod.KEY_BACKSPACE,
-            40: libtcod.KEY_ENTER,
-            80: libtcod.KEY_LEFT,
-            79: libtcod.KEY_RIGHT,
-            82: libtcod.KEY_UP,
-            81: libtcod.KEY_DOWN,
-        }
-        if cEngine:
-            if not key:
-                key = libtcod.Key()
-            if not mouse or clear:
-                mouse = libtcod.Mouse()
-            mouse.cx = self.mouse.cx
-            mouse.cy = self.mouse.cy
 
-            for event in tcod_event.get():
-                if event.type == 'MOUSEMOTION':
-                    mouse.cx = self.mouse.cx = int(event.pixel[0] / 16)
-                    mouse.cy = self.mouse.cy = int(event.pixel[1] / 16)
-
-                if event.type == 'MOUSEBUTTONDOWN':
-                    mouse.cx = self.mouse.cx = int(event.pixel[0] / 16)
-                    mouse.cy = self.mouse.cy = int(event.pixel[1] / 16)
-
-                    if event.button == tcod_event.BUTTON_LEFT:
-                        # self.mouse.lbutton = True
-                        mouse.lbutton = True
-                    if event.button == tcod_event.BUTTON_RIGHT:
-                        # self.mouse.rbutton = True
-                        mouse.rbutton = True
-
-                if event.type == "MOUSEBUTTONUP":
-                    mouse.cx = self.mouse.cx = int(event.pixel[0] / 16)
-                    mouse.cy = self.mouse.cy = int(event.pixel[1] / 16)
-
-                    if event.button == tcod_event.BUTTON_LEFT:
-                        # self.mouse.lbutton_pressed = True
-                        mouse.lbutton_pressed = True
-
-                    if event.button == tcod_event.BUTTON_RIGHT:
-                        # self.mouse.rbutton_pressed = True
-                        mouse.rbutton_pressed = True
-
-                if event.type == "TEXTINPUT":
-                    key.c = ord(event.text)
-
-                if event.type == "KEYDOWN":
-                    if event.scancode in key_conv:
-                        key.vk = key_conv[event.scancode]
-
-                if event.type == "WINDOWCLOSE":
-                    self.close_engine()
-
-            return key, mouse
-        else:
-            key = libtcod.Key()
-            mouse = libtcod.Mouse()
-            libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY, key, mouse)
-            return key, mouse
-
-    def close_engine(self):
-        self.log_message("Closing game")
-        self.log_close_block()
-        exit(69420) # :D
-
-    def init_root(self):  # Root's id will ALWAYS be 0.
-        """
-        Initializes the TCOD root console. Call after you create an instance of the engine
-        :return:
-        """
-        custom_font_width = self.custom_font_options.file_width
-        custom_font_height = self.custom_font_options.file_height
-        if cEngine:
-            self.engine = cEngine.gEngine(self.w, self.h, self.name, self.fs, self.fps, self.engine_options.font, custom_font_width, custom_font_height)
-        else:
-            self.root = libtcod.console_init_root(self.w, self.h, self.name, self.fs, renderer=libtcod.RENDERER_OPENGL2)
-            libtcod.sys_set_fps(self.fps)
-            self.console_dict[self.console_id_counter] = self.root
-            self.console_id_counter += 1
-
-        self.log_open_block("Python info:")
-        self.log_message("%s" % sys.version)
-        self.log_message("%i bit." % PY_BIT)
-        self.log_close_block()
-
-        self.log_open_block("Loading Engine Animations...")
-        p = os.path.abspath('.')
-        p = os.path.join(p, 'gEngine', 'animation', 'img', 'animations')
-        self.animation_engine.load_animations(p)
-        self.log_close_block()
-
-        self.animation_engine.load_animations()
-        self.load_custom_font_chars()
-
-        s = splash_screen.SplashScreen(self)
-        self.add_module(s)
-
-        # self.map_image = self.image_new(self.w, self.h)
-        # self.subcell_map_image = self.image_new(self.w * 2, self.h * 2)
-        # self.light_map = self.image_new(self.w, self.h)
-        # self.subcell_light_map = self.image_new(self.w * 2, self.h * 2)
-
-    def sys_get_fps(self):
-        if cEngine:
-            return self.engine.mSysGetFPS()
-        else:
-            return libtcod.sys_get_fps()
-
-    def sys_save_screenshot(self, path):
-        self.engine.mSaveScreenshot(path)
-
-    # @staticmethod
-    def console_set_custom_font(self, font_file, flags=libtcod.FONT_LAYOUT_ASCII_INCOL, h=0, v=0):
-        if cEngine:
-            libtcod.console_set_custom_font(font_file, flags, h, v)
-            pass
-        else:
-            font_file = font_file.replace('core.exe', '')
-            libtcod.console_set_custom_font(font_file, flags, h, v)
-
+    ##================================================================================================================##
+    ## Non-Drawing Console related functions
+    ##================================================================================================================##
     def console_new(self, width, height):
         """
         Creates a new console of the specified width and h eight
@@ -561,6 +792,7 @@ class gEngine:
             if con > 1:  # so we dont try to delete root
                 c = self.console_dict.pop(con)
                 libtcod.console_delete(c)
+        return None
 
     def console_remove_all(self):
         # self.mConsole = []
@@ -570,6 +802,9 @@ class gEngine:
         # self.console_id_counter += 1
         pass
 
+    ##================================================================================================================##
+    ## Drawing console functions
+    ##================================================================================================================##
     def console_get_height_rect(self, con, x, y, width, height, fmt):
         if cEngine:
             return self.engine.mGetHeightRect(int(con), int(x), int(y), int(width), int(height), fmt)
@@ -678,6 +913,9 @@ class gEngine:
             col = libtcod.console_get_char_foreground(self.console_dict[con], x, y)
             return col
 
+    ##================================================================================================================##
+    ## Image functions
+    ##================================================================================================================##
     def image_new(self, x, y):
         if cEngine:
             return self.engine.mCreateImage(int(x), int(y))
@@ -759,6 +997,9 @@ class gEngine:
         else:
             self.image_dict[image] = replacement
 
+    ##================================================================================================================##
+    ## Map/Dungeon/Fov functions
+    ##================================================================================================================##
     def map_init_level(self, sizeX, sizeY):
         if SUBCELL:
             sizeX *= 2
@@ -1029,6 +1270,9 @@ class gEngine:
         else:
             pass
 
+    ##================================================================================================================##
+    ## Lightmask/Lightmap functions
+    ##================================================================================================================##
     def lightmask_set_ambient(self, ambient):
         if cEngine:
             self.engine.mLightmaskSetAmbient(ambient)
@@ -1126,6 +1370,29 @@ class gEngine:
         else:
             return self.lightmask.get_mask_value(x, y)
 
+    ##================================================================================================================##
+    ## Light Manager functions
+    ##================================================================================================================##
+    def light_manager_add_light(self, x, y, duration=0.0, decay=0.0, intensity=0.0, color=None, flicker=False,
+                                flicker_intensity=0.025):
+        l = lights.Light(x, y, self.light_handler, duration, decay, intensity, color, flicker, flicker_intensity)
+        self.light_handler.add_light(l)
+        return l
+
+    def light_manager_remove_light(self, light):
+        self.light_handler.remove(light)
+
+    def light_manager_update(self):
+        self.light_handler.update()
+
+    def light_manager_clear_lights(self):
+        self.light_handler.empty()
+
+    def light_manager_render_lights(self):
+        self.light_handler.render()
+    ##================================================================================================================##
+    ## Particle functions
+    ##================================================================================================================##
     def particle_explosion(self, num, x, y, decay=0.055, r=False, b=False, color=None, velocity=1.0, lifetime=1.5, clipping=True, char=None, kill_no_vel=False):
         if SUBCELL:
             x *= 2
@@ -1182,6 +1449,9 @@ class gEngine:
             p.draw(self, con)
             #self.console_put_char_ex(con, int(p.x), int(p.y), c, 255, 255, 255, 0, 0, 0)
 
+    ##================================================================================================================##
+    ## Random functions
+    ##================================================================================================================##
     def random_set_instance(self, seed=None):
         if seed:
             self.random_instance = libtcod.random.Random(seed=seed)
@@ -1194,6 +1464,9 @@ class gEngine:
     def random_get_float(self, min, max):
         return libtcod.random_get_float(self.random_instance, min, max)
 
+    ##================================================================================================================##
+    ## Animation functions
+    ##================================================================================================================##
     def animation_draw_animation(self, name, target, x, y):
         return self.animation_engine.draw_animation(name, target, x, y)
 
@@ -1228,14 +1501,17 @@ class gEngine:
     def animation_draw_ui(self):
         self.animation_engine.draw_cell_ui_animation()
 
+    ##================================================================================================================##
+    ## Network functions
+    ##================================================================================================================##
     def network_send_package(self, type, package):
-        return self.network.send_package(type, package)
+        pass
+        #return self.network.send_package(type, package)
 
-    def load_custom_font_chars(self):
-        for font in self.custom_font_options.fonts:
-            self.fonts.update({font.name:font.id})
-            self.engine.mMapAsciiCodeToFont(font.id, font.location[0], font.location[1])
 
+    ##================================================================================================================##
+    ## Internal helper functions
+    ##================================================================================================================##
     def color_text(self, text, color_f=None, color_b=None):
         # changed to not use color codes, as the items were all colored the same
         # this gives the intended effect
@@ -1264,20 +1540,3 @@ class gEngine:
         if color_f and color_b:
             return "%c%c%c%c%c%c%c%c%s%c" % (libtcod.COLCTRL_FORE_RGB, rf, gf, bf,
                                              libtcod.COLCTRL_BACK_RGB, rb, gb, bb, txt, libtcod.COLCTRL_STOP)
-
-    def light_manager_add_light(self, x, y, duration=0.0, decay=0.0, intensity=0.0, color=None, flicker=False, flicker_intensity=0.025):
-        l = lights.Light(x, y, self.light_handler, duration, decay, intensity, color, flicker, flicker_intensity)
-        self.light_handler.add_light(l)
-        return l
-
-    def light_manager_remove_light(self, light):
-        self.light_handler.remove(light)
-
-    def light_manager_update(self):
-        self.light_handler.update()
-
-    def light_manager_clear_lights(self):
-        self.light_handler.empty()
-
-    def light_manager_render_lights(self):
-        self.light_handler.render()

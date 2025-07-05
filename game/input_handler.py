@@ -122,12 +122,13 @@ def handle_perk_screen(key, game, turn):
 
 def handle_inventory(key, game, turn):
     if key.c is ord(game.keys.key_inventory):
-        # show the inventory; if an item is selected, use it
+        game.show_player_inventory()
+        """# show the inventory; if an item is selected, use it
         chosen_item = inventory.inventory(game.dungeon_console, game.player, game)
 
         if chosen_item is not None:
             chosen_item.item.use(game.player.fighter.inventory, game.player, game)
-            turn = 'turn-used'
+            turn = 'turn-used'"""
     return turn
 
 

@@ -62,6 +62,9 @@ class WindowWidget:
     def deactivate(self):
         self.active = False
 
+    def toggle(self):
+        self.active = not self.active
+
     def on_exit(self):
         self.deactivate()
         self.gEngine.console_remove_console(self.con)
@@ -80,9 +83,9 @@ class WindowWidget:
             return
         self.basic_mouse_input(mouse)
         self.pre_draw_widgit()
-        if self.check_for_overlap():
-            mouse = libtcod.Mouse()
-            key = libtcod.Key()
+        #if self.check_for_overlap():
+        #    mouse = libtcod.Mouse()
+        #    key = libtcod.Key()
         self.update(key, mouse)
         if self.active:
             self.gEngine.console_blit(self.con, 0, 0, 0, 0, self.target_console, self.x, self.y, 1.0, 1.0)
@@ -180,7 +183,7 @@ class WindowWidget:
             #self.gEngine.console_set_default_Foreground(self.con,)
             if self.draw_frame:
                 self.gEngine.console_print_frame(self.con, 0, 0, self.width, self.height, True)
-            self.gEngine.console_print(self.con, self.title_x_position, 0, self.title)
+                self.gEngine.console_print(self.con, self.title_x_position, 0, self.title)
             self.gEngine.console_print(self.con, 0, 0, self.collapse_button)
             self.gEngine.console_print(self.con, self.width - 1, 0, self.minimize_button)
 

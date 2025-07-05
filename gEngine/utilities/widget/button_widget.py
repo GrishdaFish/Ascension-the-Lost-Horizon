@@ -5,7 +5,7 @@ import tcod as libtcod
 
 
 class ButtonWidget:
-    def __init__(self, parent, x, y, label, function, passable=None):
+    def __init__(self, parent, x, y, label, function=None, passable=None):
         """
         A button widget with a function pointer attached to a widget window
         Pass a function pointer to make it do stuff
@@ -28,6 +28,8 @@ class ButtonWidget:
         self.x = x
         self.y = y
         self.label = " " + label + " "
+        if function is None:
+            function = self.dummy_function
         self.function = function
         self.width = len(self.label)
         self.height = 1
@@ -39,7 +41,10 @@ class ButtonWidget:
         self.untriggered_color = libtcod.dark_grey
         self.triggered_color = libtcod.white
         self.background_color = libtcod.lighter_grey
+        self.highlight_color = libtcod.dark_orange
 
+    def dummy_function(self):
+        pass
     def activate(self):
         self.active = True
 
@@ -73,7 +78,7 @@ class ButtonWidget:
             return self.function()
 
     def mouse_is_in_console(self, mouse):
-        if math.floor(self.x + self.parent.x) <= math.floor(mouse.cx) <= math.floor((self.parent.x + self.x) + self.width):
+        if math.floor(self.x + self.parent.x) <= math.floor(mouse.cx) <= math.floor((self.parent.x + self.x) + self.width-1):
             if mouse.cy == (self.y + math.floor(self.parent.y)):
                 return True
         return False
@@ -97,7 +102,7 @@ class ButtonWidget:
 
     def basic_mouse_input(self, mouse):
         if self.mouse_is_in_console(mouse):
-            self.label = menu.color_text(self.original_label, libtcod.dark_orange)
+            self.label = menu.color_text(self.original_label, self.highlight_color)
             if mouse.lbutton:
                 return self.trigger()
         else:
@@ -126,6 +131,11 @@ class TextButtonWidget(ButtonWidget):
         if self.active:
             self.gEngine.console_print(self.con, 0, 0, self.label)
 
+class ColoredTextButtonWidget(TextButtonWidget):
+    def __init__(self, parent, x, y, label, function, passable=None, color=libtcod.light_grey):
+        super().__init__(parent, x, y, label, function, passable)
+        self.label = self.gEngine.color_text(label, color)
+        self.base_color = color
 
 class BigButtonWidget(ButtonWidget):
     def __init__(self, parent, x, y, label, function, passable=None, height=0):
