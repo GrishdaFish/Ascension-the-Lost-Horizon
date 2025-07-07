@@ -58,6 +58,7 @@ class CheckBox:
             self.pre_draw_widget()
             self.update(key, mouse)
             self.gEngine.console_blit(self.con, 0, 0, 0, 0, self.parent.con, self.x, self.y, 1.0, 1.0)
+
     def update(self, key, mouse):
         """
         Override this to enable custom behavior
@@ -100,6 +101,7 @@ class CheckBox:
         if self.active:
             self.gEngine.console_set_default_background(self.con, self.background_color)
             self.gEngine.console_print(self.con, 0, 0, self.label)
+
     def basic_key_input(self, key):
         pass
 
@@ -130,6 +132,13 @@ class CheckBox:
 
     def get_value(self):
         return self.value
+
+    def set_value(self, value):
+        self.is_checked = value
+        self.vaule = value
+
+    def get_checked(self):
+        return self.is_checked
 
     def get_check_box(self):
         """

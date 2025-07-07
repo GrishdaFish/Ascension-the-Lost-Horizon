@@ -5,6 +5,7 @@ __author__ = 'GrishdaFish'
 ## Table of Contents
 ##====================================================================================================================##
 """
+Table of Contents
 gEngine Packages and contents
 Notes
 TODO List
@@ -135,17 +136,20 @@ Ignore all of the force casting variables to ints. Python 3 is dumb when you div
 ## TODO LIST
 ##====================================================================================================================##
 # TODO: ADD 64 Bit Version of _cEngine.pyd!
-# TODO: Clean up unused functions
-# TODO: Add missing docstrings
+# TODO: Clean up unused functions - Started
+# TODO: Add missing docstrings - Started
 # TODO: add libtcod constants to this engine to avoid depreciation warnings from future libtcod versions
-# TODO: Add libtcod.Random() functions wrapped here
-# TODO: Remove all non cEngine related code
+# TODO: Add libtcod.Random() functions wrapped here - Started
+# TODO: Add in type hinting - Started
+# TODO: Change all c++ engine logging to log from here instead
 
 ##====================================================================================================================##
 ## Change Log
 ##====================================================================================================================##
 """
 7/4/2025 - Added doc strings, table of contents, visual function block separators
+7/6/2025 - Started adding in type hinting. Removed non cEngine legacy code. Finished logging logic. 
+                Added additional logging.
 
 """
 
@@ -162,19 +166,25 @@ import struct
 ##====================================================================================================================##
 ## Globals
 ##====================================================================================================================##
-RELEASE = False
-SUBCELL = True
+RELEASE: bool = False
+SUBCELL: bool = True
 
-LOGGING_LEVEL = ""
-VERSION = "0.0.1a"
+INFO: str = "info"
+DEBUG: str = "info"
+NOTICE: str = "notice"
+ERROR: str = "error"
+FATAL: str = "fatal"
+LOGGING_LEVEL: str = DEBUG
 
-REQ_PY_MAJ = 3
-REQ_PY_MIN = 8
-REQ_PY = "%i.%i.0" % (REQ_PY_MAJ, REQ_PY_MIN)
+VERSION: str = "0.0.1a"
 
-PY_BIT = (struct.calcsize("P") * 8)
+REQ_PY_MAJ: int = 3
+REQ_PY_MIN: int = 8
+REQ_PY: str = "%i.%i.0" % (REQ_PY_MAJ, REQ_PY_MIN)
 
-MAIN_PATH = os.path.abspath('.')
+PY_BIT: int = (struct.calcsize("P") * 8)
+
+MAIN_PATH: str = os.path.abspath('.')
 
 ##====================================================================================================================##
 ## Version Checking
@@ -206,23 +216,31 @@ from gEngine import tcod_event
 from gEngine.animation import animations, splash_screen
 from gEngine import custom_font
 
-
-
-
 ##====================================================================================================================##
 ## Helper Functions
 ##====================================================================================================================##
-def in_rect(x, y, w, h):
+def in_rect(x: int, y: int, w: int, h: int) -> bool:
+    """
+    Checks to see if x, y is inside a rectangle defined by w,h
+    :param x: x location to be checked
+    :param y: y location to be checked
+    :param w: value x to be checked against
+    :param h: value y to be checked against
+    :return: True if its inside, False otherwise
+    """
     return x < w and y < h
 
 ##====================================================================================================================##
 ## Dummy classes and functions
 ##====================================================================================================================##
 class NetworkDummy:
+    """
+    Dummy class for testing networking functions
+    """
     def __init__(self):
         pass
 
-    def send_package(self, package):
+    def send_package(self, package: object) -> None:
         pass
 
 ##====================================================================================================================##
@@ -235,27 +253,54 @@ class gEngineModule:
     Override update with your logic here
     Override setup or call super().__init__ to define initial variables
     """
-    def __init__(self):
-        self.active = False
+    def __init__(self) -> None:
+        self.active: bool = False
 
-    def activate(self):
+    def on_exit(self) -> None:
+        """
+        Internal function to cleanup this object
+        :return: None
+        """
+        self.close()
+        self.deactivate()
+    def activate(self) -> None:
+        """
+        Activates the module
+        :return: None
+        """
+        self.active: bool = True
+
+    def deactivate(self) -> None:
+        """
+        Deactivates the module
+        :return: None
+        """
         self.active = True
 
-    def deactivate(self):
-        self.active = True
-
-    def update(self, key, mouse):
+    def update(self, key: complex, mouse: complex) -> None:
+        """
+        Override this function to perform custom behavior
+        :param key: libtcod.Key() object
+        :param mouse: libtcod.Mouse() object
+        :return: None
+        """
         pass
 
-    def run(self, key, mouse):
+    def run(self, key: complex, mouse: complex) -> None:
+        """
+        Internal function that runs the module
+        :param key: libtcod.Key() object
+        :param mouse: libtcod.Mouse() object
+        :return: None
+        """
         self.update(key, mouse)
 
-    def close(self):
+    def close(self) -> None:
+        """
+        Override this function to provide custom exit behavior
+        :return:
+        """
         self.deactivate()
-
-    def on_exit(self):
-        pass
-
 
 class Tile:
     def __init__(self, x=0, y=0, cell='#', blocked=True, block_sight=True,
@@ -274,21 +319,23 @@ class Tile:
 ## gEngine
 ##====================================================================================================================##
 class gEngine:
+    """
+    The main python interface for the Horizon Engine. Handles all drawing, images, animations, particles, sound
+
+    Interfaces with the C++ engine via cEngine.py->cEngine.pyd
+    """
     def __init__(self):
-        """
-
-        """
-        self.release = RELEASE
-        self.engine_options = config.EngineConfig()
-        self.options = _options.GameOptions()
+        self.release: bool = RELEASE
+        self.engine_options: any = config.EngineConfig()
+        self.options: any = _options.GameOptions()
         self.options.load_options()
-        self.custom_font_options = custom_font.CustomFontOptions()
+        self.custom_font_options: any = custom_font.CustomFontOptions()
 
-        self.fonts = {}
-        self.w = self.engine_options.screen_width
-        self.h = self.engine_options.screen_height
-        self.SCREEN_WIDTH = self.w
-        self.SCREEN_HEIGHT = self.h
+        self.fonts: dict = {}
+        self.w: int = self.engine_options.screen_width
+        self.h: int = self.engine_options.screen_height
+        self.SCREEN_WIDTH: int = self.w
+        self.SCREEN_HEIGHT: int = self.h
 
         self.name = self.engine_options.name + ' ' + self.engine_options.version
         self.fs = self.options.fullscreen
@@ -298,81 +345,90 @@ class gEngine:
                                      self.engine_options.font_layout |
                                      self.engine_options.font_type)
 
-        self.mConsole = []
-        self.mMap = []
-        self.mMap2x = []
-        self.mImages = []
-        self.FOV = None
+        self.mConsole: list = []
+        self.mMap: list = []
+        self.mMap2x: list = []
+        self.mImages: list = []
+        self.FOV: any = None
 
-        self.color_dark_wall = libtcod.Color(5, 5, 5)  # was libtcod.darkest_grey
-        self.color_light_wall = libtcod.Color(30, 30, 30)  # was 99,99,99
-        self.color_dark_ground = libtcod.darker_grey
-        self.color_light_ground = libtcod.Color(125, 125, 125)
-        self.color_tile_wall = libtcod.Color(177, 177, 177)
-        self.color_tile_ground = libtcod.Color(190, 190, 190)
+        self.color_dark_wall: any = libtcod.Color(5, 5, 5)  # was libtcod.darkest_grey
+        self.color_light_wall: any = libtcod.Color(30, 30, 30)  # was 99,99,99
+        self.color_dark_ground: any = libtcod.darker_grey
+        self.color_light_ground: any = libtcod.Color(125, 125, 125)
+        self.color_tile_wall: any = libtcod.Color(177, 177, 177)
+        self.color_tile_ground: any = libtcod.Color(190, 190, 190)
 
-        self.light_sources = []
-        self.light_handler = lights.LightHandler(self)
-        self.noise = libtcod.noise_new(1, libtcod.NOISE_SIMPLEX)
+        self.light_sources: list = []
+        self.light_handler: any = lights.LightHandler(self)
+        self.noise: any = libtcod.noise_new(1, libtcod.NOISE_SIMPLEX)
 
         # self.lightmask = light_mask.LightMask(self.w, 48)
 
-        self.particles = []
-        self.modules = []
+        self.particles: list = []
+        self.modules: list = []
 
-        self.key = libtcod.Key()
-        self.mouse = libtcod.Mouse()
-        self.root = None
+        self.key: any = libtcod.Key()
+        self.mouse: any = libtcod.Mouse()
+        self.root: any = None
         # self.logger = logging.log_manager()
-        self.engine = None
-        self.console_id_counter = 0
-        self.image_id_counter = 0
-        self.image_dict = {}
-        self.console_dict = {}
+        self.engine: any = None
+        self.console_id_counter: int = 0
+        self.image_id_counter: int = 0
+        self.image_dict: dict = {}
+        self.console_dict: dict = {}
 
-        self.random_instance = None
+        self.random_instance: any = None
         self.random_set_instance()
-        self.animation_engine = animations.Animations(self)
+        self.animation_engine: any = animations.Animations(self)
         try:
             from gEngine.utilities import network
-            self.network = network.NetworkController()
+            self.network: any = network.NetworkController()
         except ImportError as imp_err:
             print(imp_err)
             print("using networking dummy")
-            self.network = NetworkDummy()
+            self.network: any = NetworkDummy()
 
-        self.additional_modules = []
-        self.modules_to_remove = []
-        self.module_adjust_list = []
-        self.adjusting = False
-        self.player_id = None
-        self.zdepth = 0
+        self.additional_modules: list = []
+        self.modules_to_remove: list = []
+        self.module_adjust_list: list = []
+        self.adjusting: bool = False
+        self.player_id: any = None
+        self.zdepth: int = 0
+
+        self.logging_level: dict = {}
+        self.logging_defaults: dict = {}
+        self.logging_history: list = []
 
     ##================================================================================================================##
     ## Internal Engine Functions
     ##================================================================================================================##
-    def init_root(self):  # Root's id will ALWAYS be 0.
+    def init_root(self, pre_init_logging: list = None) -> None:  # Root's id will ALWAYS be 0.
         """
         Initializes the TCOD root console. Call after you create an instance of the engine
         Also finishes initializing the rest of the engine that __init__ doesnt do
-        :return:
+        :return: None
         """
-        custom_font_width = self.custom_font_options.file_width
-        custom_font_height = self.custom_font_options.file_height
-        if cEngine:
-            self.engine = cEngine.gEngine(self.w, self.h, self.name, self.fs, self.fps, self.engine_options.font,
-                                          custom_font_width, custom_font_height)
-        else:
-            self.root = libtcod.console_init_root(self.w, self.h, self.name, self.fs,
-                                                  renderer=libtcod.RENDERER_OPENGL2)
-            libtcod.sys_set_fps(self.fps)
-            self.console_dict[self.console_id_counter] = self.root
-            self.console_id_counter += 1
+        custom_font_width: int = self.custom_font_options.file_width
+        custom_font_height: int = self.custom_font_options.file_height
 
-        self.log_open_block("Python info:")
-        self.log_message("%s" % sys.version)
-        self.log_message("%i bit." % PY_BIT)
-        self.log_close_block()
+        self.engine = cEngine.gEngine(self.w, self.h, self.name, self.fs, self.fps, self.engine_options.font,
+                                      custom_font_width, custom_font_height)
+
+        self.logging_defaults = {
+            "info": self.engine.mInfo,
+            "notice": self.engine.mNotice,
+            "error": self.engine.mError,
+            "fatal": self.engine.mFatalError
+        }
+        if pre_init_logging:
+            self.log_open_block("Pre-init logging messages", override=True)
+            for log in pre_init_logging:
+                self.log_message(log, override=True)
+
+        self.log_open_block("Python info:", override=True)
+        self.log_message("%s" % sys.version, override=True)
+        self.log_message("%i bit." % PY_BIT, override=True)
+        self.log_close_block(override=True)
 
         self.log_open_block("Loading Engine Animations...")
         p = os.path.abspath('.')
@@ -386,12 +442,7 @@ class gEngine:
         s = splash_screen.SplashScreen(self)
         self.add_module(s)
 
-        # self.map_image = self.image_new(self.w, self.h)
-        # self.subcell_map_image = self.image_new(self.w * 2, self.h * 2)
-        # self.light_map = self.image_new(self.w, self.h)
-        # self.subcell_light_map = self.image_new(self.w * 2, self.h * 2)
-
-    def handle_input(self, key=None, mouse=None, clear=False):
+    def handle_input(self, key: any=None, mouse: any=None, clear: bool=False) -> tuple:
         """
         Only call this module if you pull control from the main engine loop and need keyboard or mouse control
         :param key:
@@ -399,7 +450,7 @@ class gEngine:
         :param clear:
         :return: returns key and mouse data
         """
-        key_conv = {
+        key_conv: dict = {
             44: libtcod.KEY_SPACE,
             41: libtcod.KEY_ESCAPE,
             42: libtcod.KEY_BACKSPACE,
@@ -411,9 +462,9 @@ class gEngine:
         }
         if cEngine:
             if not key:
-                key = libtcod.Key()
+                key: any = libtcod.Key()
             if not mouse or clear:
-                mouse = libtcod.Mouse()
+                mouse: any = libtcod.Mouse()
             mouse.cx = self.mouse.cx
             mouse.cy = self.mouse.cy
 
@@ -462,12 +513,21 @@ class gEngine:
             libtcod.sys_check_for_event(libtcod.EVENT_MOUSE | libtcod.EVENT_KEY, key, mouse)
             return key, mouse
 
-    def close_engine(self):
-        self.log_message("Closing game")
+    def close_engine(self, exit_code: int=69420) -> None:
+        """
+        Closes the engine and performs any necessary actions
+        :param exit_code:
+        :return: Nothing
+        """
+        self.log_message("Closing game", NOTICE, True)
         self.log_close_block()
-        exit(69420)  # :D
+        exit(exit_code)  # :D
 
-    def load_custom_font_chars(self):
+    def load_custom_font_chars(self) -> None:
+        """
+        Loads all custom font from custom_font.toml
+        :return: Nothing
+        """
         for font in self.custom_font_options.fonts:
             self.fonts.update({font.name:font.id})
             self.engine.mMapAsciiCodeToFont(font.id, font.location[0], font.location[1])
@@ -475,28 +535,29 @@ class gEngine:
     ##================================================================================================================##
     ## System related functions
     ##================================================================================================================##
-    def sys_get_fps(self):
-        if cEngine:
-            return self.engine.mSysGetFPS()
-        else:
-            return libtcod.sys_get_fps()
+    def sys_get_fps(self) -> int:
+        """
+        Returns the current FPS
+        :return: Fps
+        """
+        return self.engine.mSysGetFPS()
 
-    def sys_save_screenshot(self, path):
+    def sys_save_screenshot(self, path: str) -> None:
+        """
+        Saves a screen shot to the supplied path
+        :param path: Path to save a screen shot
+        :return: None
+        """
         self.engine.mSaveScreenshot(path)
 
     # @staticmethod
     def console_set_custom_font(self, font_file, flags=libtcod.FONT_LAYOUT_ASCII_INCOL, h=0, v=0):
-        if cEngine:
-            libtcod.console_set_custom_font(font_file, flags, h, v)
-            pass
-        else:
-            font_file = font_file.replace('core.exe', '')
-            libtcod.console_set_custom_font(font_file, flags, h, v)
+        libtcod.console_set_custom_font(font_file, flags, h, v)
 
     ##================================================================================================================##
     ## Main Loop
     ##================================================================================================================##
-    def run(self):
+    def run(self) -> None:
         """
         This is the main game loop while using the engine, where all of the modules are executed
         Active modules in the module list are ran using their run(key,mouse) function. Deactivated modules are
@@ -565,28 +626,38 @@ class gEngine:
 
         except BaseException as e:
             if str(e) != "None" and str(e) != "69420":
-                self.log_open_block("*** ERROR ***")
-                self.log_message("%s" % str(e), "error")
-                self.log_open_block("*** TRACEBACK ***")
+                self.log_open_block("==========================[ERROR HISTORY OUTPUT BELOW]==========================", override=True)
+                for log in self.logging_history:
+                    self.log_message(log, override=True)
+                self.log_close_block("==========================[ERROR HISTORY OUTPUT END]============================", override=True)
+                self.log_open_block("*** ERROR ***", override=True)
+                self.log_message("%s" % str(e), "error", override=True)
+                self.log_open_block("*** TRACEBACK ***", override=True)
                 tb = traceback.format_exc()
                 tb = tb.splitlines()
                 for line in tb:
-                    self.log_message(line,"error")
+                    self.log_message(line,"error", override=True)
                     print(line)
-                self.log_close_block()
-                self.log_close_block()
+                self.log_close_block(override=True)
+                self.log_close_block(override=True)
                 self.close_engine()
 
-    def render_all(self):
+    def render_all(self) -> None:
         self.console_flush()
 
     ##================================================================================================================##
     ## Module related functions
     ##================================================================================================================##
-    def add_module(self, module):
+    def add_module(self, module: any) -> None:
+        """
+        prepares a module to be added to the engine
+        :param module: a module object to be added to the engine
+        :return:
+        """
+        self.log_message("Adding module %s" % module.__class__.__name__)
         self.additional_modules.append(module)
 
-    def remove_module(self, module):
+    def remove_module(self, module) -> bool:
         """
         Scheduls a module to be removed from the engine
         :param module: __name__ of the module, or the module object its self
@@ -594,27 +665,33 @@ class gEngine:
         """
         module = self.get_module(module)
         if module:
+            self.log_message("Removing module %s."%module.__class__.__name__)
             self.modules_to_remove.append(module)
             module.on_exit()
             return True
         else:
+            self.log_message("Supplied module not found! Returning False...")
             return False
 
-    def get_module(self, name):
+    def get_module(self, name) -> any:
         """
         Returns a module if it exists
         :param name: __name__ of the module, or the module object its self
         :return: The module if it exists, or None
         """
         if isinstance(name, str):
-            return self.get_module_by_name(name)
+            module = self.get_module_by_name(name)
+            self.log_message("Getting module %s"% module.__class__.__name__)
+            return module
         else:
             if name in self.modules:
+                self.log_message("Getting module %s" % name.__class__.__name__)
                 return name
             else:
+                self.log_message("Supplied module not found! Returning None...")
                 return None
 
-    def get_module_by_name(self, name):
+    def get_module_by_name(self, name) -> any:
         """
         Returns a module from self.modules, if it exists, using __name__
         :param name: __name__ of the module
@@ -628,7 +705,7 @@ class gEngine:
                 return module
         return None
 
-    def get_module_status(self, name):
+    def get_module_status(self, name)-> any:
         """
         Gets the status of the named module
         :param name: __name__ of the module, or the module object its self
@@ -640,7 +717,7 @@ class gEngine:
         else:
             return None
 
-    def bring_module_to_front(self, name):
+    def bring_module_to_front(self, name) -> None:
         """
         Used for bringing widgets to the front of the game screen
         :param name: __name__ of the module, or the module object its self
@@ -655,7 +732,7 @@ class gEngine:
                 self.module_adjust_list.append(m)
         self.module_adjust_list.append(module)
 
-    def activate_module(self, name):
+    def activate_module(self, name)-> bool:
         """
         Activates the named module
         :param name: __name__ of the module, or the module object its self
@@ -667,7 +744,7 @@ class gEngine:
             return True
         return False
 
-    def deactivate_module(self, name):
+    def deactivate_module(self, name) -> bool:
         """
         Deactivates a module with the specified name
         :param name: __name__ of the module, or the module object its self
@@ -679,11 +756,11 @@ class gEngine:
             return True
         return False
 
-    def toggle_module(self, name):
+    def toggle_module(self, name) -> bool:
         """
         Toggles the status of a module
         :param name: __name__ of the module, or the module object its self
-        :return:
+        :return: True if module exists, False otherwise
         """
         module = self.get_module(name)
         if module:
@@ -691,110 +768,130 @@ class gEngine:
             return True
         return False
 
-    def clear_modules(self):
+    def clear_modules(self) -> None:
         """
         Clears the engine of modules. Useful before starting the game to start with a fresh set of modules after intros
         :return:
         """
-        self.modules = []
-        self.additional_modules = []
-        self.module_adjust_list = []
-        self.modules_to_remove = []
+        self.modules: list = []
+        self.additional_modules: list = []
+        self.module_adjust_list: list = []
+        self.modules_to_remove: list = []
 
     ##================================================================================================================##
     ## Logging related functions
     ##================================================================================================================##
-    def log_open_block(self, message=""):
+    def log_open_block(self, message: str="", level: str=INFO, override: bool=False) -> None:
         """
         Creates a new indentation block in the logger
-        :param message: A string containting a message
+        :param message: A string containing a message
+        :param level: the level of the message logged
+        :param override: whether to override logging level restrictions
         :return: Nothing
         """
-        if cEngine:
+
+        if level in self.logging_level or override:
             self.engine.mOpenBlock(message)
+        else:
+            self.logging_history.append("[HISTORY][OPEN BLOCK] %s" % message)
 
-    def log_close_block(self):
+    def log_close_block(self, level: str=INFO, override: bool=False) -> None:
         """
-        Closes the last indentation block
+        Closes the latest indentation block
+        :param level: the level of the message logged
+        :param override: whether to override logging level restrictions
         :return: Nothing
         """
-        if cEngine:
+        if level in self.logging_level or override:
             self.engine.mCloseBlock()
+        else:
+            self.logging_history.append("[HISTORY][CLOSE BLOCK]")
 
-    def log_message(self, message, level='info'):
+    def log_message(self, message: str, level: str=INFO, override: bool=False) -> None:
         """
         Sends a message to the logger, using the specified level
         :param message: A string of the message to log
         :param level: the level of the message logged
+        :param override: whether to override logging level restrictions
+        :return: Nothing
+        """
+        if level in self.logging_level:
+            self.logging_level[level](message)
+            return
+        else:
+            self.logging_history.append("[HISTORY] %s" % message)
+        if override:
+            self.logging_defaults[level](message)
+
+    def logger_set_level(self, level: str=DEBUG) -> None:
+        """
+        Sets the minimum required level of logging to be output, debug/info = all
+        :param level:
         :return:
         """
-        if cEngine:
-            levels = {"info": self.engine.mInfo,
-                      "notice": self.engine.mNotice,
-                      "error": self.engine.mError,
-                      "fatal": self.engine.mFatalError}
-            if level in levels:
-                levels[level](message)
+        global LOGGING_LEVEL
+        LOGGING_LEVEL = level
+        LOGGING_LEVEL = LOGGING_LEVEL.lower()
+        default = ["debug", "info", ' ', '', None]
 
-    def logger_set_level(self, level='debug'):
-        pass
+        if LOGGING_LEVEL in default:
+            self.logging_level = {
+                "info": self.engine.mInfo,
+                "notice": self.engine.mNotice,
+                "error": self.engine.mError,
+                "fatal": self.engine.mFatalError
+            }
+        elif LOGGING_LEVEL == "notice":
+            self.logging_level = {
+                "notice": self.engine.mNotice,
+                "error": self.engine.mError,
+                "fatal": self.engine.mFatalError
+            }
+        elif LOGGING_LEVEL == "error":
+            self.logging_level = {
+                "error": self.engine.mError,
+                "fatal": self.engine.mFatalError
+            }
+        else:
+            self.logging_level = {
+                "fatal": self.engine.mFatalError
+            }
 
 
     ##================================================================================================================##
     ## Non-Drawing Console related functions
     ##================================================================================================================##
-    def console_new(self, width, height):
+    def console_new(self, width, height) -> int:
         """
         Creates a new console of the specified width and h eight
         :param width: int of the width of the new console
         :param height: int of the height of the new console
         :return: an int of the console number (Not the actual console reference)
         """
-        if cEngine:
-            return self.engine.mAddConsole(int(width), int(height))
-        else:
-            self.console_dict[self.console_id_counter] = libtcod.console.Console(int(width), int(height))
-            c = self.console_id_counter
-            self.console_id_counter += 1
-        return c
+        return self.engine.mAddConsole(int(width), int(height))
 
-    def console_set_key_color(self, con, col):
-        if cEngine:
-            self.engine.mSetKeyColor(con, col[0], col[1], col[2])
 
-    def console_flush(self):
-        if cEngine:
-            self.engine.mFlush()
-        else:
-            libtcod.console_flush()
+    def console_set_key_color(self, con, col) -> None:
+        self.engine.mSetKeyColor(con, col[0], col[1], col[2])
 
-    def console_clear_all(self):
-        if cEngine:
-            pass
-        else:
-            for con in self.console_dict:
-                self.console_dict[con].clear()
+    def console_flush(self) -> None:
+        self.engine.mFlush()
 
-    def console_get_console(self, con):
+    def console_clear_all(self) -> None:
+        pass
+
+    def console_get_console(self, con: int) -> any:
         return self.console_dict[int(con)]
 
-    def console_clear(self, con=0):
-        if cEngine:
-            self.engine.mClear(int(con))
-        else:
-            self.console_dict[con].clear()
+    def console_clear(self, con: int=0) -> None:
+        self.engine.mClear(int(con))
 
-    def console_remove_console(self, con):
-        if cEngine:
-            if con > 0:
-                self.engine.mDestroyConsole(int(con))
-        else:
-            if con > 1:  # so we dont try to delete root
-                c = self.console_dict.pop(con)
-                libtcod.console_delete(c)
+    def console_remove_console(self, con: int) -> None:
+        if con > 0:
+            self.engine.mDestroyConsole(int(con))
         return None
 
-    def console_remove_all(self):
+    def console_remove_all(self) -> None:
         # self.mConsole = []
         # self.console_dict = {}
         # self.console_id_counter = 0
@@ -805,56 +902,33 @@ class gEngine:
     ##================================================================================================================##
     ## Drawing console functions
     ##================================================================================================================##
-    def console_get_height_rect(self, con, x, y, width, height, fmt):
-        if cEngine:
-            return self.engine.mGetHeightRect(int(con), int(x), int(y), int(width), int(height), fmt)
-        else:
-            return libtcod.console_get_height_rect(self.console_dict[con], x, y, width, height, fmt)
+    def console_get_height_rect(self, con: int, x: int, y: int, width: int, height: int, fmt: str)->any:
+        return self.engine.mGetHeightRect(int(con), int(x), int(y), int(width), int(height), fmt)
 
-    def console_set_default_foreground(self, con, col):
+    def console_set_default_foreground(self, con: int, col: tuple)->None:
         r, g, b = col
-        if cEngine:
-            self.engine.mSetForegroundColor(con, int(r), int(g), int(b))
-        else:
-            libtcod.console_set_default_foreground(self.console_dict[con], col)
+        self.engine.mSetForegroundColor(con, int(r), int(g), int(b))
 
-    def console_set_default_background(self, con, col):
+    def console_set_default_background(self, con: int, col: tuple)->None:
         r, g, b = col
-        if cEngine:
-            self.engine.mSetBackgroundColor(con, int(r), int(g), int(b))
-        else:
-            libtcod.console_set_default_background(self.console_dict[con], col)
+        self.engine.mSetBackgroundColor(con, int(r), int(g), int(b))
 
-    def console_print_frame(self, con, x, y, width, height, clear, title="NULL"):
-        if cEngine:
-            self.engine.mPrintFrame(con, int(x), int(y), int(width), int(height), clear, 1, title)
-        else:
-            libtcod.console_print_frame(self.console_dict[con], int(x), int(y), int(width), int(height), clear)
+    def console_print_frame(self, con: int, x: int, y: int, width: int, height: int, clear: bool, title:str ="NULL")->None:
+        self.engine.mPrintFrame(con, int(x), int(y), int(width), int(height), clear, 1, title)
 
-    def console_hline(self, con, x, y, l, f=1):
+    def console_hline(self, con: int, x: int, y: int, l: int, f: int=1)->None:
         self.engine.mHLine(con, int(x), int(y), int(l), f)
 
-    def console_vline(self, con, x, y, l, f=1):
+    def console_vline(self, con: int, x: int, y: int, l: int, f: int=1)->None:
         self.engine.mVLine(con, int(x), int(y), int(l), f)
 
-    def console_print_rect(self, con, x, y, width, height, fmt):
-        if cEngine:
-            self.engine.mPrintRect(con, int(x), int(y), int(width), int(height), fmt)
-        else:
-            libtcod.console_print_rect(self.console_dict[con], int(x), int(y), int(width), int(height), fmt)
+    def console_print_rect(self, con: int, x: int, y: int, width: int, height: int, fmt: str)->None:
+        self.engine.mPrintRect(con, int(x), int(y), int(width), int(height), fmt)
 
-    def console_blit(self, conSrc, xSrc, ySrc, wSrc, hSrc, conDest, xDest, yDest, foreAlph=1.0, backAlph=1.0):
-        if cEngine:
-            self.engine.mBlit(conSrc, conDest, int(xSrc), int(ySrc), int(wSrc), int(hSrc), int(xDest), int(yDest), float(foreAlph), float(backAlph))
-        else:
-            src = self.console_dict[conSrc]
-            if conDest == 0:
-                dest = self.root
-            else:
-                dest = self.console_dict[conDest]
-            src.blit(dest, int(xDest), int(yDest), int(xSrc), int(ySrc), int(wSrc), int(hSrc), foreAlph, backAlph)
+    def console_blit(self, conSrc: int, xSrc: int, ySrc: int, wSrc: int, hSrc: int, conDest: int, xDest: int, yDest: int, foreAlph: float=1.0, backAlph: float=1.0)->None:
+        self.engine.mBlit(conSrc, conDest, int(xSrc), int(ySrc), int(wSrc), int(hSrc), int(xDest), int(yDest), float(foreAlph), float(backAlph))
 
-    def console_put_char_ex(self, con, x, y, c, fore, back):
+    def console_put_char_ex(self, con: int, x: int, y: int, c: str, fore:tuple, back:tuple)->None:
         """
         Sets the destination cell to the specified color and character. Automatically converts to custom fonts if
             len(c) > 1
@@ -868,134 +942,65 @@ class gEngine:
         """
         cr, cg, cb = fore
         br, bg, bb = back
-        if len(c) > 1:
-            c = chr(self.fonts[c])
-        if cEngine:
-            self.engine.mPutCharEx(con, int(x), int(y), ord(c), int(cr), int(cg), int(cb), int(br), int(bg), int(bb))
-        else:
-            libtcod.console_put_char_ex(self.console_dict[con], x, y, c, fore, back)
+        self.engine.mPutCharEx(con, int(x), int(y), ord(self.get_char(c)), int(cr), int(cg), int(cb), int(br), int(bg), int(bb))
 
-    def console_set_char(self, con, x, y, c):
-        if cEngine:
-            self.engine.mSetChar(con, int(x), int(y), ord(c))
-        else:
-            libtcod.console_set_char(self.console_dict[con], x, y, c)
+    def console_set_char(self, con: int, x: int, y: int, c: str)->None:
+        self.engine.mSetChar(con, int(x), int(y), ord(self.get_char(c)))
 
     def console_set_alignment(self, con, align):  # Depreciated. Requires refactor then removal
-        if cEngine:
-            self.engine.mSetAlignment(int(con), align)
-        else:
-            libtcod.console_set_alignment(self.console_dict[con], align)
+        self.engine.mSetAlignment(int(con), align)
 
-    def console_print(self, con, x, y, fmt):
-        if cEngine:
-            self.engine.mPrint(con, int(x), int(y), fmt)
-        else:
-            libtcod.console_print(self.console_dict[con], int(x), int(y), fmt)
+    def console_print(self, con: int, x: int, y: int, fmt: str)->None:
+        self.engine.mPrint(con, int(x), int(y), fmt)
 
-    def console_print_ex(self, con, x, y, flag, alignment, fmt):
-        if cEngine:
-            self.engine.mPrintEx(con, int(x), int(y), flag, alignment, fmt)
-        else:
-            libtcod.console_print_ex(self.console_dict[con], x, y, flag, alignment, fmt)
+    def console_print_ex(self, con: int, x: int, y: int, flag: int, alignment: int, fmt: str)->None:
+        self.engine.mPrintEx(con, int(x), int(y), flag, alignment, fmt)
 
     def console_get_char_background(self, con, x, y):
-        if cEngine:
-            return(0,0,0)
-        else:
-            col = libtcod.console_get_char_background(self.console_dict[con], x, y)
-            return libtcod.color_get_hsv(col)
+        return(0,0,0)
 
     def console_get_char_foreground(self, con, x, y):
-        if cEngine:
-            return (0,0,0)
-        else:
-            col = libtcod.console_get_char_foreground(self.console_dict[con], x, y)
-            return col
+        return (0,0,0)
 
     ##================================================================================================================##
     ## Image functions
     ##================================================================================================================##
     def image_new(self, x, y):
-        if cEngine:
-            return self.engine.mCreateImage(int(x), int(y))
-        else:
-            self.image_dict[self.image_id_counter] = libtcod.image.Image(x, y)
-            c = self.image_id_counter
-            self.image_id_counter += 1
-            return c
+        return self.engine.mCreateImage(int(x), int(y))
 
     def image_load(self, _path):
-        if cEngine:
-            return self.engine.mLoadImage(_path)
-        else:
-            img = libtcod.image_load(_path)
-            x, y = libtcod.image_get_size(img)
-            img2 = libtcod.image.Image(x, y)
-            for xx in range(x):
-                for yy in range(y):
-                    img2.put_pixel(xx, yy, img.get_pixel(xx, yy))
-            self.image_dict[self.image_id_counter] = img2
-            c = self.image_id_counter
-            self.image_id_counter += 1
-            return c
+        return self.engine.mLoadImage(_path)
 
     def image_delete(self, img):
-        if cEngine:
-            self.engine.mDestroyImage(int(img))
-        else:
-            self.image_dict.pop(img)
+        self.engine.mDestroyImage(int(img))
 
     def image_clear(self, i, col):
         r, g, b = col
-        if cEngine:
-            self.engine.mImageClear(int(i), int(r), int(g), int(b))
-        else:
-            self.image_dict[i].clear(col)
+        self.engine.mImageClear(int(i), int(r), int(g), int(b))
 
     def image_put_pixel(self, i, x, y, col):
         r, g, b = col
-        if cEngine:
-            self.engine.mImagePutPixel(int(i), int(x), int(y), int(r), int(g), int(b))
-        else:
-            self.image_dict[i].put_pixel(x, y, col)
+        self.engine.mImagePutPixel(int(i), int(x), int(y), int(r), int(g), int(b))
 
     def image_get_size(self, i):
-        if cEngine:
-            w = self.engine.mImageGetWidth(int(i))
-            h = self.engine.mImageGetHeight(int(i))
-            return w, h
-        else:
-            w = self.image_dict[i].width
-            h = self.image_dict[i].height
-            return w, h
+        w = self.engine.mImageGetWidth(int(i))
+        h = self.engine.mImageGetHeight(int(i))
+        return w, h
 
     def image_get_pixel(self, i, x, y):
-        if cEngine:
-            r = self.engine.mImageGetR(int(i), int(x), int(y))
-            g = self.engine.mImageGetG(int(i), int(x), int(y))
-            b = self.engine.mImageGetB(int(i), int(x), int(y))
-            return r, g, b
-        else:
-            return self.image_dict[i].get_pixel(x, y)
+        r = self.engine.mImageGetR(int(i), int(x), int(y))
+        g = self.engine.mImageGetG(int(i), int(x), int(y))
+        b = self.engine.mImageGetB(int(i), int(x), int(y))
+        return r, g, b
 
     def image_blit(self, i, c, x, y, w=-1, h=-1):
-        if cEngine:
-            self.engine.mImageBlitRect(i, c, int(x), int(y), int(w), int(h))
-        else:
-            self.image_dict[i].blit(self.console_dict[c], float(x), float(y), libtcod.BKGND_SET, 1.0, 1.0, 0)
+        self.engine.mImageBlitRect(i, c, int(x), int(y), int(w), int(h))
 
     def image_blit_2x(self, i, c, x, y, sx=0, sy=0, w=-1, h=-1):
-        if cEngine:
-            self.engine.mImageBlit2x(int(i), int(c), int(x), int(y), int(sx), int(sy), int(w), int(h))
-        else:
-            self.image_dict[i].blit_2x(self.console_dict[c], x, y, sx, sy, w, h)
+        self.engine.mImageBlit2x(int(i), int(c), int(x), int(y), int(sx), int(sy), int(w), int(h))
 
     def image_replace(self, image, replacement):
-        if cEngine:
-            pass
-        else:
-            self.image_dict[image] = replacement
+        pass
 
     ##================================================================================================================##
     ## Map/Dungeon/Fov functions
@@ -1010,18 +1015,17 @@ class gEngine:
             self.map_set_properties(tile.x, tile.y, not tile.blocked, not tile.block_sight)
 
     def map_add_tile(self, x=0, y=0, cell=" ", blocked=False, block_sight=False, explored=False, spawn_node=None, color=libtcod.white, opacity=0.0):
-        if cEngine:
-            if SUBCELL:
-                self.engine.mDungeonAddTile(int(x * 2), int(y * 2), not blocked, not block_sight, int(color[0]), int(color[1]),
-                                            int(color[2]))
-                self.engine.mDungeonAddTile(int(x * 2 + 1), int(y * 2), not blocked, not block_sight, int(color[0]), int(color[1]),
-                                            int(color[2]))
-                self.engine.mDungeonAddTile(int(x * 2), int(y * 2 + 1), not blocked, not block_sight, int(color[0]), int(color[1]),
-                                            int(color[2]))
-                self.engine.mDungeonAddTile(int(x * 2 + 1), int(y * 2 + 1), not blocked, not block_sight, int(color[0]), int(color[1]),
-                                            int(color[2]))
-            else:
-                self.engine.mDungeonAddTile(x, y, not blocked, not block_sight, int(color[0]), int(color[1]), int(color[2]))
+        if SUBCELL:
+            self.engine.mDungeonAddTile(int(x * 2), int(y * 2), not blocked, not block_sight, int(color[0]),
+                                        int(color[1]), int(color[2]))
+            self.engine.mDungeonAddTile(int(x * 2 + 1), int(y * 2), not blocked, not block_sight, int(color[0]),
+                                        int(color[1]), int(color[2]))
+            self.engine.mDungeonAddTile(int(x * 2), int(y * 2 + 1), not blocked, not block_sight, int(color[0]),
+                                        int(color[1]), int(color[2]))
+            self.engine.mDungeonAddTile(int(x * 2 + 1), int(y * 2 + 1), not blocked, not block_sight, int(color[0]),
+                                        int(color[1]), int(color[2]))
+        else:
+            self.engine.mDungeonAddTile(x, y, not blocked, not block_sight, int(color[0]), int(color[1]), int(color[2]))
         self.mMap.append(Tile(x, y, cell, blocked, block_sight, explored, spawn_node, color, opacity))
 
     def map_change_tile_blocking(self, x, y, blocked, block_sight):
@@ -1034,14 +1038,11 @@ class gEngine:
         :return: Nothing
         """
         self.map_set_properties(x, y, not blocked, not block_sight)
-        if cEngine:
-            if SUBCELL:
-                self.engine.mDungeonChangeTileBlocking(int(x * 2), int(y * 2), not blocked, not block_sight)
-                self.engine.mDungeonChangeTileBlocking(int(x * 2 + 1), int(y * 2), not blocked, not block_sight)
-                self.engine.mDungeonChangeTileBlocking(int(x * 2), int(y * 2 + 1), not blocked, not block_sight)
-                self.engine.mDungeonChangeTileBlocking(int(x * 2 + 1), int(y * 2 + 1), not blocked, not block_sight)
-        else:
-            pass
+        if SUBCELL:
+            self.engine.mDungeonChangeTileBlocking(int(x * 2), int(y * 2), not blocked, not block_sight)
+            self.engine.mDungeonChangeTileBlocking(int(x * 2 + 1), int(y * 2), not blocked, not block_sight)
+            self.engine.mDungeonChangeTileBlocking(int(x * 2), int(y * 2 + 1), not blocked, not block_sight)
+            self.engine.mDungeonChangeTileBlocking(int(x * 2 + 1), int(y * 2 + 1), not blocked, not block_sight)
 
     def map_add_tile_2x(self, x, y, cell, blocked, block_sight, explored, spawn_node, color, opacity):
         self.mMap2x.append(Tile(x, y, cell, blocked, block_sight, explored, spawn_node, color, opacity))
@@ -1050,21 +1051,16 @@ class gEngine:
         libtcod.map_set_properties(self.FOV, x, y, blocked, block_sight)
 
     def map_new(self, w, h):
-        if cEngine:
-            if SUBCELL:
-                w *= 2
-                h *= 2
-            self.engine.mDungeonNewMap(int(w), int(h))
-            self.engine.mLightmaskInit(int(w), int(h))
-        else:
-            pass
+        if SUBCELL:
+            w *= 2
+            h *= 2
+        self.engine.mDungeonNewMap(int(w), int(h))
+        self.engine.mLightmaskInit(int(w), int(h))
 
     def map_clear(self):
         self.mMap = []
         self.mMap2x = []
-        if cEngine:
-            pass
-            #self.engine.mDungeonReset()
+        pass
 
     def set_fov_map(self, map):
         self.FOV = map
@@ -1113,8 +1109,6 @@ class gEngine:
             self.console_clear(con)
             self.image_blit_2x(self.subcell_map_image, con, 0, 0)
 
-    def clamp_float(self, f, l=1):
-        return f - f % 1e-2
 
     def map_get_final_color(self, x, y):
         x = int(x)
@@ -1154,45 +1148,14 @@ class gEngine:
         self.image_blit(self.map_image, con, self.w / 2, self.h / 2 - 4)
 
     def map_blit(self, con):
-        if cEngine:
-            if SUBCELL:
-                self.engine.mDungeonBlit2x(con)
+        if SUBCELL:
+            self.engine.mDungeonBlit2x(con)
 
     def map_draw(self, con, x=0, y=0, run_fov=True):
-        if cEngine:
-            if SUBCELL:
-                self.engine.mDungeonRenderStaticMap2x(con, int(x*2), int(y*2))
-            else:
-                self.engine.mDungeonRenderStaticMap(con, int(x), int(y))
+        if SUBCELL:
+            self.engine.mDungeonRenderStaticMap2x(con, int(x*2), int(y*2))
         else:
-            self.image_clear(self.map_image, 0, 0, 0)
-            if con == 0:
-                con = self.root
-            for tile in self.mMap:
-                r, g, b = tile.color
-                if run_fov:
-                    if libtcod.map_is_in_fov(self.FOV, tile.x, tile.y):
-                        brightness = self.lightmask_get_mask_value(tile.x, tile.y)
-                        new_bright = []
-                        for f in range(len(brightness)):
-                            new_bright.append(self.clamp_float(brightness[f]))
-                        brightness = new_bright
-                        # print(brightness)
-                        # this is  VERY slow for some reason
-                        r *= brightness[0]
-                        g *= brightness[1]
-                        b *= brightness[2]
-                        tile.explored = True
-                    else:
-                        if tile.explored:
-                            r *= self.lightmask.ambient
-                            g *= self.lightmask.ambient
-                            b *= self.lightmask.ambient
-
-                        else:
-                            r, g, b = 0, 0, 0
-                self.image_put_pixel(self.map_image, tile.x, tile.y, int(r), int(g), int(b))
-            self.image_blit(self.map_image, con, 0, 0)
+            self.engine.mDungeonRenderStaticMap(con, int(x), int(y))
 
     def map_draw_scrolling(self, con, game, x, y):
         self.image_clear(self.map_image, 0, 0, 0)
@@ -1241,134 +1204,94 @@ class gEngine:
         libtcod.map_compute_fov(self.FOV, x, y)
 
     def map_is_explored(self, x, y):
-        try:
-            if cEngine:
-                if SUBCELL:
-                    x *= 2
-                    y *= 2
+        if SUBCELL:
+            x *= 2
+            y *= 2
 
-                return self.engine.mDungeonIsExplored(int(x), int(y))
-            else:
-                for tile in self.mMap:
-                    if tile.x == x and tile.y == y:
-                        return tile.explored
-        except Exception(e):
-            print(e)
+        return self.engine.mDungeonIsExplored(int(x), int(y))
 
-    def map_is_transparent(self, x, y):
-        if cEngine:
-            # if SUBCELL:
-            #     x *= 2
-            #     y *= 2
-            returnable = (
-                self.engine.mDungeonIsExplored(int(x * 2), int(y * 2)),
-                self.engine.mDungeonIsExplored(int(x * 2 + 1), int(y * 2)),
-                self.engine.mDungeonIsExplored(int(x * 2), int(y * 2 + 1)),
-                self.engine.mDungeonIsExplored(int(x * 2 + 1), int(y * 2 + 1))
-            )
-            return returnable
-        else:
-            pass
+    def map_is_transparent(self, x: int, y: int)->any:
+        # if SUBCELL:
+        #     x *= 2
+        #     y *= 2
+        returnable = (
+            self.engine.mDungeonIsExplored(int(x * 2), int(y * 2)),
+            self.engine.mDungeonIsExplored(int(x * 2 + 1), int(y * 2)),
+            self.engine.mDungeonIsExplored(int(x * 2), int(y * 2 + 1)),
+            self.engine.mDungeonIsExplored(int(x * 2 + 1), int(y * 2 + 1))
+        )
+        return returnable
 
     ##================================================================================================================##
     ## Lightmask/Lightmap functions
     ##================================================================================================================##
-    def lightmask_set_ambient(self, ambient):
-        if cEngine:
-            self.engine.mLightmaskSetAmbient(ambient)
-        else:
-            self.lightmask.set_ambient(ambient)
+    def lightmask_set_ambient(self, ambient: float):
+        self.engine.mLightmaskSetAmbient(ambient)
 
     def lightmask_set_size(self, w, h):
-        if cEngine:
-            pass
-            self.engine.mLightmaskInit(int(w), int(h))
-        else:
-            self.lightmask.width = w
-            self.lightmask.height = h
-            self.lightmask_reset()
+        self.engine.mLightmaskInit(int(w), int(h))
 
     def lightmask_set_opacity_value(self, x, y, o):
-        if cEngine:
-            pass
-        else:
-            self.lightmask.set_opacity_value(x, y, o)
+        pass
 
     def lightmask_set_persistent_lightmask(self):
-        if cEngine:
-            pass
-        else:
-            self.lightmask.set_persistent_lightmask()
+        pass
 
     def lightmask_reset(self):
-        if cEngine:
-            self.engine.mLightmaskReset()
-        else:
-            self.lightmask.reset()
+        self.engine.mLightmaskReset()
 
     def lightmask_add_light(self, x, y, br, radius=10):
-        if cEngine:
-            r, g, b = 0, 0, 0
-            if isinstance(br, float):
-                r = int(255 * br)
-                g = int(255 * br)
-                b = int(255 * br)
-            else:
-                r = int(br[0] * 255)
-                g = int(br[1] * 255)
-                b = int(br[2] * 255)
-            if SUBCELL:
-                x *= 2
-                y *= 2
-                radius *= 2
-            radius += 0.5
-            self.engine.mLightmaskAddLight(int(x), int(y), r, g, b, radius=radius)
+        r, g, b = 0, 0, 0
+        if isinstance(br, float):
+            r = int(255 * br)
+            g = int(255 * br)
+            b = int(255 * br)
         else:
-            self.lightmask.add_light(x, y, br)
+            r = int(br[0] * 255)
+            g = int(br[1] * 255)
+            b = int(br[2] * 255)
+        if SUBCELL:
+            x *= 2
+            y *= 2
+            radius *= 2
+        radius += 0.5
+        self.engine.mLightmaskAddLight(int(x), int(y), r, g, b, radius=radius)
 
     def lightmask_set_intensity(self, i):
-        if cEngine:
-            pass
-        else:
-            self.lightmask.set_intensity(i)
+        pass
 
     def lightmask_compute(self, map):
-        if cEngine:
-            self.engine.mLightmaskCompute()
-        else:
-            self.lightmask.compute_mask(map)
+        self.engine.mLightmaskCompute()
 
     def lightmask_get_mask_value(self, x, y):
         x = int(x)
         y = int(y)
-        if cEngine:
-            if SUBCELL:  # get the average light of the subpixels
-                r1 = self.engine.mLightmaskGetValueR(x * 2, y * 2)
-                g1 = self.engine.mLightmaskGetValueG(x * 2, y * 2)
-                b1 = self.engine.mLightmaskGetValueB(x * 2, y * 2)
+        if SUBCELL:  # get the average light of the subpixels
+            r1 = self.engine.mLightmaskGetValueR(x * 2, y * 2)
+            g1 = self.engine.mLightmaskGetValueG(x * 2, y * 2)
+            b1 = self.engine.mLightmaskGetValueB(x * 2, y * 2)
 
-                r2 = self.engine.mLightmaskGetValueR(x * 2 + 1, y * 2)
-                g2 = self.engine.mLightmaskGetValueG(x * 2 + 1, y * 2)
-                b2 = self.engine.mLightmaskGetValueB(x * 2 + 1, y * 2)
+            r2 = self.engine.mLightmaskGetValueR(x * 2 + 1, y * 2)
+            g2 = self.engine.mLightmaskGetValueG(x * 2 + 1, y * 2)
+            b2 = self.engine.mLightmaskGetValueB(x * 2 + 1, y * 2)
 
-                r3 = self.engine.mLightmaskGetValueR(x * 2, y * 2 + 1)
-                g3 = self.engine.mLightmaskGetValueG(x * 2, y * 2 + 1)
-                b3 = self.engine.mLightmaskGetValueB(x * 2, y * 2 + 1)
+            r3 = self.engine.mLightmaskGetValueR(x * 2, y * 2 + 1)
+            g3 = self.engine.mLightmaskGetValueG(x * 2, y * 2 + 1)
+            b3 = self.engine.mLightmaskGetValueB(x * 2, y * 2 + 1)
 
-                r4 = self.engine.mLightmaskGetValueR(x * 2 + 1, y * 2 + 1)
-                g4 = self.engine.mLightmaskGetValueG(x * 2 + 1, y * 2 + 1)
-                b4 = self.engine.mLightmaskGetValueB(x * 2 + 1, y * 2 + 1)
-                r = (r1 + r2 + r3 + r4) / 4
-                g = (g1 + g2 + g3 + g4) / 4
-                b = (b1 + b2 + b3 + b4) / 4
-                return r, g, b
-            else:
-                r = self.engine.mLightmaskGetValueR(x, y)
-                g = self.engine.mLightmaskGetValueG(x, y)
-                b = self.engine.mLightmaskGetValueB(x, y)
-                return r, g, b
+            r4 = self.engine.mLightmaskGetValueR(x * 2 + 1, y * 2 + 1)
+            g4 = self.engine.mLightmaskGetValueG(x * 2 + 1, y * 2 + 1)
+            b4 = self.engine.mLightmaskGetValueB(x * 2 + 1, y * 2 + 1)
+            r = (r1 + r2 + r3 + r4) / 4
+            g = (g1 + g2 + g3 + g4) / 4
+            b = (b1 + b2 + b3 + b4) / 4
+            return r, g, b
         else:
-            return self.lightmask.get_mask_value(x, y)
+            r = self.engine.mLightmaskGetValueR(x, y)
+            g = self.engine.mLightmaskGetValueG(x, y)
+            b = self.engine.mLightmaskGetValueB(x, y)
+            return r, g, b
+
 
     ##================================================================================================================##
     ## Light Manager functions
@@ -1512,22 +1435,45 @@ class gEngine:
     ##================================================================================================================##
     ## Internal helper functions
     ##================================================================================================================##
-    def color_text(self, text, color_f=None, color_b=None):
-        # changed to not use color codes, as the items were all colored the same
-        # this gives the intended effect
-        # txt = text.capitalize()
+    def get_char(self, c: str)->chr:
+        """
+        Checks supplied char or string
+        :param c: char or string to check for custom character
+        :return: either the original char or custom char based on provided string
+        """
+        if len(c) > 1:
+            return chr(self.fonts[c])
+        else: return c
+
+    def clamp_float(self, f: float, l: int=1)->float:
+        """
+        clamps a float to 2 decimal places
+        :param f:
+        :param l:
+        :return:
+        """
+        return f - f % 1e-2
+
+    def color_text(self, text: str, color_f: tuple = None, color_b: tuple = None) -> str:
+        """
+        Applies libtcod COLORCTRL codes to color text for libtcod
+        :param text: The text to be colored, string
+        :param color_f: The foreground color, can be libtcod.Color, or a 3 element tuple (R, G, B)
+        :param color_b:  The background color, can be libtcod.Color, or a 3 element tuple (R, G, B)
+        :return: the string complete with proper color control codes
+        """
         txt = text
         rf, gf, bf, rb, gb, bb = 1, 1, 1, 1, 1, 1
 
         if color_f:
             rf, gf, bf = color_f
-            # make sure none of the rgb vlaues are 0
+            # make sure none of the rgb values are 0
             if rf == 0: rf = 1
             if gf == 0: gf = 1
             if bf == 0: bf = 1
         if color_b:
             rb, gb, bb = color_b
-            # make sure none of the rgb vlaues are 0
+            # make sure none of the rgb values are 0
             if rb == 0: rb = 1
             if gb == 0: gb = 1
             if bb == 0: bb = 1
@@ -1539,4 +1485,5 @@ class gEngine:
             return '%c%c%c%c%s%c' % (libtcod.COLCTRL_FORE_RGB, rf, gf, bf, txt, libtcod.COLCTRL_STOP)
         if color_f and color_b:
             return "%c%c%c%c%c%c%c%c%s%c" % (libtcod.COLCTRL_FORE_RGB, rf, gf, bf,
-                                             libtcod.COLCTRL_BACK_RGB, rb, gb, bb, txt, libtcod.COLCTRL_STOP)
+                                             libtcod.COLCTRL_BACK_RGB, rb, gb, bb,
+                                             txt, libtcod.COLCTRL_STOP)

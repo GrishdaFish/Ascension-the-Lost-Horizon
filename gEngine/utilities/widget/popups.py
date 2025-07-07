@@ -65,8 +65,13 @@ class Confirm(window_widget.WindowWidget):
         self.ok_button = button_widget.ButtonWidget(self, len(ok) + 3, 4, ok, self.callback, [True])
         self.cancel_button = button_widget.ButtonWidget(self, self.width - len(cancel) - 5, 4, cancel, self.callback, [False])
 
+
+    def extra_update(self, key, mouse):
+        pass
+
     def update(self, key, mouse):
         if self.active:
+            self.extra_update(key, mouse)
             self.gEngine.console_print(self.con, 2, 2, self.message)
             self.ok_button.run(key, mouse)
             if self.active:

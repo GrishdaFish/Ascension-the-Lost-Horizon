@@ -30,6 +30,14 @@ class StaticPanel:
         self.collapsed = False
         self.minimized = False
 
+
+    def is_active(self):
+        """
+        Returns if the parent widget is active
+        :return: T/F
+        """
+        return self.parent.is_active()
+
     def on_exit(self):
         """
         cleanup for this panel

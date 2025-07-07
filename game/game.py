@@ -201,15 +201,22 @@ class Game:
     def toggle(self):
         self.active = not self.active
     def show_player_inventory(self):
+        #self.show_old_inventory()
+        self.show_new_inventory()
+
+    def show_old_inventory(self):
+        chosen_item = inventory.inventory(self.dungeon_console, self.player, self)
+        if chosen_item is not None:
+            self.use_item(chosen_item)
+
+    def show_new_inventory(self):
         self.toggle()
         self.player_inventory_widget.toggle()
         self.gEngine.bring_module_to_front(self.player_inventory_widget)
-        """# show the inventory; if an item is selected, use it
-        chosen_item = inventory.inventory(self.dungeon_console, self.player, self)
 
-        if chosen_item is not None:
-            chosen_item.item.use(self.player.fighter.inventory, self.player, self)
-            self.player_action = 'turn-used'"""
+    def use_item(self, item):
+        item.item.use(self.player.fighter.inventory, self.player, self)
+        self.player_action = 'turn-used'
 
     def on_exit(self):
         self.deactivate()

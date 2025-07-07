@@ -20,6 +20,8 @@
       <option name="ignoredIdentifiers">
         <list>
           <option value="tcod.*" />
+          <option value="game.user_interface.widgets.inventory_support_widgets.inventory.*" />
+          <option value="__builtin__" />
         </list>
       </option>
     </inspection_tool>
