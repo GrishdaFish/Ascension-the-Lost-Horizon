@@ -138,7 +138,7 @@ class PrefabGenerator:
         trys = max_trys  # limit the number of trys so we don't waste time trying to place a room in a crowded map
         failed = False
         node_obj = None
-        print("Finding room placement")
+        self.gEngine.log_message("Finding room placement", 'debug')
         while trys > 0:
             # pick random room co-ords clamped to map dimensions, from room center point
             if first:
@@ -181,11 +181,11 @@ class PrefabGenerator:
                             # then place the room at the proper offsets from the center of the room
                             self.set_ground(x + room_x - center_x, y + room_y - center_y, map)
                         elif new_room_tiles[y][x] == 'L':
-                            print("Found a wall light...")
+                            self.gEngine.log_message("Found a wall light...", 'debug')
                             if light_handler:
                                 r = libtcod.random_get_int(0, 0, 100)
                                 if r <= light_spawn_chance:
-                                    print("...wall light added to light map")
+                                    self.gEngine.log_message("...wall light added to light map", 'debug')
                                     i = libtcod.random_get_float(0, 0.90, 1.15)
                                     l = lights.Light(x + room_x - center_x, y + room_y - center_y, light_handler,
                                                      flicker=True, intensity=i)
@@ -196,12 +196,12 @@ class PrefabGenerator:
                                                                               x + room_x - center_x,
                                                                               y + room_y - center_y, delay=5, fore=False)
                         elif new_room_tiles[y][x] == 'l':
-                            print("Found floor light...")
+                            self.gEngine.log_message("Found floor light...", 'debug')
                             self.set_ground(x + room_x - center_x, y + room_y - center_y, map)
                             if light_handler:
                                 r = libtcod.random_get_int(0, 0, 100)
                                 if r <= light_spawn_chance:
-                                    print("...floor light added")
+                                    self.gEngine.log_message("...floor light added", 'debug')
                                     i = libtcod.random_get_float(0, 0.90, 1.15)#libtcod.random_get_float(0, 0.75, 1.0)
                                     l = lights.Light(x + room_x - center_x, y + room_y - center_y, light_handler,
                                                      flicker=True, intensity=i)
@@ -234,15 +234,15 @@ class PrefabGenerator:
                 break  # break out of the loop if we draw a room to not waste time
 
         if trys == 0 and failed:  # if we ran out of trys and was unable to place a room
-            print("Failed to place room")
+            self.gEngine.log_message("Failed to place room", 'debug')
             return False, rooms, node_obj  # room was unable to fit
 
         if not first:  # don't try to draw a hallway if this is the first room placed.
             # draw hallways to the nearest doorway from a randomly chosen door
-            print("Room placed, generating tunnel")
+            self.gEngine.log_message("Room placed, generating tunnel", 'debug')
             pmap = libtcod.map_new(width, height)  # create a new map for path finding to draw our new hallways
 
-            print("setting map settings for pathing...")
+            self.gEngine.log_message("setting map settings for pathing...", 'debug')
             # set the walkable area to the entire map
             for y in range(height):
                 for x in range(width):
@@ -297,30 +297,28 @@ class PrefabGenerator:
             libtcod.path_compute(wpath, origin_door[0], origin_door[1], dest_door[0], dest_door[1])
             if libtcod.path_size(wpath) > max_path:
                 connect_to_closest = 100  # if a path is too long, force a connection to the closest room
-            print("Walking path....")
+            self.gEngine.log_message("Walking path....", 'debug')
             for i in range(libtcod.path_size(wpath)):
                 x, y = libtcod.path_get(wpath, i)
                 if not map[x][y].blocked:  # if we find our next step is a walkable tile, stop the hallway
-                    print("Ran into another blank space, ending pathing!")
+                    self.gEngine.log_message("Ran into another blank space, ending pathing!", 'debug')
                     self.set_ground(x, y, map)
                     # set the dest door to a wall so it doesnt look out of place since we wont path to it
                     # self.set_wall(dest_door[0], dest_door[1], map)
                     break
                 self.set_ground(x, y, map)
-
-            print('Pathing complete')
+            self.gEngine.log_message('Pathing complete', 'debug')
 
             r = libtcod.random_get_int(0, 0, 100)
             if r <= connect_to_closest:
                 origin_doors = []
                 dest_doors = []
-                print("Generating secondary connection...")
+                self.gEngine.log_message("Generating secondary connection...", 'debug')
                 origin_room = rooms[len(rooms) - 1]
                 distance = 100000000
                 dest_room = None
                 for room in rooms:
                     new_distance = self.room_distance_to(origin_room, room)
-                    # print(new_distance)
                     if new_distance != 0.0:
                         if new_distance < distance:
                             distance = new_distance
@@ -333,7 +331,6 @@ class PrefabGenerator:
                 for odoor in origin_doors:
                     for ddoor in dest_doors:
                         new_distance = self.door_distance_to(odoor, ddoor)
-                        # print(new_distance)
                         if new_distance < distance:
                             origin_door = odoor  # hodor????
                             dest_door = ddoor
@@ -346,13 +343,12 @@ class PrefabGenerator:
 
                 wpath = libtcod.path_new_using_map(pmap, 0)
                 libtcod.path_compute(wpath, origin_door[0], origin_door[1], dest_door[0], dest_door[1])
-                print("Walking secondary path....")
+                self.gEngine.log_message("Walking secondary path....", 'debug')
                 for i in range(libtcod.path_size(wpath)):
                     x, y = libtcod.path_get(wpath, i)
                     self.set_ground(x, y, map)
-                print('Secondary pathing complete')
-
-            print("Checking to see if room is connected...")
+                self.gEngine.log_message("Secondary pathing complete", 'debug')
+            self.gEngine.log_message("Checking to see if room is connected...", 'debug')
             for y in range(height):
                 for x in range(width):
                     if not map[x][y].blocked:
@@ -363,7 +359,7 @@ class PrefabGenerator:
             this_cx, this_cy = this_room.center()
 
             if map[this_cx][this_cy].blocked:
-                print("This_room center is not walkable, finding first walkable tile in room...")
+                self.gEngine.log_message("This_room center is not walkable, finding first walkable tile in room...", 'debug')
                 x1, x2, y1, y2 = this_room.outside_border()
                 found = False
                 for y in range(y1, y2):
@@ -374,12 +370,12 @@ class PrefabGenerator:
                             this_cx = x
                             this_cy = y
                             found = True
-                            print("..found walkable tile.")
+                            self.gEngine.log_message("..found walkable tile.", 'debug')
                             break
 
             home_cx, home_cy = home_room.center()
             if map[home_cx][home_cy].blocked:
-                print("Home_room center is not walkable, finding first walkable tile in room...")
+                self.gEngine.log_message("Home_room center is not walkable, finding first walkable tile in room...", 'debug')
                 x1, x2, y1, y2 = home_room.outside_border()
                 found = False
                 for y in range(y1, y2):
@@ -390,24 +386,24 @@ class PrefabGenerator:
                             home_cx = x
                             home_cy = y
                             found = True
-                            print("..found walkable tile.")
+                            self.gEngine.log_message("..found walkable tile.", 'debug')
                             break
 
             if not libtcod.path_compute(wpath, this_cx, this_cy, home_cx, home_cy):
-                print('Room is not connected...')
+                self.gEngine.log_message("Room is not connected...", 'debug')
                 x1, x2, y1, y2 = this_room.outside_border()
-                print('Covering up room...')
+                self.gEngine.log_message("Covering up room...", 'debug')
                 for y in range(y1, y2):
                     for x in range(x1, x2):
                         self.set_wall(x, y, map)
-                print('...Done. Removing room from list...')
+                self.gEngine.log_message("...Done. Removing room from list...", 'debug')
                 rooms.remove(this_room)
-                print('...Done. Room addition failed due to lack of proper connection. Returning...')
+                self.gEngine.log_message("...Done. Room addition failed due to lack of proper connection. Returning...", 'debug')
             else:
-                print('Room is connected')
-                print("Room addition completed!")
+                self.gEngine.log_message("Room is connected", 'debug')
+                self.gEngine.log_message("Room addition completed!", 'debug')
         else:
-            print("First room set!")
+            self.gEngine.log_message("First room set!", 'debug')
         return map, rooms, node_obj  # , door_objects
 
     def pick_doors(self, dest_doors, origin_doors):  # this bugs the generator out for some reason *shrugs*
@@ -489,7 +485,7 @@ class PrefabGenerator:
         self.set_draw_map(self.dungeon)
         fov_map = self.gEngine.get_fov_map()
         mmap = self.gEngine.get_map()
-        print(map_rooms)
+        self.gEngine.log_message(str(map_rooms), 'debug')
 
         for obj in self.game.objects:
             if obj.misc:

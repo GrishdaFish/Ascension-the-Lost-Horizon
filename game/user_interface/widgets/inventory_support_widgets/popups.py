@@ -45,3 +45,14 @@ class ItemUseConfirmPopup(popups.Confirm):
                     self.parent.close_use_popup()
                 self.parent.parent.update_data()
 
+class ItemUnequipConfirmPopup(ItemUseConfirmPopup):
+    def trigger(self, value):
+        if self.parent.parent.is_active() and self.owner:
+            if not value:
+                print("Cancel")
+                self.parent.close_use_popup()
+            else:
+                if is_equipment(self.data):
+                    self.owner.fighter.gear.unquip_it(self.data)
+                    self.parent.close_use_popup()
+                self.parent.parent.update_data()

@@ -228,34 +228,3 @@ class Particle:
 
     def get_color(self):
         x = libtcod.Color()
-
-if __name__ == "__main__":
-    l = [1, 2, 3, 4, 5]
-    p = int(100/len(l))
-    print(p)
-    p_list = []
-    counter = -1
-    for x in range(len(l)):
-        c = (counter+2, counter+p+1)
-        counter += p
-        p_list.append(c)
-    print(p_list)
-    d = {}
-    for x in range(len(l)):
-        d[p_list[x]] = l[x]
-
-    print(d)
-    value = 36
-    for key_range, val in d.items():
-        if value >= key_range[0] and value <= key_range[1]:
-            print(val)
-    print(type(libtcod.Color))
-
-    lifetime =  1.5
-    max_lifetime = time.time()# + lifetime
-    print(max_lifetime)
-    while True:
-        print(time.time() - max_lifetime)
-        if (time.time() - max_lifetime) > lifetime:
-            print(max_lifetime)
-            break

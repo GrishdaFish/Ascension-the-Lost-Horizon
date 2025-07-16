@@ -2,8 +2,8 @@ __author__ = 'GrishdaFish'
 from game.user_interface.widgets.inventory_support_widgets import *
 
 class EquipmentDataButton(button_widget.ColoredTextButtonWidget):
-    def __init__(self, parent, x, y, label="", function=None, passable=None, equip_type="", color=libtcod.light_grey, data=None):
-        super().__init__(parent, x, y, label, function, passable, color)
+    def __init__(self, parent, x, y, label="", function=None, passable=None, equip_type="", color=libtcod.light_grey, data=None, clean_label=None):
+        super().__init__(parent, x, y, label, function, passable, color, clean_label=clean_label)
         self.background_color = libtcod.black
         self.triggered_color = color
         self.untriggered_color = color

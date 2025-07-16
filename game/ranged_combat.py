@@ -19,7 +19,7 @@ def select_ammo(ox, oy, dx, dy, shooter, game, target=None):
     if ammo_types:
         return Popup(game.gEngine, game.dungeon_console, ammo_types, dx, dy, ammos)
     else:
-        print("You gots none ammo's noob!")
+        shooter.game.gEngine.log_message("You gots none ammo's noob!","debug")
         return None
 
 def fire_shot(ox, oy, dx, dy, shooter, game, target=None):

@@ -100,6 +100,7 @@ class CharacterCreator(window_widget.StaticWindowWidget):
         self.create_player()
         self.gEngine.add_module(self.g)
 
+        self.g.save_game_manager.save_game(self.g.save_game_manager.parse_object(self.g.player))
         help_module = help_popup_module.HelpPopup(self.gEngine, self.g, 5, 5, 70, 30, "Help")
         if self.tutorial_on_button.enabled:
             help_module.activate()
@@ -108,6 +109,7 @@ class CharacterCreator(window_widget.StaticWindowWidget):
         self.gEngine.add_module(help_module)
 
         self.g.setup_ui_modules()
+
     def activate_warrior(self):
         self.warrior_description = True
         self.wizard_description = False
@@ -183,7 +185,6 @@ class CharacterCreator(window_widget.StaticWindowWidget):
     def create_warrior(self): # TODO: Break this out into its own .py file
         inv = self.g.player.fighter.inventory
         # inv = []
-        print(self.g.player.name)
         weapon = self.g.build_objects.build_equipment(self.g, 0, 0, name="Great Sword", mat="Iron")
         # weapon.item.equipment.on_hit_effect = spells.explosion # Testing on hit effects
 

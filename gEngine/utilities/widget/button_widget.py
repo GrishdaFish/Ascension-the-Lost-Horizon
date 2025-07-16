@@ -2,10 +2,10 @@ __author__ = 'GrishdaFish'
 import math
 from gEngine.utilities.user_interface import menu
 import tcod as libtcod
-
+import re
 
 class ButtonWidget:
-    def __init__(self, parent, x, y, label, function=None, passable=None):
+    def __init__(self, parent, x, y, label, function=None, passable=None, clean_label=None):
         """
         A button widget with a function pointer attached to a widget window
         Pass a function pointer to make it do stuff
@@ -28,10 +28,14 @@ class ButtonWidget:
         self.x = x
         self.y = y
         self.label = " " + label + " "
+        self.clean_label = clean_label
         if function is None:
             function = self.dummy_function
         self.function = function
-        self.width = len(self.label)
+        if self.clean_label:
+            self.width = len(self.clean_label)
+        else:
+            self.width = len(self.label)
         self.height = 1
         self.con = self.gEngine.console_new(self.width, self.height)
         self.active = True
@@ -119,11 +123,14 @@ class ButtonWidget:
 
 
 class TextButtonWidget(ButtonWidget):
-    def __init__(self, parent, x, y, label, function, passable=None):
-        super().__init__(parent, x, y, label, function, passable)
+    def __init__(self, parent, x, y, label, function, passable=None, clean_label=None):
+        super().__init__(parent, x, y, label, function, passable, clean_label=None)
         self.label = label
         self.original_label = label
-        self.width = len(self.label)
+        if clean_label:
+            self.width = len(clean_label)
+        else:
+            self.width = len(label)
         self.gEngine.console_remove_console(self.con)
         self.con = self.gEngine.console_new(self.width, self.height)
 
@@ -132,8 +139,8 @@ class TextButtonWidget(ButtonWidget):
             self.gEngine.console_print(self.con, 0, 0, self.label)
 
 class ColoredTextButtonWidget(TextButtonWidget):
-    def __init__(self, parent, x, y, label, function, passable=None, color=libtcod.light_grey):
-        super().__init__(parent, x, y, label, function, passable)
+    def __init__(self, parent, x, y, label, function, passable=None, color=libtcod.light_grey, clean_label=None):
+        super().__init__(parent, x, y, label, function, passable, clean_label=clean_label)
         self.label = self.gEngine.color_text(label, color)
         self.base_color = color
 
@@ -184,3 +191,6 @@ class BigButtonWidget(ButtonWidget):
                 return True
                 # if mouse.cy == (self.y + math.floor(self.parent.y)):
         return False
+
+def remove_non_ascii(text):
+    return ''.join(char for char in text if ord(char) < 128)

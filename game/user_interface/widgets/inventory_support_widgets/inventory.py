@@ -35,6 +35,9 @@ class InventoryDisplay(panels.StaticPanel):
         self.use_popup = None
         self.used_item = None
 
+    def setup(self, *args, **kwargs):
+        pass
+
     def update_data(self):
         """
         Creates new buttons for the inventory screen. Called after every time the inventory updates
@@ -50,7 +53,15 @@ class InventoryDisplay(panels.StaticPanel):
 
         i = 1
         for item in self.owner.fighter.inventory:
-            item_button = EquipmentDataButton(self, 3, i, item.name.capitalize(), self.popup, [item], "", item.color, item)
+            itm = self.gEngine.color_text(item.name.capitalize(), item.color)
+            clean_label = item.name
+            if item.item.stackable:
+                itm += " (%s)" % self.gEngine.color_text(str(item.item.qty), libtcod.green)
+                clean_label += " (%s)" % str(item.item.qty)
+            elif is_light(item, self.owner):
+                itm += " (%s - %s)" % (self.gEngine.color_text("Fuel", libtcod.brass), self.gEngine.color_text(str(item.item.equipment.fuel), get_fuel_color(item)))
+                clean_label += " (Fuel - %s)" % str(item.item.equipment.fuel)
+            item_button = EquipmentDataButton(self, 3, i, itm, self.popup, [item], "", item.color, item, clean_label=clean_label)
             item_button.width = self.w - 2
             self.buttons.append(item_button)
 
@@ -96,13 +107,7 @@ class InventoryDisplay(panels.StaticPanel):
         else:
             message = "Do you want to use %s" % item.name.capitalize()
             title = "Use Item"
-
-        i = ItemUseConfirmPopup(self.gEngine,x=self.w, y=self.h/2,title=title, owner=self.owner, parent=self, message=message)
-        i.update_data(item)
-        i.x = self.w - i.width/2
-        i.activate()
-        self.gEngine.add_module(i)
-        self.use_popup = i
+        self.build_popup(message, title, item)
 
     def close_use_popup(self):
         """
@@ -127,3 +132,11 @@ class InventoryDisplay(panels.StaticPanel):
             for button in self.buttons:
                 if self.parent.is_active():
                     button.run(key, mouse)
+
+    def build_popup(self, message, title, item):
+        i = ItemUseConfirmPopup(self.gEngine,x=self.w, y=self.h/2,title=title, owner=self.owner, parent=self, message=message)
+        i.update_data(item)
+        i.x = self.w - i.width/2
+        i.activate()
+        self.gEngine.add_module(i)
+        self.use_popup = i

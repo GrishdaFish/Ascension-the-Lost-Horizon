@@ -59,13 +59,15 @@ class CompareExamine(panels.StaticPanel):
         """
         if data:
             self.display_data.clear()
+            item_type = data.item.equipment.type.replace('_', ' ')
             self.display_data = [
-                'Name     : %s' % data.name.capitalize(),
-                'Type     : %s' % data.item.equipment.type.capitalize()
+                'Name     : %s' % self.gEngine.color_text(data.name.capitalize(), data.color),
+                'Type     : %s' % item_type.capitalize()
             ]
 
             if is_weapon(data, self.owner):
-                self.display_data.append('Damage   : %s' % data.item.equipment.damage)
+                damage = '%dd%d+%d' %(data.item.equipment.damage[0], data.item.equipment.damage[1], data.item.equipment.damage[3])
+                self.display_data.append('Damage   : %s' % damage)
                 self.display_data.append('Accuracy : %s' % data.item.equipment.accuracy)
 
             elif is_armor(data, self.owner):
@@ -77,7 +79,7 @@ class CompareExamine(panels.StaticPanel):
                 self.display_data.append('Fuel     : %s' % data.item.equipment.fuel)
                 self.display_data.append('Max Fuel : %s' % data.item.equipment.max_fuel)
 
-            self.display_data.append('Value    : %s' % data.item.value)
+            self.display_data.append(    'Value    : %s' % self.gEngine.color_text(data.item.value, libtcod.gold))
 
             if not is_light(data, self.owner):
                 self.display_data.append('Effects  : ')
@@ -89,5 +91,21 @@ class CompareExamine(panels.StaticPanel):
         :param data:
         :return:
         """
-        self.display_data.clear()
-
+        if data:
+            unusable = self.gEngine.color_text(" Unable to use this item!", libtcod.red)
+            self.display_data.clear()
+            self.display_data = [
+                'Name     : %s'    % self.gEngine.color_text(data.name.capitalize(), data.color),
+                'Type     : %s'    % data.item.spell.type.capitalize(),
+                'Power    : %s-%s' %( str(data.item.spell.min ), str(data.item.spell.max)),
+                'Range    : %s'    % str(data.item.spell.range),
+                'Radius   : %s'    % str(data.item.spell.radius),
+                'Value    : %s'    % self.gEngine.color_text(data.item.value, libtcod.gold)
+            ]
+            if data.item.level:
+                if data.item.level > self.owner.fighter.max_consumable_level:
+                    txt = self.gEngine.color_text(str(data.item.level), libtcod.red)
+                    txt = txt + unusable
+                else:
+                    txt = self.gEngine.color_text(str(data.item.level), libtcod.green)
+                self.display_data.append('Level    : %s' % txt)

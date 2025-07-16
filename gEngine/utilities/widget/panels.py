@@ -3,7 +3,7 @@ __author__ = 'GrishdaFish'
 
 
 class StaticPanel:
-    def __init__(self, gEngine, parent, x=0, y=0, w=0, h=5, title="", draw_frame=True):
+    def __init__(self, gEngine: any, parent: any, x: int=0, y: int=0, w: int=0, h: int=5, title: str="", draw_frame: bool=True)->None:
         """
         A static panel used to display information on WindowWidgets. Useful to divide up sections of a Window
         :param gEngine: the active gEngine instance

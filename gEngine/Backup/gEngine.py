@@ -154,8 +154,6 @@ Ignore all of the force casting variables to ints. Python 3 is dumb when you div
                 Added additional logging.
 7/11/2025 - Started adding sound support. Needs c++ engine support
 7/13/2025 - Added engine popup functions
-7/15/2025 - Added debug specific logging level, debug will also print the debug message. Replace most prints with debug
-                logging, so release distributions don't have as many prints
 
 """
 
@@ -168,6 +166,8 @@ import sys
 import numpy as np
 import traceback
 import struct
+from pygame import mixer
+import pygame
 
 ##====================================================================================================================##
 ## Globals
@@ -176,7 +176,7 @@ RELEASE: bool = False
 SUBCELL: bool = True
 
 INFO: str = "info"
-DEBUG: str = "debug"
+DEBUG: str = "info"
 NOTICE: str = "notice"
 ERROR: str = "error"
 FATAL: str = "fatal"
@@ -327,6 +327,7 @@ class EngineAlert(popups.Alert):
     Slightly customized Alert popup for engine popup messages
     """
     def close(self):
+        print("Closing Engine Alert")
         self.active=False
         self.gEngine.reactivate_modules()
         self.gEngine.remove_module(self)
@@ -430,7 +431,7 @@ class gEngine:
     def init_root(self, pre_init_logging: list = None) -> None:  # Root's id will ALWAYS be 0.
         """
         Initializes the TCOD root console. Call after you create an instance of the engine
-        Also finishes initializing the rest of the engine that __init__ doesn't do
+        Also finishes initializing the rest of the engine that __init__ doesnt do
         :return: None
         """
         custom_font_width: int = self.custom_font_options.file_width
@@ -440,7 +441,6 @@ class gEngine:
                                       custom_font_width, custom_font_height)
 
         self.logging_defaults = {
-            "debug": self.engine.mInfo,
             "info": self.engine.mInfo,
             "notice": self.engine.mNotice,
             "error": self.engine.mError,
@@ -464,8 +464,9 @@ class gEngine:
         #mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=4096)
         #mixer.init()
         #pygame.init()
-        self.log_message(str(self.music_dict), DEBUG)
-        self.log_message((str(self.sfx_dict)), DEBUG)
+
+        print(self.music_dict)
+        print(self.sfx_dict)
         self.sound_play_music('djen')
         self.sound_play_sfx('ui_click')
         self.log_message("...Done!", INFO, override=True)
@@ -582,6 +583,7 @@ class gEngine:
                 for file in files:
                     value = os.path.join(root, file)
                     key = os.path.splitext(os.path.basename(file))
+                    print(key)
                     self.music_dict[key[0]] = value
                     self.log_message("Loading music file [%s]"% value, INFO, True)
         self.log_close_block(INFO, True)
@@ -879,8 +881,6 @@ class gEngine:
         """
 
         if level in self.logging_level or override:
-            if level == "debug":
-                print("[DEBUG] -> %s" %message)
             self.engine.mOpenBlock(message)
         else:
             self.logging_history.append("[HISTORY][OPEN BLOCK] %s" % message)
@@ -905,10 +905,7 @@ class gEngine:
         :param override: whether to override logging level restrictions
         :return: Nothing
         """
-
         if level in self.logging_level:
-            if level == "debug":
-                print("[DEBUG] -> %s" %message)
             self.logging_level[level](message)
             return
         else:
@@ -926,17 +923,9 @@ class gEngine:
         global LOGGING_LEVEL
         LOGGING_LEVEL = level
         LOGGING_LEVEL = LOGGING_LEVEL.lower()
-        default = ["debug",' ', '', None]
+        default = ["debug", "info", ' ', '', None]
 
         if LOGGING_LEVEL in default:
-            self.logging_level = {
-                "debug": self.engine.mInfo,
-                "info": self.engine.mInfo,
-                "notice": self.engine.mNotice,
-                "error": self.engine.mError,
-                "fatal": self.engine.mFatalError
-            }
-        elif LOGGING_LEVEL == "info":
             self.logging_level = {
                 "info": self.engine.mInfo,
                 "notice": self.engine.mNotice,
@@ -1546,7 +1535,7 @@ class gEngine:
         if music in self.music_dict.keys():
             #sound = mixer.Sound(self.music_dict[music])
             #sound.set_volume(self.music_volume)
-            self.log_message("playing %s music file!" % music, DEBUG)
+            print("playing %s music file!" % music)
         else:
             pass
             '''sound = mixer.Sound(music)
@@ -1558,7 +1547,7 @@ class gEngine:
 
     def sound_play_sfx(self, sfx: str = "")->any:
         if sfx in self.sfx_dict.keys():
-            self.log_message("Playing %s sfx" % self.sfx_dict[sfx], DEBUG)
+            print("Playing %s sfx" % self.sfx_dict[sfx])
             #sound = mixer.Sound(self.sfx_dict[sfx])
             #sound.set_volume(self.sfx_volume)
         else:

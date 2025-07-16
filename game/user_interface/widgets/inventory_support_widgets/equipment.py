@@ -36,11 +36,14 @@ class EquipmentDisplay(panels.StaticPanel):
             "Neck":      "Neck      : ",
             "Ring":      "Ring      : ",
         }
+
+        self.use_popup = None
         self.update_data()
 
 
     def unequip_item(self, item):
         print("Unequipping Item")
+        self.popup(item)
 
     def setup(self, data):
         self.equipment_slots = self.owner.fighter.gimmie_da_slots()
@@ -76,3 +79,39 @@ class EquipmentDisplay(panels.StaticPanel):
         for line in self.display_data:
             self.gEngine.console_print(self.con, 1, i, self.display_data[line])
             i+=1
+        bonus = 0
+        penalty = 0
+        for item in self.owner.fighter.gear.gimmie_da_armors():
+            if item:
+                bonus += item.item.equipment.bonus
+                penalty += item.item.equipment.penalty
+        text = 'Total Armor Bonus   : %s' % self.gEngine.color_text(str(bonus), libtcod.green)
+        self.gEngine.console_print(self.con, 1, 11, text)
+        text = 'Total Armor Penalty : %s' % self.gEngine.color_text(str(penalty), libtcod.red)
+        self.gEngine.console_print(self.con, 1, 12, text)
+
+    def popup(self, item):
+        """
+        Creates and displays a confirmation popup
+        :param item: The item to be used/Equipped
+        :return:
+        """
+        if is_equipment(item):
+            message = "Do you want to un-equip %s" % item.name.capitalize()
+            title = "Un-Equip item?"
+        else:
+            return
+
+        i = ItemUnequipConfirmPopup(self.gEngine,x=self.w, y=self.h/2,title=title, owner=self.owner, parent=self, message=message)
+        i.update_data(item)
+        i.x = self.w - i.width/2
+        i.activate()
+        self.gEngine.add_module(i)
+        self.use_popup = i
+
+    def close_use_popup(self):
+        """
+        Helper Cleanup Function for the confirm popup
+        :return:
+        """
+        self.use_popup.close()

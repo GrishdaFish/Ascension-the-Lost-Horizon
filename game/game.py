@@ -1,14 +1,19 @@
 __author__ = 'Grishnak'
 
+import os
+
+import tcod as libtcod
+
 from dungeon import dungeon
 from dungeon import prefab_dungeon
 from dungeon.prefabs import prefabs
-import tcod as libtcod
-#from game.ecs import systems
+
 from gEngine.utilities.timing import ticker
+
 from gEngine.utilities import console
 from gEngine.utilities import status_bar
 from gEngine.utilities import messaging
+
 from gEngine.utilities.user_interface import menu
 from gEngine.utilities.user_interface import hot_bar
 
@@ -17,28 +22,28 @@ from gEngine.utilities.widget import button_widget
 
 from gEngine import lights
 
-from game import bark
-from game.object import build_objects
-from game.object import object
-
-from game.user_interface import inventory
-from game.user_interface.widgets import inventory_widget
-
 from game import main_menu
-
-from game.user_interface import hover_description
-from game.user_interface.widgets import skill_screen
-
+from game import bark
 from game import ranged_combat
 from game import input_handler
 from game import render
-from game.ai_director import ai_director
 
+from game.object import build_objects
+from game.object import object
+from game.object import saving
+from game.object import loading
+
+from game.user_interface import inventory
+from game.user_interface import hover_description
+
+from game.user_interface.widgets import inventory_widget
+from game.user_interface.widgets import skill_screen
+
+from game.ai_director import ai_director
 
 from game.classes import warrior_skills
 
 from game.debug_modules import module_list, dungeon_status, spawning_tool, reload_module
-import os
 
 # todo externalize this data
 dungeon_height = 55
@@ -49,6 +54,7 @@ max_rooms = 25
 max_room_monsters = 0
 max_room_items = 3
 
+ROOT_PATH: str = os.path.abspath('.')
 def dummy_func():
     pass
 
@@ -154,6 +160,7 @@ class Game:
         self.skill_screen = skill_screen.SkillScreen(self.gEngine, self, 0, 0, self.dungeon_width, self.dungeon_height, "Skills")
         self.skill_screen.active = False
 
+        self.save_game_manager = saving.SaveGame(self, self.gEngine, os.path.join(path, "save.sav"))
 
         self.gEngine.log_message("Game fully initialized")
         self.gEngine.log_close_block()
@@ -197,9 +204,15 @@ class Game:
 
     def deactivate(self):
         self.active = False
+        self.gEngine.log_message("Game paused...")
 
     def toggle(self):
         self.active = not self.active
+
+    def test_engine_popup(self):
+        pass
+        #self.gEngine.engine_fatal_popup("Test", "This is a test debug popup")
+
     def show_player_inventory(self):
         #self.show_old_inventory()
         self.show_new_inventory()
@@ -357,6 +370,7 @@ class Game:
         self.player = object.Object(self.dungeon_console, 0, 0, '@', 'player',
                                     libtcod.white, blocks=True, fighter=fighter_component)
         self.player.game = self
+        self.player.is_player = True
         self.player.idle_frames = ['player_1', 'player_2', 'player_3', 'player_4', 'player_5']
         self.player.add_idle_animation()
 

@@ -1,6 +1,12 @@
 <component name="InspectionProjectProfileManager">
   <profile version="1.0">
     <option name="myName" value="Project Default" />
+    <inspection_tool class="DuplicatedCode" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <Languages>
+        <language minSize="80" name="Python" />
+      </Languages>
+    </inspection_tool>
+    <inspection_tool class="LossyEncoding" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="ignoredErrors">
         <list>
@@ -22,8 +28,17 @@
           <option value="tcod.*" />
           <option value="game.user_interface.widgets.inventory_support_widgets.inventory.*" />
           <option value="__builtin__" />
+          <option value="game.user_interface.widgets.inventory_support_widgets.compare_examine.libtcod" />
+          <option value="game.user_interface.widgets.inventory_support_widgets.weapon_display.*" />
+          <option value="game.user_interface.widgets.inventory_support_widgets.popups.*" />
+          <option value="game.user_interface.widgets.inventory_support_widgets.buttons.*" />
+          <option value="gEngine.utilities.widget.panels.*" />
+          <option value="game.user_interface.widgets.inventory_support_widgets.equipment.*" />
+          <option value="game.user_interface.widgets.inventory_support_widgets.compare_examine.*" />
+          <option value="game.ai_director" />
         </list>
       </option>
     </inspection_tool>
+    <inspection_tool class="ReassignedToPlainText" enabled="false" level="WARNING" enabled_by_default="false" />
   </profile>
 </component>

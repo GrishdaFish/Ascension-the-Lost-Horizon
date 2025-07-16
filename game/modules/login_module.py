@@ -56,7 +56,7 @@ class LoginMenu(window_widget.WindowWidget):
             # new text widget. Returns text field if Enter key was pressed, otherwise None
             user_input = self.user_widget.run(key, mouse)
             if user_input:
-                print(user_input)
+                self.gEngine.log_message(user_input, "debug")
                 self.pass_widget.force_activate()
                 self.user_input = True
                 return

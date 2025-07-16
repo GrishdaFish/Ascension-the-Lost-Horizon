@@ -49,6 +49,8 @@ class Object:
         self.idle_frames = []
         self.game = None
 
+        self.is_player = False
+
         self.fighter = fighter
         if self.fighter:
             self.fighter.owner = self

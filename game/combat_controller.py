@@ -23,7 +23,7 @@ def single_target(attacker, target):
 
     attack_roll = libtcod.random_get_int(0, 1, 20)
     attack_roll += get_accuracy_bonus(attacker)
-    print("ATK ROLL= " + str(attack_roll))
+    attacker.game.gEngine.log_message("ATK ROLL= " + str(attack_roll),"debug")
     weapon = attacker.gear.gimmie_da_weapon()
     # Evasion chance always occurs, ends turn - no damage dealt
     if try_to_evade(target) > attack_roll:
@@ -54,7 +54,7 @@ def single_target(attacker, target):
         # TODO when weapon crits are added they will get checked at the same time as conditions:
         if attacker.stat.conditions:
             for fx in attacker.stat.conditions:
-                print(attacker.owner.name + " trying to inflict: " + fx.effect_name)
+                attacker.game.gEngine.log_message(attacker.owner.name + " trying to inflict: " + fx.effect_name, "debug")
                 fx.inflict_condition(target)
 
         weapon_damage = attacker.gear.get_weapon_damage() - try_to_defend(target)
@@ -71,8 +71,8 @@ def single_target(attacker, target):
             mitigated_damage = get_blocked_amount(target)
 
         final_damage = weapon_damage + elemental_damage - mitigated_damage
-        print("Damage " + str(final_damage))
         msg = attacker.owner.name.capitalize() + ' attacks ' + target.owner.name + ' for ' + str(final_damage) + '!'
+        attacker.game.gEngine.log_message("Damage " + str(final_damage), "debug")
         if attacker.game:
             attacker.game.message.message(msg, 2)
         target.take_damage(final_damage, attacker.owner, attacker.game)
@@ -212,8 +212,7 @@ def get_attack_pattern(attacker, direction, pattern="line"):
     for target in altered_locs:
         if attacker.game.check_for_target(attacker.owner.x + target[0], attacker.owner.y + target[1]):
             targets.append(attacker.game.check_for_target(attacker.owner.x + target[0], attacker.owner.y + target[1]))
-
-    print("attack pattern returning targets: " + str(targets))
+    attacker.game.gEngine.log_message("attack pattern returning targets: " + str(targets),"debug")
     return targets
 
 # # below is semi psuedocode implementation

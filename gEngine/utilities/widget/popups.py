@@ -22,7 +22,7 @@ class Alert(window_widget.WindowWidget):
             self.message = message
         self.width = len(message) + 2
         self.original_width = self.width
-        self.gEngine.console_remove_console(self.con)
+        # self.gEngine.console_remove_console(self.con)
         self.con = self.gEngine.console_new(self.width, self.height)
         self.title_x_position = self.width / 2 - (len(self.title) / 2)
         self.ok_button = button_widget.ButtonWidget(self, self.width/2 - 2, 3, "Ok", self.close)

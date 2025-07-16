@@ -287,6 +287,7 @@ class GameObjects:
         equip_component.max_fuel = light.max_fuel
         equip_component.torch_color = light.effect_color
         equip_component.torch_intensity = light.intensity
+        equip_component.torch = True
 
         item_component = Item()
         item_component.equipment = equip_component

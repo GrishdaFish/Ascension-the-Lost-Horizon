@@ -77,6 +77,7 @@ class MainMenu:
     def run(self, key, mouse):
         if self.first:
             self.gEngine.log_open_block("Main menu running...")
+            self.gEngine.sound_play_music('djen')
             self.first = False
             '''login = login_module.LoginMenu(self.gEngine, None, self.gEngine.SCREEN_WIDTH / 4,
                                            self.gEngine.SCREEN_HEIGHT / 4,
