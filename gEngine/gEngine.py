@@ -168,6 +168,8 @@ import sys
 import numpy as np
 import traceback
 import struct
+import time
+import inspect
 
 ##====================================================================================================================##
 ## Globals
@@ -282,9 +284,9 @@ class gEngineModule:
         Deactivates the module
         :return: None
         """
-        self.active = True
+        self.active = False
 
-    def update(self, key: complex, mouse: complex) -> None:
+    def update(self, key: any, mouse: any) -> None:
         """
         Override this function to perform custom behavior
         :param key: libtcod.Key() object
@@ -293,7 +295,7 @@ class gEngineModule:
         """
         pass
 
-    def run(self, key: complex, mouse: complex) -> None:
+    def run(self, key: any, mouse: any) -> None:
         """
         Internal function that runs the module
         :param key: libtcod.Key() object
@@ -308,6 +310,13 @@ class gEngineModule:
         :return:
         """
         self.deactivate()
+
+    def setup(self) -> None:
+        """
+        Override this to set up initial state of the module if you don't want to super().__init__()
+        :return:
+        """
+        pass
 
 class Tile:
     def __init__(self, x=0, y=0, cell='#', blocked=True, block_sight=True,
@@ -357,6 +366,9 @@ class gEngine:
         self.name = self.engine_options.name + ' ' + self.engine_options.version
         self.fs = self.options.fullscreen
         self.fps = self.options.fps
+        #self.fps = 60
+
+        self.frame_duration = 1 / self.fps
 
         self.console_set_custom_font(self.engine_options.font,
                                      self.engine_options.font_layout |
@@ -436,7 +448,7 @@ class gEngine:
         custom_font_width: int = self.custom_font_options.file_width
         custom_font_height: int = self.custom_font_options.file_height
 
-        self.engine = cEngine.gEngine(self.w, self.h, self.name, self.fs, self.fps, self.engine_options.font,
+        self.engine = cEngine.gEngine(self.w, self.h, self.name, self.fs, 0, self.engine_options.font,
                                       custom_font_width, custom_font_height)
 
         self.logging_defaults = {
@@ -654,6 +666,7 @@ class gEngine:
         """
         try:
             while True:
+                frame_time = time.time()
                 # start every frame by flushing all of the screen, then grab and parse any input
                 self.console_flush()
 
@@ -693,6 +706,10 @@ class gEngine:
                     self.modules_to_remove.clear()
                 self.adjusting = False
 
+                elapsed_time = time.time() - frame_time
+                if elapsed_time < self.frame_duration:
+                    time.sleep(self.frame_duration - elapsed_time)
+
         except BaseException as e:
             if str(e) != "None" and str(e) != "69420":
                 self.log_open_block("==========================[ERROR HISTORY OUTPUT BELOW]==========================", override=True)
@@ -720,27 +737,41 @@ class gEngine:
     def add_module(self, module: any) -> None:
         """
         prepares a module to be added to the engine
-        :param module: a module object to be added to the engine
-        :return:
+        :param module: a module object to be added to the engine. Must be a class and have the following methods:
+            run(key, mouse)
+            activate()
+            deactivate()
+        :return: Nothing
         """
-        self.log_message("Adding module %s" % module.__class__.__name__)
+        if not callable(getattr(module, "run", None)):
+            raise NameError("%s module does not have the required run(key, mouse) method!"% module)
+        if not callable(getattr(module,"activate", None)):
+            raise NameError("%s module does not have the required activate() method!"% module)
+        if not callable(getattr(module,"deactivate", None)):
+            raise NameError("%s module does not have the required deactivate() method!"% module)
+        if not hasattr(module, "active"):
+            raise TypeError("%s module does not have the required bool type: active!" % module)
+
+        self.log_message("Adding module %s" % module.__class__.__name__, DEBUG)
         self.additional_modules.append(module)
+
 
     def remove_module(self, module) -> bool:
         """
-        Scheduls a module to be removed from the engine
+        Schedules a module to be removed from the engine
         :param module: __name__ of the module, or the module object its self
         :return: True if the module was found and is ready to be removed, False otherwise
         """
         module = self.get_module(module)
         if module:
-            self.log_message("Removing module %s."%module.__class__.__name__)
+            self.log_message("Removing module %s."%module.__class__.__name__, DEBUG)
             self.modules_to_remove.append(module)
             module.on_exit()
             return True
         else:
-            self.log_message("Supplied module not found! Returning False...")
+            self.log_message("Supplied module not found! Returning False...", NOTICE)
             return False
+
 
     def get_module(self, name) -> any:
         """
@@ -750,15 +781,16 @@ class gEngine:
         """
         if isinstance(name, str):
             module = self.get_module_by_name(name)
-            self.log_message("Getting module %s"% module.__class__.__name__)
+            self.log_message("Getting module %s"% module.__class__.__name__, DEBUG)
             return module
         else:
             if name in self.modules:
-                self.log_message("Getting module %s" % name.__class__.__name__)
+                self.log_message("Getting module %s" % name.__class__.__name__, DEBUG)
                 return name
             else:
-                self.log_message("Supplied module not found! Returning None...")
+                self.log_message("Supplied module not found! Returning None...", NOTICE)
                 return None
+
 
     def get_module_by_name(self, name) -> any:
         """
@@ -774,6 +806,7 @@ class gEngine:
                 return module
         return None
 
+
     def get_module_status(self, name)-> any:
         """
         Gets the status of the named module
@@ -785,6 +818,7 @@ class gEngine:
             return module.active
         else:
             return None
+
 
     def bring_module_to_front(self, name) -> None:
         """
@@ -880,7 +914,8 @@ class gEngine:
 
         if level in self.logging_level or override:
             if level == "debug":
-                print("[DEBUG] -> %s" %message)
+                message = "[DEBUG] -> %s" %message
+                print(message)
             self.engine.mOpenBlock(message)
         else:
             self.logging_history.append("[HISTORY][OPEN BLOCK] %s" % message)
@@ -908,7 +943,8 @@ class gEngine:
 
         if level in self.logging_level:
             if level == "debug":
-                print("[DEBUG] -> %s" %message)
+                message = "[DEBUG] -> %s" % message
+                print(message)
             self.logging_level[level](message)
             return
         else:
@@ -970,7 +1006,11 @@ class gEngine:
         :param height: int of the height of the new console
         :return: an int of the console number (Not the actual console reference)
         """
-        return self.engine.mAddConsole(int(width), int(height))
+        id = self.engine.mAddConsole(int(width), int(height))
+        self.log_open_block("Creating a new console...", DEBUG)
+        self.log_message("Width [%d], Height [%d], ID [%d]" %(width, height, id), DEBUG)
+        self.log_close_block(DEBUG)
+        return id
 
 
     def console_set_key_color(self, con, col) -> None:
@@ -988,10 +1028,23 @@ class gEngine:
     def console_clear(self, con: int=0) -> None:
         self.engine.mClear(int(con))
 
-    def console_remove_console(self, con: int) -> None:
+    def console_remove_console(self, con: int) -> bool:
+        self.log_open_block("Removing console...", DEBUG)
         if con > 0:
-            self.engine.mDestroyConsole(int(con))
-        return None
+            self.log_message("Removing console [%d]" % con, DEBUG)
+            success = self.engine.mDestroyConsole(int(con))
+            if success:
+                self.log_message("Console [%d] removed successfully" % con, DEBUG)
+            else:
+                self.log_message("Removing console [%d] failed! Check to see if console exists!" % con, ERROR)
+                #TODO: Add a c++ check function maybe?
+            self.log_close_block(DEBUG)
+        else:
+            self.log_open_block("Error removing console!", ERROR)
+            self.log_message("Cannot remove root (con=0) console!", ERROR)
+            success = False
+            self.log_close_block(ERROR)
+        return success
 
     def console_remove_all(self) -> None:
         # self.mConsole = []
@@ -1003,6 +1056,7 @@ class gEngine:
 
     ##================================================================================================================##
     ## Drawing console functions
+    ## See libtcod documentation for more info on these functions
     ##================================================================================================================##
     def console_get_height_rect(self, con: int, x: int, y: int, width: int, height: int, fmt: str)->any:
         return self.engine.mGetHeightRect(int(con), int(x), int(y), int(width), int(height), fmt)
@@ -1066,9 +1120,15 @@ class gEngine:
 
     ##================================================================================================================##
     ## Image functions
+    ## See libtcod documentation for more info on these functions
     ##================================================================================================================##
-    def image_new(self, x, y):
-        return self.engine.mCreateImage(int(x), int(y))
+    def image_new(self, width, height):
+        self.log_open_block("Creating a new TCODImage...", DEBUG)
+        id = self.engine.mCreateImage(int(width), int(height))
+        self.log_message("Width [%d], Height [%d], ID [%d]" % (width, height, id), DEBUG)
+        self.log_close_block(DEBUG)
+        return id
+
 
     def image_load(self, _path):
         return self.engine.mLoadImage(_path)

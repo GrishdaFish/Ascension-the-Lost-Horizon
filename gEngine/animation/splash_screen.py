@@ -1,6 +1,6 @@
 __author__ = 'GrishdaFish'
 import tcod as libtcod
-
+import time
 
 class SplashScreen:
     def __init__(self, gEngine):
@@ -23,6 +23,7 @@ class SplashScreen:
         console_fade_amount = 0.008
         self.gEngine.log_open_block("Splash Screen Running")
         while not libtcod.console_is_window_closed():
+            frame_time = time.time()
             key, mouse = self.gEngine.handle_input()
             if key.vk == libtcod.KEY_SPACE or key.vk == libtcod.KEY_ESCAPE or key.vk == libtcod.KEY_ENTER:
                 self.gEngine.log_message("Splash skipped, proceeding to run game")
@@ -46,3 +47,7 @@ class SplashScreen:
             self.gEngine.console_blit(self.con, 0, 0, 0, 0, 0, 0, 0, console_fade, console_fade)
             self.gEngine.console_flush()
             self.gEngine.console_clear(0)
+
+            elapsed_time = time.time() - frame_time
+            if elapsed_time < self.gEngine.frame_duration:
+                time.sleep(self.gEngine.frame_duration - elapsed_time)

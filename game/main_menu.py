@@ -194,11 +194,15 @@ class MenuWidget(window_widget.StaticWindowWidget):
                 if self.active:
                     button.run(key, mouse)
 
-
+def test():
+    pass
 class NewGame(button_widget.TextButtonWidget):
     def trigger(self):
         self.gEngine.log_message('Starting new game')
         self.parent.close()
+        t = TestModule()
+        self.gEngine.add_module(t)
+        self.gEngine.remove_module(t)
         self.gEngine.remove_module(self.gEngine.get_module_by_name("MainMenu"))
         c = character_creator.CharacterCreator(self.gEngine, w=self.gEngine.w, h=self.gEngine.h,
                                                title="Character Creator")
@@ -206,7 +210,19 @@ class NewGame(button_widget.TextButtonWidget):
         c.setup()
         self.gEngine.add_module(c)
 
+    def test(self):
+        pass
 
+class TestModule:
+    def __init__(self):
+        #self.active = True
+        pass
+    def run(self, key, mouse):
+        pass
+    def activate(self):
+        self.active = True
+    def deactivate(self):
+        self.active = False
 
 class CloseGame(button_widget.TextButtonWidget):
     def trigger(self):
